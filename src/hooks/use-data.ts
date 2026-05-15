@@ -40,7 +40,10 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(taskData),
       })
-      if (!res.ok) throw new Error('Failed to create task')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to create task')
+      }
       await fetchTasks()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
@@ -55,7 +58,10 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(taskData),
       })
-      if (!res.ok) throw new Error('Failed to update task')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to update task')
+      }
       await fetchTasks()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
@@ -229,29 +235,41 @@ export function useLabels() {
 export function useSearch(query: string) {
   const [results, setResults] = useState<Task[]>([])
   const [loading, setLoading] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!query.trim()) {
       setResults([])
+      setSearchError(null)
       return
     }
 
+    let cancelled = false
     setLoading(true)
+    setSearchError(null)
+
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
         if (!res.ok) throw new Error('Search failed')
         const data = await res.json()
-        setResults(data)
+        if (!cancelled) {
+          setResults(data)
+          setLoading(false)
+        }
       } catch (err) {
-        console.error('Search error:', err)
-      } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setSearchError(err instanceof Error ? err.message : 'Search failed')
+          setLoading(false)
+        }
       }
     }, 300)
 
-    return () => clearTimeout(timer)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
   }, [query])
 
-  return { results, loading }
+  return { results, loading, error: searchError }
 }
