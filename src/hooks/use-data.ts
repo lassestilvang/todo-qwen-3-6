@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { toast } from 'sonner'
 import { Task, TaskList, Label, ViewType } from '@/lib/types'
 
 export function useTasks(view: ViewType, listId: string | null, showCompleted: boolean) {
@@ -49,8 +50,11 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
         throw new Error(details ? `${message}: ${details}` : message)
       }
       await fetchTasks()
+      toast.success('Task created')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(message)
+      toast.error(message)
       throw err
     }
   }
@@ -67,8 +71,11 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
         throw new Error(errData.error || 'Failed to update task')
       }
       await fetchTasks()
+      toast.success('Task updated')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(message)
+      toast.error(message)
       throw err
     }
   }
@@ -78,8 +85,11 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
       const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete task')
       await fetchTasks()
+      toast.success('Task deleted')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(message)
+      toast.error(message)
       throw err
     }
   }
@@ -133,8 +143,11 @@ export function useLists() {
       })
       if (!res.ok) throw new Error('Failed to create list')
       await fetchLists()
+      toast.success('List created')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(message)
+      toast.error(message)
       throw err
     }
   }
@@ -148,8 +161,11 @@ export function useLists() {
       })
       if (!res.ok) throw new Error('Failed to update list')
       await fetchLists()
+      toast.success('List updated')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(message)
+      toast.error(message)
       throw err
     }
   }
@@ -159,8 +175,11 @@ export function useLists() {
       const res = await fetch(`/api/lists/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete list')
       await fetchLists()
+      toast.success('List deleted')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(message)
+      toast.error(message)
       throw err
     }
   }
@@ -201,8 +220,11 @@ export function useLabels() {
       })
       if (!res.ok) throw new Error('Failed to create label')
       await fetchLabels()
+      toast.success('Label created')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(message)
+      toast.error(message)
       throw err
     }
   }
@@ -216,8 +238,11 @@ export function useLabels() {
       })
       if (!res.ok) throw new Error('Failed to update label')
       await fetchLabels()
+      toast.success('Label updated')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(message)
+      toast.error(message)
       throw err
     }
   }
@@ -227,8 +252,11 @@ export function useLabels() {
       const res = await fetch(`/api/labels/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete label')
       await fetchLabels()
+      toast.success('Label deleted')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      setError(message)
+      toast.error(message)
       throw err
     }
   }
