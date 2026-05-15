@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Task, Priority, Label, RecurringRule } from '@/lib/types'
+import { Task, Priority, Label, RecurringRule, RecurringPattern } from '@/lib/types'
 import { parseNaturalLanguage } from '@/lib/natural-language'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,21 +37,6 @@ interface ReminderForm {
   id?: string
   type: 'notification' | 'email'
   time: string
-}
-
-interface TaskFormData {
-  name: string
-  description: string
-  listId: string | null
-  date: string | null
-  deadline: string | null
-  estimate: string | null
-  actualTime: string | null
-  priority: Priority
-  labels: string[]
-  subTasks: SubTaskForm[]
-  reminders: ReminderForm[]
-  recurringRule: RecurringRule | null
 }
 
 interface TaskFormProps {
@@ -497,7 +482,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
                 if (v === 'none') {
                   setRecurringRule(null)
                 } else {
-                  setRecurringRule({ pattern: v as any })
+                  setRecurringRule({ pattern: v as RecurringPattern })
                 }
               }}
             >
