@@ -42,7 +42,11 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
       })
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to create task')
+        const message = errData.error || 'Failed to create task'
+        const details = (errData.details as Array<{ path?: string[]; message?: string }> | undefined)
+          ?.map(d => `${d.path?.join('.')}: ${d.message}`)
+          .join(', ')
+        throw new Error(details ? `${message}: ${details}` : message)
       }
       await fetchTasks()
     } catch (err) {
