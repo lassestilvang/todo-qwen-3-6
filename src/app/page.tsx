@@ -10,6 +10,7 @@ import { TaskForm } from '@/components/tasks/task-form'
 import { TaskDetail } from '@/components/tasks/task-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Task } from '@/lib/types'
 
 export default function Home() {
   const { currentView, currentListId, selectedTaskId, setSelectedTaskId, sidebarOpen } = useApp()
@@ -23,11 +24,11 @@ export default function Home() {
 
   const [showTaskForm, setShowTaskForm] = useState(false)
   const [showTaskDetail, setShowTaskDetail] = useState(false)
-  const [editingTask, setEditingTask] = useState<any>(null)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   const selectedTask = tasks.find(t => t.id === selectedTaskId)
 
-  const handleSelectTask = (task: any) => {
+  const handleSelectTask = (task: Task) => {
     setSelectedTaskId(task.id)
     setShowTaskDetail(true)
   }
@@ -38,12 +39,27 @@ export default function Home() {
   }
 
   const handleEditTask = () => {
-    setEditingTask(selectedTask)
-    setShowTaskForm(true)
-    setShowTaskDetail(false)
+    if (selectedTask) {
+      setEditingTask(selectedTask)
+      setShowTaskForm(true)
+      setShowTaskDetail(false)
+    }
   }
 
-  const handleSaveTask = async (data: any) => {
+  const handleSaveTask = async (data: {
+    name: string
+    description: string
+    listId: string | null
+    date: string | null
+    deadline: string | null
+    estimate: string | null
+    actualTime: string | null
+    priority: import('@/lib/types').Priority
+    labels: string[]
+    subTasks: { id?: string; name: string; completed: boolean; order: number }[]
+    reminders: { id?: string; type: 'notification' | 'email'; time: string }[]
+    recurringRule: import('@/lib/types').RecurringRule | null
+  }) => {
     if (editingTask) {
       await updateTask(editingTask.id, data)
     } else {
@@ -60,8 +76,6 @@ export default function Home() {
       setSelectedTaskId(null)
     }
   }
-
-  const listData = lists.find(l => l.id === currentListId)
 
   return (
     <div className="h-screen flex bg-zinc-950 text-white">
@@ -83,7 +97,7 @@ export default function Home() {
             ) : error ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <p className="text-red-400">{error}</p>
-                <button onClick={refresh} className="text-sm text-zinc-400 hover:text-white mt-2">
+                <button type="button" onClick={refresh} className="text-sm text-zinc-400 hover:text-white mt-2">
                   Try again
                 </button>
               </div>
