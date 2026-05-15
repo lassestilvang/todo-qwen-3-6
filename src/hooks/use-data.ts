@@ -33,7 +33,7 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
     fetchTasks()
   }, [fetchTasks])
 
-  const createTask = async (taskData: Partial<Task>) => {
+  const createTask = async (taskData: Record<string, unknown>) => {
     try {
       const res = await fetch('/api/tasks', {
         method: 'POST',
@@ -51,7 +51,7 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
     }
   }
 
-  const updateTask = async (id: string, taskData: Partial<Task>) => {
+  const updateTask = async (id: string, taskData: Record<string, unknown>) => {
     try {
       const res = await fetch(`/api/tasks/${id}`, {
         method: 'PATCH',
