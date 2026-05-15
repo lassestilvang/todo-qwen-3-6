@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Task, Priority, Label, RecurringRule, SubTask, Reminder } from '@/lib/types'
+import { useState } from 'react'
+import { Task, Priority, Label, RecurringRule } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -10,24 +10,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import {
   Calendar as CalendarIcon,
-  Clock,
-  Flag,
   Tag,
   ListChecks,
   Bell,
   Repeat,
-  Paperclip,
   Plus,
   X,
-  Trash2,
-  GripVertical,
 } from 'lucide-react'
 
 interface SubTaskForm {
@@ -75,12 +69,12 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
   const [estimate, setEstimate] = useState(task?.estimate || '')
   const [actualTime, setActualTime] = useState(task?.actualTime || '')
   const [priority, setPriority] = useState<Priority>(task?.priority || 'none')
-  const [selectedLabels, setSelectedLabels] = useState<string[]>(task?.labels.map(l => l.id) || [])
+  const [selectedLabels, setSelectedLabels] = useState<string[]>(task?.labels?.map(l => l.id) ?? [])
   const [subTasks, setSubTasks] = useState<SubTaskForm[]>(
-    task?.subTasks.map(st => ({ id: st.id, name: st.name, completed: st.completed, order: st.order })) || []
+    task?.subTasks?.map(st => ({ id: st.id, name: st.name, completed: st.completed, order: st.order })) ?? []
   )
   const [reminders, setReminders] = useState<ReminderForm[]>(
-    task?.reminders.map(r => ({ id: r.id, type: r.type, time: r.time })) || []
+    task?.reminders?.map(r => ({ id: r.id, type: r.type, time: r.time })) ?? []
   )
   const [recurringRule, setRecurringRule] = useState<RecurringRule | null>(task?.recurringRule || null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -123,7 +117,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
     setSubTasks([...subTasks, { id: crypto.randomUUID(), name: '', completed: false, order: subTasks.length }])
   }
 
-  const updateSubTask = (index: number, field: keyof SubTaskForm, value: any) => {
+  const updateSubTask = (index: number, field: keyof SubTaskForm, value: string | boolean | number) => {
     const updated = [...subTasks]
     updated[index] = { ...updated[index], [field]: value }
     setSubTasks(updated)
@@ -139,7 +133,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
     setReminders([...reminders, { id: crypto.randomUUID(), type: 'notification', time: reminderTime.toISOString() }])
   }
 
-  const updateReminder = (index: number, field: keyof ReminderForm, value: any) => {
+  const updateReminder = (index: number, field: keyof ReminderForm, value: string) => {
     const updated = [...reminders]
     updated[index] = { ...updated[index], [field]: value }
     setReminders(updated)
@@ -409,7 +403,12 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
                   <Input
                     type="datetime-local"
                     value={reminder.time ? format(new Date(reminder.time), "yyyy-MM-dd'T'HH:mm") : ''}
-                    onChange={e => updateReminder(index, 'time', new Date(e.target.value).toISOString())}
+                    onChange={e => {
+                      const parsed = new Date(e.target.value)
+                      if (!isNaN(parsed.getTime())) {
+                        updateReminder(index, 'time', parsed.toISOString())
+                      }
+                    }}
                     className="flex-1 bg-zinc-800/50 border-zinc-700 text-white text-sm h-8"
                   />
                   <Button
