@@ -33,14 +33,19 @@ export const attachmentSchema = z.object({
   mimeType: z.string(),
 })
 
+const emptyStringToNull = z.preprocess((val) => {
+  if (val === '' || val === undefined) return null
+  return val
+})
+
 export const createTaskSchema = z.object({
   name: z.string().min(1, 'Task name is required').max(500),
   description: z.string().max(10000).default(''),
-  listId: z.string().uuid().nullable().default(null),
-  date: z.string().datetime().nullable().default(null),
-  deadline: z.string().datetime().nullable().default(null),
-  estimate: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)').nullable().default(null),
-  actualTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)').nullable().default(null),
+  listId: emptyStringToNull.pipe(z.string().uuid().nullable().default(null)),
+  date: emptyStringToNull.pipe(z.string().datetime().nullable().default(null)),
+  deadline: emptyStringToNull.pipe(z.string().datetime().nullable().default(null)),
+  estimate: emptyStringToNull.pipe(z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)').nullable().default(null)),
+  actualTime: emptyStringToNull.pipe(z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)').nullable().default(null)),
   priority: prioritySchema.default('none'),
   completed: z.boolean().default(false),
   recurringRule: recurringRuleSchema.nullable().default(null),
