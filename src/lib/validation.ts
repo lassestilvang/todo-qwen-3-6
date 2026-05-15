@@ -33,26 +33,23 @@ export const attachmentSchema = z.object({
   mimeType: z.string(),
 })
 
-const nullableUuid = z.union([z.string().uuid(), z.literal(''), z.null()]).transform(v => v === '' ? null : v).nullable().default(null)
-const nullableDatetime = z.union([z.string().datetime(), z.literal(''), z.null()]).transform(v => v === '' ? null : v).nullable().default(null)
 const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
-const nullableTime = z.union([z.string().regex(timeRegex), z.literal(''), z.null()]).transform(v => v === '' ? null : v).nullable().default(null)
 
 export const createTaskSchema = z.object({
   name: z.string().min(1, 'Task name is required').max(500),
-  description: z.string().max(10000).default(''),
-  listId: nullableUuid,
-  date: nullableDatetime,
-  deadline: nullableDatetime,
-  estimate: nullableTime,
-  actualTime: nullableTime,
+  description: z.string().optional().default(''),
+  listId: z.string().uuid().optional().nullable().default(null),
+  date: z.string().datetime().optional().nullable().default(null),
+  deadline: z.string().datetime().optional().nullable().default(null),
+  estimate: z.string().regex(timeRegex).optional().nullable().default(null),
+  actualTime: z.string().regex(timeRegex).optional().nullable().default(null),
   priority: prioritySchema.default('none'),
   completed: z.boolean().default(false),
-  recurringRule: recurringRuleSchema.nullable().default(null),
-  labels: z.array(z.string().uuid()).default([]),
-  subTasks: z.array(subTaskSchema).default([]),
-  reminders: z.array(reminderSchema).default([]),
-  attachments: z.array(attachmentSchema).default([]),
+  recurringRule: recurringRuleSchema.optional().nullable().default(null),
+  labels: z.array(z.string().uuid()).optional().default([]),
+  subTasks: z.array(subTaskSchema).optional().default([]),
+  reminders: z.array(reminderSchema).optional().default([]),
+  attachments: z.array(attachmentSchema).optional().default([]),
 })
 
 export const updateTaskSchema = createTaskSchema.partial()
