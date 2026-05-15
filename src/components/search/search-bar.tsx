@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input'
 import { Task } from '@/lib/types'
 import { Search, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@/components/ui/button'
 
 export function SearchBar() {
   const { searchQuery, setSearchQuery, setSelectedTaskId } = useApp()
@@ -53,6 +52,7 @@ export function SearchBar() {
         />
         {searchQuery && (
           <button
+            type="button"
             onClick={() => setSearchQuery('')}
             className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white"
           >
@@ -77,6 +77,7 @@ export function SearchBar() {
               <div className="py-2">
                 {results.map(task => (
                   <button
+                    type="button"
                     key={task.id}
                     onClick={() => handleSelect(task)}
                     className="w-full px-4 py-2.5 text-left hover:bg-zinc-800 transition-colors"
