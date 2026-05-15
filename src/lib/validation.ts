@@ -33,9 +33,10 @@ export const attachmentSchema = z.object({
   mimeType: z.string(),
 })
 
-const nullableUuid = z.string().uuid().nullable().catch(null)
-const nullableDatetime = z.string().datetime().nullable().catch(null)
-const nullableTime = z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).nullable().catch(null)
+const nullableUuid = z.union([z.string().uuid(), z.literal(''), z.null()]).transform(v => v === '' ? null : v).nullable().default(null)
+const nullableDatetime = z.union([z.string().datetime(), z.literal(''), z.null()]).transform(v => v === '' ? null : v).nullable().default(null)
+const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
+const nullableTime = z.union([z.string().regex(timeRegex), z.literal(''), z.null()]).transform(v => v === '' ? null : v).nullable().default(null)
 
 export const createTaskSchema = z.object({
   name: z.string().min(1, 'Task name is required').max(500),
