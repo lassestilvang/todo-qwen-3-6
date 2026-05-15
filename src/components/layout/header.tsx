@@ -12,9 +12,11 @@ import { useState, useEffect } from 'react'
 export function Header({ onAddTask }: { onAddTask: () => void }) {
   const { currentView, currentListId, showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar } = useApp()
   const { tasks } = useTasks(currentView, currentListId, showCompleted)
+  const [mounted, setMounted] = useState(false)
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
 
   useEffect(() => {
+    setMounted(true)
     const stored = localStorage.getItem('theme') as 'dark' | 'light' | null
     if (stored) {
       setTheme(stored)
@@ -78,9 +80,11 @@ export function Header({ onAddTask }: { onAddTask: () => void }) {
           </Label>
         </div>
 
-        <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-zinc-400 hover:text-white h-8 w-8">
-          {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-        </Button>
+        {mounted && (
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-zinc-400 hover:text-white h-8 w-8">
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </Button>
+        )}
 
         <Button onClick={onAddTask} className="bg-zinc-100 text-zinc-900 hover:bg-white h-8">
           <Plus className="w-4 h-4 mr-1" />
