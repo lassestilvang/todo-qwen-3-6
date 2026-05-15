@@ -1,65 +1,140 @@
-import Image from "next/image";
+'use client'
+
+import { useState } from 'react'
+import { useApp } from '@/hooks/use-app'
+import { useTasks, useLists, useLabels } from '@/hooks/use-data'
+import { Sidebar } from '@/components/sidebar/sidebar'
+import { Header } from '@/components/layout/header'
+import { TaskList } from '@/components/tasks/task-list'
+import { TaskForm } from '@/components/tasks/task-form'
+import { TaskDetail } from '@/components/tasks/task-detail'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Home() {
+  const { currentView, currentListId, selectedTaskId, setSelectedTaskId, sidebarOpen } = useApp()
+  const { tasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, refresh } = useTasks(
+    currentView,
+    currentListId,
+    false
+  )
+  const { lists } = useLists()
+  const { labels } = useLabels()
+
+  const [showTaskForm, setShowTaskForm] = useState(false)
+  const [showTaskDetail, setShowTaskDetail] = useState(false)
+  const [editingTask, setEditingTask] = useState<any>(null)
+
+  const selectedTask = tasks.find(t => t.id === selectedTaskId)
+
+  const handleSelectTask = (task: any) => {
+    setSelectedTaskId(task.id)
+    setShowTaskDetail(true)
+  }
+
+  const handleAddTask = () => {
+    setEditingTask(null)
+    setShowTaskForm(true)
+  }
+
+  const handleEditTask = () => {
+    setEditingTask(selectedTask)
+    setShowTaskForm(true)
+    setShowTaskDetail(false)
+  }
+
+  const handleSaveTask = async (data: any) => {
+    if (editingTask) {
+      await updateTask(editingTask.id, data)
+    } else {
+      await createTask(data)
+    }
+    setShowTaskForm(false)
+    setEditingTask(null)
+  }
+
+  const handleDeleteTask = async () => {
+    if (selectedTask) {
+      await deleteTask(selectedTask.id)
+      setShowTaskDetail(false)
+      setSelectedTaskId(null)
+    }
+  }
+
+  const listData = lists.find(l => l.id === currentListId)
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="h-screen flex bg-zinc-950 text-white">
+      <Sidebar />
+
+      <motion.main
+        animate={{ marginLeft: sidebarOpen ? 280 : 0 }}
+        transition={{ duration: 0.2 }}
+        className="flex-1 flex flex-col min-w-0"
+      >
+        <Header onAddTask={handleAddTask} />
+
+        <div className="flex-1 flex min-h-0">
+          <div className="flex-1 min-w-0">
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="w-6 h-6 border-2 border-zinc-700 border-t-zinc-400 rounded-full animate-spin" />
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <p className="text-red-400">{error}</p>
+                <button onClick={refresh} className="text-sm text-zinc-400 hover:text-white mt-2">
+                  Try again
+                </button>
+              </div>
+            ) : (
+              <TaskList
+                tasks={tasks}
+                onToggle={toggleComplete}
+                onSelect={handleSelectTask}
+                selectedTaskId={selectedTaskId}
+              />
+            )}
+          </div>
+
+          <AnimatePresence>
+            {showTaskDetail && selectedTask && (
+              <motion.div
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 400, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="border-l border-zinc-800 overflow-hidden"
+              >
+                <TaskDetail
+                  task={selectedTask}
+                  onClose={() => {
+                    setShowTaskDetail(false)
+                    setSelectedTaskId(null)
+                  }}
+                  onDelete={handleDeleteTask}
+                  onEdit={handleEditTask}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </motion.main>
+
+      <Dialog open={showTaskForm} onOpenChange={setShowTaskForm}>
+        <DialogContent className="max-w-2xl max-h-[90vh] p-0 bg-zinc-900 border-zinc-800 overflow-hidden">
+          <TaskForm
+            task={editingTask}
+            lists={lists}
+            labels={labels}
+            onSave={handleSaveTask}
+            onClose={() => {
+              setShowTaskForm(false)
+              setEditingTask(null)
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
-  );
+  )
 }
