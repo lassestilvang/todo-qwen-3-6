@@ -227,17 +227,14 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
             <div>
               <UILabel className="text-sm font-medium text-zinc-300">Date</UILabel>
               <Popover>
-                <PopoverTrigger>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      'w-full mt-1.5 bg-zinc-800/50 border-zinc-700 text-white justify-start',
-                      !date && 'text-zinc-500'
-                    )}
-                  >
-                    <CalendarIcon className="w-4 h-4 mr-2" />
-                    {date ? format(date, 'PPP') : 'Pick a date'}
-                  </Button>
+                <PopoverTrigger
+                  className={cn(
+                    'w-full mt-1.5 inline-flex items-center justify-start gap-2 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white transition-colors',
+                    !date && 'text-zinc-500'
+                  )}
+                >
+                  <CalendarIcon className="w-4 h-4" />
+                  {date ? format(date, 'PPP') : 'Pick a date'}
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-zinc-800 border-zinc-700" align="start">
                   <Calendar
@@ -253,17 +250,14 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
             <div>
               <UILabel className="text-sm font-medium text-zinc-300">Deadline</UILabel>
               <Popover>
-                <PopoverTrigger>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      'w-full mt-1.5 bg-zinc-800/50 border-zinc-700 text-white justify-start',
-                      !deadline && 'text-zinc-500'
-                    )}
-                  >
-                    <CalendarIcon className="w-4 h-4 mr-2" />
-                    {deadline ? format(deadline, 'PPP') : 'Pick a date'}
-                  </Button>
+                <PopoverTrigger
+                  className={cn(
+                    'w-full mt-1.5 inline-flex items-center justify-start gap-2 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white transition-colors',
+                    !deadline && 'text-zinc-500'
+                  )}
+                >
+                  <CalendarIcon className="w-4 h-4" />
+                  {deadline ? format(deadline, 'PPP') : 'Pick a date'}
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 bg-zinc-800 border-zinc-700" align="start">
                   <Calendar
