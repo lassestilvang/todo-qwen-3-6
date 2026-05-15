@@ -64,7 +64,54 @@ export const taskRepository = {
     `
 
     const rows = db.prepare(query).all(...params) as any[]
-    return rows.map(row => mapTaskRow(row, db))
+    if (rows.length === 0) return []
+
+    const taskIds = rows.map(r => r.id)
+    const placeholders = taskIds.map(() => '?').join(', ')
+
+    const labelsByTask = new Map<string, Label[]>()
+    const labelsRows = db.prepare(`
+      SELECT tl.task_id, lb.* FROM labels lb
+      INNER JOIN task_labels tl ON lb.id = tl.label_id
+      WHERE tl.task_id IN (${placeholders})
+    `).all(...taskIds) as any[]
+    for (const lr of labelsRows) {
+      const arr = labelsByTask.get(lr.task_id) || []
+      arr.push(lr)
+      labelsByTask.set(lr.task_id, arr)
+    }
+
+    const subTasksByTask = new Map<string, SubTask[]>()
+    const subTasksRows = db.prepare(`
+      SELECT * FROM subtasks WHERE task_id IN (${placeholders}) ORDER BY "order" ASC
+    `).all(...taskIds) as any[]
+    for (const st of subTasksRows) {
+      const arr = subTasksByTask.get(st.task_id) || []
+      arr.push({ ...st, completed: st.completed === 1 })
+      subTasksByTask.set(st.task_id, arr)
+    }
+
+    const remindersByTask = new Map<string, Reminder[]>()
+    const remindersRows = db.prepare(`
+      SELECT * FROM reminders WHERE task_id IN (${placeholders})
+    `).all(...taskIds) as any[]
+    for (const r of remindersRows) {
+      const arr = remindersByTask.get(r.task_id) || []
+      arr.push(r)
+      remindersByTask.set(r.task_id, arr)
+    }
+
+    const attachmentsByTask = new Map<string, Attachment[]>()
+    const attachmentsRows = db.prepare(`
+      SELECT * FROM attachments WHERE task_id IN (${placeholders})
+    `).all(...taskIds) as any[]
+    for (const a of attachmentsRows) {
+      const arr = attachmentsByTask.get(a.task_id) || []
+      arr.push(a)
+      attachmentsByTask.set(a.task_id, arr)
+    }
+
+    return rows.map(row => mapTaskRowWithRelations(row, labelsByTask, subTasksByTask, remindersByTask, attachmentsByTask))
   },
 
   findById(id: string): Task | null {
@@ -338,6 +385,42 @@ function mapTaskRow(row: any, db: any): Task {
     subTasks,
     reminders,
     attachments,
+  }
+}
+
+function mapTaskRowWithRelations(
+  row: any,
+  labelsByTask: Map<string, Label[]>,
+  subTasksByTask: Map<string, SubTask[]>,
+  remindersByTask: Map<string, Reminder[]>,
+  attachmentsByTask: Map<string, Attachment[]>
+): Task {
+  let recurringRule: RecurringRule | null = null
+  if (row.recurring_rule) {
+    try {
+      recurringRule = JSON.parse(row.recurring_rule)
+    } catch {}
+  }
+
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description || '',
+    listId: row.list_id,
+    date: row.date,
+    deadline: row.deadline,
+    estimate: row.estimate,
+    actualTime: row.actual_time,
+    priority: row.priority as Priority,
+    completed: row.completed === 1,
+    completedAt: row.completed_at,
+    recurringRule,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    labels: labelsByTask.get(row.id) || [],
+    subTasks: subTasksByTask.get(row.id) || [],
+    reminders: remindersByTask.get(row.id) || [],
+    attachments: attachmentsByTask.get(row.id) || [],
   }
 }
 
