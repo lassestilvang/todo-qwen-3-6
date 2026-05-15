@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Task, Priority, Label, RecurringRule } from '@/lib/types'
+import { parseNaturalLanguage } from '@/lib/natural-language'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,6 +23,7 @@ import {
   Repeat,
   Plus,
   X,
+  Sparkles,
 } from 'lucide-react'
 
 interface SubTaskForm {
@@ -78,6 +80,33 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
   )
   const [recurringRule, setRecurringRule] = useState<RecurringRule | null>(task?.recurringRule || null)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [parsedPreview, setParsedPreview] = useState<{ date?: Date; time?: string; priority?: Priority } | null>(null)
+
+  const handleNameBlur = () => {
+    if (task || !name.trim()) {
+      setParsedPreview(null)
+      return
+    }
+    const parsed = parseNaturalLanguage(name)
+    if (parsed.date || parsed.time || parsed.priority !== 'none') {
+      setParsedPreview({
+        date: parsed.date ?? undefined,
+        time: parsed.time ?? undefined,
+        priority: parsed.priority as Priority,
+      })
+    } else {
+      setParsedPreview(null)
+    }
+  }
+
+  const applyParsedFields = () => {
+    if (!parsedPreview) return
+    if (parsedPreview.date) setDate(parsedPreview.date)
+    if (parsedPreview.priority) setPriority(parsedPreview.priority)
+    const parsed = parseNaturalLanguage(name)
+    setName(parsed.name)
+    setParsedPreview(null)
+  }
 
   const validate = () => {
     const newErrors: Record<string, string> = {}
@@ -160,18 +189,45 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
             <UILabel htmlFor="task-name" className="text-sm font-medium text-zinc-300">
               Task Name <span className="text-red-400">*</span>
             </UILabel>
-            <Input
-              id="task-name"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="What needs to be done?"
-              className={cn(
-                'mt-1.5 bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-600',
-                errors.name && 'border-red-500'
+            <div className="flex gap-2 mt-1.5">
+              <Input
+                id="task-name"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                onBlur={handleNameBlur}
+                placeholder="What needs to be done? (e.g., Meeting tomorrow at 3pm !high)"
+                className={cn(
+                  'flex-1 bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-600',
+                  errors.name && 'border-red-500'
+                )}
+                autoFocus
+              />
+              {parsedPreview && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={applyParsedFields}
+                  className="border-zinc-700 text-zinc-300 shrink-0 h-9"
+                  title="Apply parsed date and priority"
+                >
+                  <Sparkles className="w-3.5 h-3.5 mr-1" />
+                  Apply
+                </Button>
               )}
-              autoFocus
-            />
+            </div>
             {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
+            {parsedPreview && (
+              <p className="text-zinc-500 text-xs mt-1">
+                Detected:{' '}
+                {parsedPreview.date && `Date: ${format(parsedPreview.date, 'PPP')}`}
+                {parsedPreview.date && parsedPreview.priority && ', '}
+                {parsedPreview.priority && `Priority: ${parsedPreview.priority}`}
+                <button type="button" onClick={applyParsedFields} className="text-blue-400 hover:text-blue-300 ml-1">
+                  (click Apply to fill in)
+                </button>
+              </p>
+            )}
           </div>
 
           <div>
