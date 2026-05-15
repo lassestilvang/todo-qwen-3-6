@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     const tasks = taskRepository.search(query.trim())
     return NextResponse.json(tasks)
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to search' }, { status: 500 })
   }
 }
