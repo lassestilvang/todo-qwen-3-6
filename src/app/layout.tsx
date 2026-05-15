@@ -28,9 +28,31 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (theme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                  } else if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-zinc-950 text-white">
         <TooltipProvider>
           <AppProvider>

@@ -11,17 +11,16 @@ import { useState, useEffect } from 'react'
 export function Header({ onAddTask, taskCount }: { onAddTask: () => void; taskCount: number }) {
   const { showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar } = useApp()
   const [mounted, setMounted] = useState(false)
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
+    } catch {
+      return 'dark'
+    }
+  })
 
   useEffect(() => {
     setMounted(true)
-    const stored = localStorage.getItem('theme') as 'dark' | 'light' | null
-    if (stored) {
-      setTheme(stored)
-      document.documentElement.classList.toggle('dark', stored === 'dark')
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.documentElement.classList.add('dark')
-    }
   }, [])
 
   const toggleTheme = () => {
