@@ -56,7 +56,7 @@ interface TaskFormProps {
   task?: Task | null
   lists: { id: string; name: string; emoji: string }[]
   labels: Label[]
-  onSave: (data: TaskFormData) => void
+  onSave: (data: Record<string, unknown>) => void
   onClose: () => void
 }
 
@@ -390,7 +390,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
                 <div key={reminder.id || index} className="flex items-center gap-2">
                   <Select
                     value={reminder.type}
-                    onValueChange={(v) => updateReminder(index, 'type', v)}
+                    onValueChange={(v) => { if (v) updateReminder(index, 'type', v) }}
                   >
                     <SelectTrigger className="w-32 bg-zinc-800/50 border-zinc-700 text-white text-sm h-8">
                       <SelectValue />
