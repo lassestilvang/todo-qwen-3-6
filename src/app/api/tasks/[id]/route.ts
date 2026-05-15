@@ -3,7 +3,7 @@ import { taskRepository } from '@/lib/repository'
 import { updateTaskSchema } from '@/lib/validation'
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -15,7 +15,7 @@ export async function GET(
     }
 
     return NextResponse.json(task)
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch task' }, { status: 500 })
   }
 }
@@ -29,7 +29,7 @@ export async function PATCH(
     const body = await request.json()
     const validated = updateTaskSchema.parse(body)
 
-    const { labels, subTasks, reminders, attachments, ...taskData } = validated
+    const { labels, subTasks, reminders, ...taskData } = validated
 
     const task = taskRepository.update(id, taskData)
 
@@ -51,9 +51,9 @@ export async function PATCH(
 
     const freshTask = taskRepository.findById(id)
     return NextResponse.json(freshTask)
-  } catch (error: any) {
-    if (error.errors) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 })
+  } catch (error: unknown) {
+    if (error instanceof Error && 'issues' in error) {
+      return NextResponse.json({ error: 'Validation failed', details: (error as Record<string, unknown>).issues }, { status: 400 })
     }
     console.error('Error updating task:', error)
     return NextResponse.json({ error: 'Failed to update task' }, { status: 500 })
@@ -61,7 +61,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -73,7 +73,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 })
   }
 }
