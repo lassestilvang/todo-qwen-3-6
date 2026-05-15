@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { taskRepository } from '@/lib/repository'
-import { createTaskSchema, updateTaskSchema } from '@/lib/validation'
+import { createTaskSchema } from '@/lib/validation'
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,8 +17,7 @@ export async function GET(request: NextRequest) {
 
     const tasks = taskRepository.findAll(view, listId, showCompleted)
     return NextResponse.json(tasks)
-  } catch (error) {
-    console.error('Error fetching tasks:', error)
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 })
   }
 }
@@ -28,7 +27,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validated = createTaskSchema.parse(body)
 
-    const { labels, subTasks, reminders, attachments, ...taskData } = validated
+    const { labels, subTasks, reminders, ...taskData } = validated
 
     const task = taskRepository.create(taskData)
 
@@ -46,9 +45,9 @@ export async function POST(request: NextRequest) {
 
     const freshTask = taskRepository.findById(task.id)
     return NextResponse.json(freshTask, { status: 201 })
-  } catch (error: any) {
-    if (error.errors) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 })
+  } catch (error: unknown) {
+    if (error instanceof Error && 'issues' in error) {
+      return NextResponse.json({ error: 'Validation failed', details: (error as Record<string, unknown>).issues }, { status: 400 })
     }
     console.error('Error creating task:', error)
     return NextResponse.json({ error: 'Failed to create task' }, { status: 500 })
