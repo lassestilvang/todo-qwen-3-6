@@ -97,6 +97,9 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
     e.preventDefault()
     if (!validate()) return
 
+    const validSubTasks = subTasks.filter(st => st.name.trim().length > 0)
+    const validReminders = reminders.filter(r => r.time && !isNaN(new Date(r.time).getTime()))
+
     onSave({
       name: name.trim(),
       description,
@@ -107,8 +110,8 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
       actualTime: actualTime || null,
       priority,
       labels: selectedLabels,
-      subTasks,
-      reminders,
+      subTasks: validSubTasks,
+      reminders: validReminders,
       recurringRule,
     })
   }
