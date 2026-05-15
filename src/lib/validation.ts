@@ -38,7 +38,7 @@ const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
 export const createTaskSchema = z.object({
   name: z.string().min(1, 'Task name is required').max(500),
   description: z.string().optional().default(''),
-  listId: z.string().uuid().optional().nullable().default(null),
+  listId: z.string().optional().nullable().default(null),
   date: z.string().datetime().optional().nullable().default(null),
   deadline: z.string().datetime().optional().nullable().default(null),
   estimate: z.string().regex(timeRegex).optional().nullable().default(null),
@@ -46,7 +46,7 @@ export const createTaskSchema = z.object({
   priority: prioritySchema.default('none'),
   completed: z.boolean().default(false),
   recurringRule: recurringRuleSchema.optional().nullable().default(null),
-  labels: z.array(z.string().uuid()).optional().default([]),
+  labels: z.array(z.string()).optional().default([]),
   subTasks: z.array(subTaskSchema).optional().default([]),
   reminders: z.array(reminderSchema).optional().default([]),
   attachments: z.array(attachmentSchema).optional().default([]),
