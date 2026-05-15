@@ -3,7 +3,7 @@ import { listRepository } from '@/lib/repository'
 import { updateListSchema } from '@/lib/validation'
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -15,7 +15,7 @@ export async function GET(
     }
 
     return NextResponse.json(list)
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch list' }, { status: 500 })
   }
 }
@@ -35,16 +35,16 @@ export async function PATCH(
     }
 
     return NextResponse.json(list)
-  } catch (error: any) {
-    if (error.errors) {
-      return NextResponse.json({ error: 'Validation failed', details: error.errors }, { status: 400 })
+  } catch (error: unknown) {
+    if (error instanceof Error && 'issues' in error) {
+      return NextResponse.json({ error: 'Validation failed', details: (error as Record<string, unknown>).issues }, { status: 400 })
     }
     return NextResponse.json({ error: 'Failed to update list' }, { status: 500 })
   }
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -56,7 +56,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to delete list' }, { status: 500 })
   }
 }
