@@ -46,20 +46,7 @@ export default function Home() {
     }
   }
 
-  const handleSaveTask = async (data: {
-    name: string
-    description: string
-    listId: string | null
-    date: string | null
-    deadline: string | null
-    estimate: string | null
-    actualTime: string | null
-    priority: import('@/lib/types').Priority
-    labels: string[]
-    subTasks: { id?: string; name: string; completed: boolean; order: number }[]
-    reminders: { id?: string; type: 'notification' | 'email'; time: string }[]
-    recurringRule: import('@/lib/types').RecurringRule | null
-  }) => {
+  const handleSaveTask = async (data: Record<string, unknown>) => {
     if (editingTask) {
       await updateTask(editingTask.id, data)
     } else {
