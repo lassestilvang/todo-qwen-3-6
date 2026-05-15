@@ -1,7 +1,6 @@
 'use client'
 
 import { useApp } from '@/hooks/use-app'
-import { useTasks } from '@/hooks/use-data'
 import { SearchBar } from '@/components/search/search-bar'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -9,9 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Plus, Menu, Sun, Moon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
-export function Header({ onAddTask }: { onAddTask: () => void }) {
-  const { currentView, currentListId, showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar } = useApp()
-  const { tasks } = useTasks(currentView, currentListId, showCompleted)
+export function Header({ onAddTask, taskCount }: { onAddTask: () => void; taskCount: number }) {
+  const { showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar } = useApp()
   const [mounted, setMounted] = useState(false)
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
 
@@ -62,7 +60,7 @@ export function Header({ onAddTask }: { onAddTask: () => void }) {
           )}
         </div>
         <span className="text-xs text-zinc-600 bg-zinc-800 px-2 py-0.5 rounded-full">
-          {tasks.length}
+          {taskCount}
         </span>
       </div>
 

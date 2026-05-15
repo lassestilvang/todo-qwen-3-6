@@ -73,7 +73,7 @@ export default function Home() {
         transition={{ duration: 0.2 }}
         className="flex-1 flex flex-col min-w-0"
       >
-        <Header onAddTask={handleAddTask} />
+        <Header onAddTask={handleAddTask} taskCount={tasks.length} />
 
         <div className="flex-1 flex min-h-0">
           <div className="flex-1 min-w-0">
