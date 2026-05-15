@@ -137,10 +137,8 @@ export function Sidebar() {
                             </button>
                             {!list.isDefault && (
                               <DropdownMenu>
-                                <DropdownMenuTrigger>
-                                  <button className="opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-white transition-opacity">
-                                    <MoreHorizontal className="w-4 h-4" />
-                                  </button>
+                                <DropdownMenuTrigger className="opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-white transition-opacity">
+                                  <MoreHorizontal className="w-4 h-4" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="bg-zinc-800 border-zinc-700">
                                   <DropdownMenuItem
