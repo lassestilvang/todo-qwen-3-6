@@ -47,7 +47,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(freshTask, { status: 201 })
   } catch (error: unknown) {
     if (error instanceof Error && 'issues' in error) {
-      return NextResponse.json({ error: 'Validation failed', details: (error as Record<string, unknown>).issues }, { status: 400 })
+      const issues = (error as Record<string, unknown>).issues
+      console.error('Validation issues:', JSON.stringify(issues, null, 2))
+      return NextResponse.json({ error: 'Validation failed', details: issues }, { status: 400 })
     }
     console.error('Error creating task:', error)
     return NextResponse.json({ error: 'Failed to create task' }, { status: 500 })
