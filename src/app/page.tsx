@@ -47,20 +47,27 @@ export default function Home() {
   }
 
   const handleSaveTask = async (data: Record<string, unknown>) => {
-    if (editingTask) {
-      await updateTask(editingTask.id, data)
-    } else {
-      await createTask(data)
+    try {
+      if (editingTask) {
+        await updateTask(editingTask.id, data)
+      } else {
+        await createTask(data)
+      }
+      setShowTaskForm(false)
+      setEditingTask(null)
+    } catch {
+      // Error already handled by toast in use-data.ts, keep form open
     }
-    setShowTaskForm(false)
-    setEditingTask(null)
   }
 
   const handleDeleteTask = async () => {
-    if (selectedTask) {
+    if (!selectedTask) return
+    try {
       await deleteTask(selectedTask.id)
       setShowTaskDetail(false)
       setSelectedTaskId(null)
+    } catch {
+      // Error already handled by toast in use-data.ts
     }
   }
 
