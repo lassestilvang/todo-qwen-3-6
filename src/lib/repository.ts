@@ -210,7 +210,7 @@ export const taskRepository = {
       estimate: { key: 'estimate' },
       actualTime: { key: 'actual_time' },
       priority: { key: 'priority' },
-      completed: { key: 'completed' },
+      completed: { key: 'completed', transform: (v: boolean) => v ? 1 : 0 },
       recurringRule: { key: 'recurring_rule', transform: (v) => v ? JSON.stringify(v) : null },
     }
 
