@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { labelRepository } from '@/lib/repository'
 import { createLabelSchema } from '@/lib/validation'
+import { handleApiError } from '@/lib/api-utils'
 
 export async function GET() {
   try {
@@ -18,9 +19,6 @@ export async function POST(request: NextRequest) {
     const label = labelRepository.create(validated)
     return NextResponse.json(label, { status: 201 })
   } catch (error: unknown) {
-    if (error instanceof Error && 'issues' in error) {
-      return NextResponse.json({ error: 'Validation failed', details: (error as Record<string, unknown>).issues }, { status: 400 })
-    }
-    return NextResponse.json({ error: 'Failed to create label' }, { status: 500 })
+    return handleApiError(error, 'Failed to create label')
   }
 }

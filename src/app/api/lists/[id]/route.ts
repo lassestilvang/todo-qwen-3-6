@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { listRepository } from '@/lib/repository'
 import { updateListSchema } from '@/lib/validation'
+import { handleApiError } from '@/lib/api-utils'
 
 export async function GET(
   _request: NextRequest,
@@ -36,10 +37,7 @@ export async function PATCH(
 
     return NextResponse.json(list)
   } catch (error: unknown) {
-    if (error instanceof Error && 'issues' in error) {
-      return NextResponse.json({ error: 'Validation failed', details: (error as Record<string, unknown>).issues }, { status: 400 })
-    }
-    return NextResponse.json({ error: 'Failed to update list' }, { status: 500 })
+    return handleApiError(error, 'Failed to update list')
   }
 }
 

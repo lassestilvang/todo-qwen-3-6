@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { taskRepository } from '@/lib/repository'
 import { createTaskSchema } from '@/lib/validation'
+import { handleApiError } from '@/lib/api-utils'
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,12 +47,6 @@ export async function POST(request: NextRequest) {
     const freshTask = taskRepository.findById(task.id)
     return NextResponse.json(freshTask, { status: 201 })
   } catch (error: unknown) {
-    if (error instanceof Error && 'issues' in error) {
-      const issues = (error as Record<string, unknown>).issues
-      console.error('Validation issues:', JSON.stringify(issues, null, 2))
-      return NextResponse.json({ error: 'Validation failed', details: issues }, { status: 400 })
-    }
-    console.error('Error creating task:', error)
-    return NextResponse.json({ error: 'Failed to create task' }, { status: 500 })
+    return handleApiError(error, 'Failed to create task')
   }
 }
