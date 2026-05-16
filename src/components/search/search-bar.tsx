@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import { useSearch } from '@/hooks/use-data'
 import { useApp } from '@/hooks/use-app'
 import { Input } from '@/components/ui/input'
@@ -11,12 +11,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 export function SearchBar() {
   const { searchQuery, setSearchQuery, setSelectedTaskId } = useApp()
   const { results, loading } = useSearch(searchQuery)
-  const [isOpen, setIsOpen] = useState(false)
+  const isOpen = searchQuery.length > 0
   const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    setIsOpen(searchQuery.length > 0)
-  }, [searchQuery])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -36,7 +32,6 @@ export function SearchBar() {
   const handleSelect = (task: Task) => {
     setSelectedTaskId(task.id)
     setSearchQuery('')
-    setIsOpen(false)
   }
 
   return (

@@ -4,11 +4,9 @@ import { Task } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import {
-  Check,
   Flag,
   Clock,
   Calendar,
-  ChevronDown,
   ChevronRight,
   Paperclip,
 } from 'lucide-react'
@@ -33,13 +31,6 @@ export function TaskItem({ task, onToggle, onSelect, isSelected }: TaskItemProps
     medium: 'text-amber-400',
     low: 'text-blue-400',
     none: 'text-zinc-500',
-  }
-
-  const priorityLabels = {
-    high: 'High',
-    medium: 'Medium',
-    low: 'Low',
-    none: '',
   }
 
   return (

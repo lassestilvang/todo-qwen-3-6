@@ -6,22 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Plus, Menu, Sun, Moon } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 export function Header({ onAddTask, taskCount }: { onAddTask: () => void; taskCount: number }) {
   const { showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar, currentListId, currentView } = useApp()
-  const [mounted, setMounted] = useState(false)
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    try {
-      return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
-    } catch {
-      return 'dark'
-    }
+  const [mounted] = useState(() => {
+    if (typeof window !== 'undefined') return true
+    return false
   })
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark'

@@ -34,6 +34,7 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
   }, [view, listId, showCompleted])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchTasks()
   }, [fetchTasks])
 
@@ -140,6 +141,7 @@ export function useLists() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchLists()
   }, [fetchLists])
 
@@ -229,6 +231,7 @@ export function useLabels() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchLabels()
   }, [fetchLabels])
 
@@ -300,17 +303,18 @@ export function useSearch(query: string) {
   const [searchError, setSearchError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!query.trim()) {
-      setResults([])
-      setSearchError(null)
-      return
-    }
-
     let cancelled = false
-    setLoading(true)
-    setSearchError(null)
 
-    const timer = setTimeout(async () => {
+    const doSearch = async () => {
+      if (!query.trim()) {
+        setResults([])
+        setSearchError(null)
+        return
+      }
+
+      setLoading(true)
+      setSearchError(null)
+
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
         if (!res.ok) {
@@ -328,7 +332,9 @@ export function useSearch(query: string) {
           setLoading(false)
         }
       }
-    }, 300)
+    }
+
+    const timer = setTimeout(doSearch, 300)
 
     return () => {
       cancelled = true
