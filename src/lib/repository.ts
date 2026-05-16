@@ -129,7 +129,8 @@ export const taskRepository = {
 
   search(query: string): Task[] {
     const db = getDb()
-    const searchQuery = `%${query}%`
+    const escapedQuery = query.replace(/([%_])/g, '\\$1')
+    const searchQuery = `%${escapedQuery}%`
     const rows = db.prepare(`
       SELECT DISTINCT t.*, l.id as list_id, l.name as list_name, l.color as list_color, l.emoji as list_emoji
       FROM tasks t
@@ -137,10 +138,10 @@ export const taskRepository = {
       LEFT JOIN task_labels tl ON t.id = tl.task_id
       LEFT JOIN labels lb ON tl.label_id = lb.id
       LEFT JOIN subtasks st ON t.id = st.task_id
-      WHERE t.name LIKE ?
-        OR t.description LIKE ?
-        OR lb.name LIKE ?
-        OR st.name LIKE ?
+       WHERE t.name LIKE ? ESCAPE '\\'
+         OR t.description LIKE ? ESCAPE '\\'
+         OR lb.name LIKE ? ESCAPE '\\'
+         OR st.name LIKE ? ESCAPE '\\'
       ORDER BY t.created_at DESC
       LIMIT 50
     `).all(searchQuery, searchQuery, searchQuery, searchQuery) as any[]
