@@ -20,7 +20,10 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
       if (listId) params.set('listId', listId)
 
       const res = await fetch(`/api/tasks?${params}`)
-      if (!res.ok) throw new Error('Failed to fetch tasks')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to fetch tasks')
+      }
       const data = await res.json()
       setTasks(data)
     } catch (err) {
@@ -83,7 +86,10 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
   const deleteTask = async (id: string) => {
     try {
       const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to delete task')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to delete task')
+      }
       await fetchTasks()
       toast.success('Task deleted')
     } catch (err) {
@@ -120,7 +126,10 @@ export function useLists() {
     setError(null)
     try {
       const res = await fetch('/api/lists')
-      if (!res.ok) throw new Error('Failed to fetch lists')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to fetch lists')
+      }
       const data = await res.json()
       setLists(data)
     } catch (err) {
@@ -141,7 +150,10 @@ export function useLists() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      if (!res.ok) throw new Error('Failed to create list')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to create list')
+      }
       await fetchLists()
       toast.success('List created')
     } catch (err) {
@@ -159,7 +171,10 @@ export function useLists() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      if (!res.ok) throw new Error('Failed to update list')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to update list')
+      }
       await fetchLists()
       toast.success('List updated')
     } catch (err) {
@@ -173,7 +188,10 @@ export function useLists() {
   const deleteList = async (id: string) => {
     try {
       const res = await fetch(`/api/lists/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to delete list')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to delete list')
+      }
       await fetchLists()
       toast.success('List deleted')
     } catch (err) {
@@ -197,7 +215,10 @@ export function useLabels() {
     setError(null)
     try {
       const res = await fetch('/api/labels')
-      if (!res.ok) throw new Error('Failed to fetch labels')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to fetch labels')
+      }
       const data = await res.json()
       setLabels(data)
     } catch (err) {
@@ -218,7 +239,10 @@ export function useLabels() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      if (!res.ok) throw new Error('Failed to create label')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to create label')
+      }
       await fetchLabels()
       toast.success('Label created')
     } catch (err) {
@@ -236,7 +260,10 @@ export function useLabels() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      if (!res.ok) throw new Error('Failed to update label')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to update label')
+      }
       await fetchLabels()
       toast.success('Label updated')
     } catch (err) {
@@ -250,7 +277,10 @@ export function useLabels() {
   const deleteLabel = async (id: string) => {
     try {
       const res = await fetch(`/api/labels/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to delete label')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to delete label')
+      }
       await fetchLabels()
       toast.success('Label deleted')
     } catch (err) {
@@ -283,7 +313,10 @@ export function useSearch(query: string) {
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
-        if (!res.ok) throw new Error('Search failed')
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}))
+          throw new Error(errData.error || 'Search failed')
+        }
         const data = await res.json()
         if (!cancelled) {
           setResults(data)
