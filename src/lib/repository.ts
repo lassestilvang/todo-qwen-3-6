@@ -262,37 +262,43 @@ export const taskRepository = {
 
   setLabels(taskId: string, labelIds: string[]) {
     const db = getDb()
-    db.prepare('DELETE FROM task_labels WHERE task_id = ?').run(taskId)
-
-    for (const labelId of labelIds) {
-      db.prepare('INSERT INTO task_labels (task_id, label_id) VALUES (?, ?)').run(taskId, labelId)
-    }
+    const transaction = db.transaction(() => {
+      db.prepare('DELETE FROM task_labels WHERE task_id = ?').run(taskId)
+      for (const labelId of labelIds) {
+        db.prepare('INSERT INTO task_labels (task_id, label_id) VALUES (?, ?)').run(taskId, labelId)
+      }
+    })
+    transaction()
   },
 
   setSubTasks(taskId: string, subTasks: { id?: string; name: string; completed: boolean; order: number }[]) {
     const db = getDb()
-    db.prepare('DELETE FROM subtasks WHERE task_id = ?').run(taskId)
-
-    for (const subTask of subTasks) {
-      const id = subTask.id || uuidv4()
-      db.prepare(`
-        INSERT INTO subtasks (id, task_id, name, completed, "order")
-        VALUES (?, ?, ?, ?, ?)
-      `).run(id, taskId, subTask.name, subTask.completed ? 1 : 0, subTask.order)
-    }
+    const transaction = db.transaction(() => {
+      db.prepare('DELETE FROM subtasks WHERE task_id = ?').run(taskId)
+      for (const subTask of subTasks) {
+        const id = subTask.id || uuidv4()
+        db.prepare(`
+          INSERT INTO subtasks (id, task_id, name, completed, "order")
+          VALUES (?, ?, ?, ?, ?)
+        `).run(id, taskId, subTask.name, subTask.completed ? 1 : 0, subTask.order)
+      }
+    })
+    transaction()
   },
 
   setReminders(taskId: string, reminders: { id?: string; type: 'notification' | 'email'; time: string }[]) {
     const db = getDb()
-    db.prepare('DELETE FROM reminders WHERE task_id = ?').run(taskId)
-
-    for (const reminder of reminders) {
-      const id = reminder.id || uuidv4()
-      db.prepare(`
-        INSERT INTO reminders (id, task_id, type, time)
-        VALUES (?, ?, ?, ?)
-      `).run(id, taskId, reminder.type, reminder.time)
-    }
+    const transaction = db.transaction(() => {
+      db.prepare('DELETE FROM reminders WHERE task_id = ?').run(taskId)
+      for (const reminder of reminders) {
+        const id = reminder.id || uuidv4()
+        db.prepare(`
+          INSERT INTO reminders (id, task_id, type, time)
+          VALUES (?, ?, ?, ?)
+        `).run(id, taskId, reminder.type, reminder.time)
+      }
+    })
+    transaction()
   },
 
   logChange(taskId: string, field: string, oldValue: string | null, newValue: string | null) {
