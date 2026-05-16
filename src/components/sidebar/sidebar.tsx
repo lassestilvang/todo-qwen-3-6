@@ -233,6 +233,8 @@ export function Sidebar() {
                   <button
                     key={emoji}
                     onClick={() => setNewListEmoji(emoji)}
+                    aria-label={`Select emoji: ${emoji}`}
+                    aria-pressed={newListEmoji === emoji}
                     className={cn(
                       'w-8 h-8 flex items-center justify-center rounded-lg text-lg transition-colors',
                       newListEmoji === emoji ? 'bg-zinc-700' : 'hover:bg-zinc-800'
@@ -250,6 +252,8 @@ export function Sidebar() {
                   <button
                     key={color}
                     onClick={() => setNewListColor(color)}
+                    aria-label={`Select color: ${color}`}
+                    aria-pressed={newListColor === color}
                     className={cn(
                       'w-8 h-8 rounded-full transition-transform',
                       newListColor === color ? 'ring-2 ring-white ring-offset-2 ring-offset-zinc-900 scale-110' : 'hover:scale-110'

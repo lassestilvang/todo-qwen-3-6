@@ -74,12 +74,14 @@ export function SearchBar() {
             ) : results.length === 0 ? (
               <div className="p-4 text-center text-zinc-500 text-sm">No results found</div>
             ) : (
-              <div className="py-2">
+              <div className="py-2" role="listbox" aria-label="Search results">
                 {results.map(task => (
                   <button
                     type="button"
                     key={task.id}
                     onClick={() => handleSelect(task)}
+                    role="option"
+                    aria-selected={false}
                     className="w-full px-4 py-2.5 text-left hover:bg-zinc-800 transition-colors"
                   >
                     <p className="text-sm text-white truncate">{task.name}</p>

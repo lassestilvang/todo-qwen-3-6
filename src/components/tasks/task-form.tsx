@@ -358,6 +358,8 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
                   key={label.id}
                   type="button"
                   onClick={() => toggleLabel(label.id)}
+                  aria-pressed={selectedLabels.includes(label.id)}
+                  aria-label={`${selectedLabels.includes(label.id) ? 'Remove' : 'Add'} label: ${label.name}`}
                   className={cn(
                     'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-all',
                     selectedLabels.includes(label.id)
