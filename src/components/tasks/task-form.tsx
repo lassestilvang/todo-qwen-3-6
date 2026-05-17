@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Task, Priority, Label, RecurringRule, RecurringPattern } from '@/lib/types'
 import { parseNaturalLanguage } from '@/lib/natural-language'
+import { timeRegex } from '@/lib/validation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -97,10 +98,10 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
     const newErrors: Record<string, string> = {}
     if (!name.trim()) newErrors.name = 'Task name is required'
     if (name.length > 500) newErrors.name = 'Name must be less than 500 characters'
-    if (estimate && !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(estimate)) {
+    if (estimate && !timeRegex.test(estimate)) {
       newErrors.estimate = 'Invalid format (HH:mm)'
     }
-    if (actualTime && !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(actualTime)) {
+    if (actualTime && !timeRegex.test(actualTime)) {
       newErrors.actualTime = 'Invalid format (HH:mm)'
     }
     setErrors(newErrors)
