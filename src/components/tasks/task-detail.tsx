@@ -20,6 +20,7 @@ import {
   Repeat,
   Paperclip,
   History,
+  Pencil,
 } from 'lucide-react'
 
 interface TaskDetailProps {
@@ -68,9 +69,7 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
         <h2 className="text-sm font-medium text-zinc-400">Task Details</h2>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" onClick={onEdit} className="text-zinc-400 hover:text-white h-8 w-8" aria-label="Edit task">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
+            <Pencil className="w-4 h-4" />
           </Button>
           <Button variant="ghost" size="icon" onClick={onDelete} className="text-zinc-400 hover:text-red-400 h-8 w-8">
             <Trash2 className="w-4 h-4" />
