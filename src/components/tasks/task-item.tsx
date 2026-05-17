@@ -2,6 +2,7 @@
 
 import { Task } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { formatTimeDifference } from '@/lib/natural-language'
 import { motion } from 'framer-motion'
 import {
   Flag,
@@ -12,7 +13,7 @@ import {
 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { format, isBefore, startOfDay } from 'date-fns'
+import { isBefore, startOfDay } from 'date-fns'
 
 interface TaskItemProps {
   task: Task
@@ -85,7 +86,7 @@ export function TaskItem({ task, onToggle, onSelect, isSelected }: TaskItemProps
               isOverdue ? 'text-red-400' : 'text-zinc-500'
             )}>
               <Calendar className="w-3 h-3" />
-              {format(new Date(task.date), 'MMM d')}
+              {formatTimeDifference(new Date(task.date))}
               {isOverdue && <Badge variant="destructive" className="text-[10px] h-4 px-1">Overdue</Badge>}
             </span>
           )}
