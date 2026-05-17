@@ -41,6 +41,7 @@ export function Sidebar() {
   const { lists, createList, deleteList } = useLists()
   const { labels } = useLabels()
   const [showCreateList, setShowCreateList] = useState(false)
+  const [deleteListId, setDeleteListId] = useState<string | null>(null)
   const [newListName, setNewListName] = useState('')
   const [newListColor, setNewListColor] = useState('#6366f1')
   const [newListEmoji, setNewListEmoji] = useState('📋')
@@ -52,11 +53,25 @@ export function Sidebar() {
 
   const handleCreateList = async () => {
     if (!newListName.trim()) return
-    await createList({ name: newListName.trim(), color: newListColor, emoji: newListEmoji })
-    setNewListName('')
-    setNewListColor('#6366f1')
-    setNewListEmoji('📋')
-    setShowCreateList(false)
+    try {
+      await createList({ name: newListName.trim(), color: newListColor, emoji: newListEmoji })
+      setNewListName('')
+      setNewListColor('#6366f1')
+      setNewListEmoji('📋')
+      setShowCreateList(false)
+    } catch {
+      // Error handled by toast in use-data.ts
+    }
+  }
+
+  const handleDeleteList = async () => {
+    if (!deleteListId) return
+    try {
+      await deleteList(deleteListId)
+      setDeleteListId(null)
+    } catch {
+      // Error handled by toast in use-data.ts
+    }
   }
 
   return (
@@ -141,7 +156,7 @@ export function Sidebar() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="bg-zinc-800 border-zinc-700">
                                   <DropdownMenuItem
-                                    onClick={() => deleteList(list.id)}
+                                    onClick={() => setDeleteListId(list.id)}
                                     className="text-red-400"
                                   >
                                     <Trash2 className="w-4 h-4 mr-2" />
@@ -270,6 +285,25 @@ export function Sidebar() {
             </Button>
             <Button onClick={handleCreateList} disabled={!newListName.trim()}>
               Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteListId} onOpenChange={(open) => !open && setDeleteListId(null)}>
+        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Delete List</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-zinc-400">
+            Are you sure you want to delete this list? This action cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteListId(null)} className="border-zinc-700">
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteList}>
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
