@@ -6,20 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Plus, Menu, Sun, Moon } from 'lucide-react'
-import { useState } from 'react'
+import { useTheme } from 'next-themes'
 
 export function Header({ onAddTask, taskCount }: { onAddTask: () => void; taskCount: number }) {
   const { showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar, currentListId, currentView } = useApp()
-  const [mounted] = useState(() => {
-    if (typeof window !== 'undefined') return true
-    return false
-  })
+  const { theme, setTheme, resolvedTheme } = useTheme()
 
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark'
-    setTheme(newTheme)
-    localStorage.setItem('theme', newTheme)
-    document.documentElement.classList.toggle('dark', newTheme === 'dark')
+    setTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
   const viewLabels: Record<string, string> = {
@@ -69,11 +63,9 @@ export function Header({ onAddTask, taskCount }: { onAddTask: () => void; taskCo
           </Label>
         </div>
 
-        {mounted && (
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-zinc-400 hover:text-white h-8 w-8">
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </Button>
-        )}
+        <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-zinc-400 hover:text-white h-8 w-8">
+          {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </Button>
 
         <Button onClick={onAddTask} className="bg-zinc-100 text-zinc-900 hover:bg-white h-8">
           <Plus className="w-4 h-4 mr-1" />
