@@ -7,7 +7,8 @@ export async function GET() {
   try {
     const lists = listRepository.findAll()
     return NextResponse.json(lists)
-  } catch {
+  } catch (error: unknown) {
+    console.error('Failed to fetch lists:', error)
     return NextResponse.json({ error: 'Failed to fetch lists' }, { status: 500 })
   }
 }

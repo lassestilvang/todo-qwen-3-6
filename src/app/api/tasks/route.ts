@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
 
     const tasks = taskRepository.findAll(view, listId, showCompleted)
     return NextResponse.json(tasks)
-  } catch {
+  } catch (error: unknown) {
+    console.error('Failed to fetch tasks:', error)
     return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 })
   }
 }

@@ -7,7 +7,8 @@ export async function GET() {
   try {
     const labels = labelRepository.findAll()
     return NextResponse.json(labels)
-  } catch {
+  } catch (error: unknown) {
+    console.error('Failed to fetch labels:', error)
     return NextResponse.json({ error: 'Failed to fetch labels' }, { status: 500 })
   }
 }
