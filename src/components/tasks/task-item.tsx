@@ -49,6 +49,9 @@ export function TaskItem({ task, onToggle, onSelect, isSelected }: TaskItemProps
         task.completed && 'opacity-60'
       )}
       onClick={() => onSelect(task)}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(task) } }}
+      role="button"
+      tabIndex={0}
     >
       <div className="pt-0.5" onClick={e => e.stopPropagation()}>
         <Checkbox
