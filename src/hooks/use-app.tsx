@@ -27,20 +27,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCurrentListId(null)
   }, [])
 
-  const setListId = useCallback((listId: string | null) => {
-    setCurrentListId(listId)
-  }, [])
-
-  const handleSetSelectedTaskId = useCallback((taskId: string | null) => {
-    setSelectedTaskId(taskId)
-  }, [])
-
   const toggleShowCompleted = useCallback(() => {
     setShowCompleted(prev => !prev)
-  }, [])
-
-  const handleSetSearchQuery = useCallback((query: string) => {
-    setSearchQuery(query)
   }, [])
 
   const toggleSidebar = useCallback(() => {
@@ -55,10 +43,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     searchQuery,
     sidebarOpen,
     setView,
-    setListId,
-    setSelectedTaskId: handleSetSelectedTaskId,
+    setListId: setCurrentListId,
+    setSelectedTaskId,
     toggleShowCompleted,
-    setSearchQuery: handleSetSearchQuery,
+    setSearchQuery,
     toggleSidebar,
   }), [
     currentView,
@@ -68,10 +56,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     searchQuery,
     sidebarOpen,
     setView,
-    setListId,
-    handleSetSelectedTaskId,
     toggleShowCompleted,
-    handleSetSearchQuery,
     toggleSidebar,
   ])
 
