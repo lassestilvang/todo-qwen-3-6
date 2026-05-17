@@ -1,6 +1,7 @@
 'use client'
 
 import { useApp } from '@/hooks/use-app'
+import { useLists } from '@/hooks/use-data'
 import { SearchBar } from '@/components/search/search-bar'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -11,6 +12,7 @@ import { useTheme } from 'next-themes'
 export function Header({ onAddTask, taskCount }: { onAddTask: () => void; taskCount: number }) {
   const { showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar, currentListId, currentView } = useApp()
   const { theme, setTheme, resolvedTheme } = useTheme()
+  const { lists } = useLists()
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
@@ -23,8 +25,9 @@ export function Header({ onAddTask, taskCount }: { onAddTask: () => void; taskCo
     all: 'All Tasks',
   }
 
+  const currentList = lists.find(l => l.id === currentListId)
   const title = currentListId
-    ? `List`
+    ? currentList?.name || 'List'
     : viewLabels[currentView] || 'Tasks'
 
   const today = new Date()
