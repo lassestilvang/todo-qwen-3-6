@@ -12,7 +12,7 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
   }
   if (listId) params.listId = listId
 
-  const { data: tasks, loading, error, create, update, remove, refresh } = useCrud<Task>({
+  const { data: tasks, loading, error, create, update, remove, refresh, isMutating } = useCrud<Task>({
     baseUrl: '/api/tasks',
     entityName: 'task',
     fetchParams: params,
@@ -29,6 +29,7 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
     tasks,
     loading,
     error,
+    isMutating,
     createTask: create,
     updateTask: update,
     deleteTask: remove,
@@ -38,7 +39,7 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
 }
 
 export function useLists() {
-  const crud = useCrud<TaskList>({
+  const { data: lists, loading, error, create, update, remove, refresh, isMutating } = useCrud<TaskList>({
     baseUrl: '/api/lists',
     entityName: 'list',
     createSuccessMessage: 'List created',
@@ -47,18 +48,19 @@ export function useLists() {
   })
 
   return {
-    lists: crud.data,
-    loading: crud.loading,
-    error: crud.error,
-    createList: crud.create,
-    updateList: crud.update,
-    deleteList: crud.remove,
-    refresh: crud.refresh,
+    lists,
+    loading,
+    error,
+    isMutating,
+    createList: create,
+    updateList: update,
+    deleteList: remove,
+    refresh,
   }
 }
 
 export function useLabels() {
-  const crud = useCrud<Label>({
+  const { data: labels, loading, error, create, update, remove, refresh, isMutating } = useCrud<Label>({
     baseUrl: '/api/labels',
     entityName: 'label',
     createSuccessMessage: 'Label created',
@@ -67,13 +69,14 @@ export function useLabels() {
   })
 
   return {
-    labels: crud.data,
-    loading: crud.loading,
-    error: crud.error,
-    createLabel: crud.create,
-    updateLabel: crud.update,
-    deleteLabel: crud.remove,
-    refresh: crud.refresh,
+    labels,
+    loading,
+    error,
+    isMutating,
+    createLabel: create,
+    updateLabel: update,
+    deleteLabel: remove,
+    refresh,
   }
 }
 

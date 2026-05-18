@@ -16,6 +16,7 @@ interface UseCrudReturn<T> {
   data: T[]
   loading: boolean
   error: string | null
+  isMutating: boolean
   create: (itemData: Record<string, unknown>) => Promise<void>
   update: (id: string, itemData: Record<string, unknown>) => Promise<void>
   remove: (id: string) => Promise<void>
@@ -33,6 +34,7 @@ export function useCrud<T extends { id: string }>({
   const [data, setData] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isMutating, setIsMutating] = useState(false)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -61,6 +63,8 @@ export function useCrud<T extends { id: string }>({
   }, [fetchData])
 
   const create = useCallback(async (itemData: Record<string, unknown>) => {
+    if (isMutating) return
+    setIsMutating(true)
     try {
       const res = await fetch(baseUrl, {
         method: 'POST',
@@ -82,10 +86,14 @@ export function useCrud<T extends { id: string }>({
       setError(message)
       toast.error(message)
       throw err
+    } finally {
+      setIsMutating(false)
     }
-  }, [baseUrl, entityName, fetchData, createSuccessMessage])
+  }, [baseUrl, entityName, fetchData, createSuccessMessage, isMutating])
 
   const update = useCallback(async (id: string, itemData: Record<string, unknown>) => {
+    if (isMutating) return
+    setIsMutating(true)
     try {
       const res = await fetch(`${baseUrl}/${id}`, {
         method: 'PATCH',
@@ -103,10 +111,14 @@ export function useCrud<T extends { id: string }>({
       setError(message)
       toast.error(message)
       throw err
+    } finally {
+      setIsMutating(false)
     }
-  }, [baseUrl, entityName, fetchData, updateSuccessMessage])
+  }, [baseUrl, entityName, fetchData, updateSuccessMessage, isMutating])
 
   const remove = useCallback(async (id: string) => {
+    if (isMutating) return
+    setIsMutating(true)
     try {
       const res = await fetch(`${baseUrl}/${id}`, { method: 'DELETE' })
       if (!res.ok) {
@@ -120,13 +132,16 @@ export function useCrud<T extends { id: string }>({
       setError(message)
       toast.error(message)
       throw err
+    } finally {
+      setIsMutating(false)
     }
-  }, [baseUrl, entityName, fetchData, deleteSuccessMessage])
+  }, [baseUrl, entityName, fetchData, deleteSuccessMessage, isMutating])
 
   return {
     data,
     loading,
     error,
+    isMutating,
     create,
     update,
     remove,
