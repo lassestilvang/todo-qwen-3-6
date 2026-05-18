@@ -11,21 +11,15 @@ import { Label as UILabel } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
-import {
-  Calendar as CalendarIcon,
-  Tag,
-  ListChecks,
-  Bell,
-  Repeat,
-  Plus,
-  X,
-  Sparkles,
-} from 'lucide-react'
+import { Calendar as CalendarIcon, Sparkles } from 'lucide-react'
+import { SubTasksSection } from './subtasks-section'
+import { RemindersSection } from './reminders-section'
+import { LabelsSection } from './labels-section'
+import { RecurringSection } from './recurring-section'
 
 interface SubTaskForm {
   id?: string
@@ -348,161 +342,29 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
 
           <Separator className="bg-zinc-800" />
 
-          <div>
-            <UILabel className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-              <Tag className="w-4 h-4" />
-              Labels
-            </UILabel>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {labels.map(label => (
-                <button
-                  key={label.id}
-                  type="button"
-                  onClick={() => toggleLabel(label.id)}
-                  aria-pressed={selectedLabels.includes(label.id)}
-                  aria-label={`${selectedLabels.includes(label.id) ? 'Remove' : 'Add'} label: ${label.name}`}
-                  className={cn(
-                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-all',
-                    selectedLabels.includes(label.id)
-                      ? 'ring-1 ring-white/20'
-                      : 'opacity-50 hover:opacity-75'
-                  )}
-                  style={{
-                    backgroundColor: selectedLabels.includes(label.id) ? `${label.color}30` : `${label.color}15`,
-                    color: label.color,
-                  }}
-                >
-                  {label.icon} {label.name}
-                </button>
-              ))}
-            </div>
-          </div>
+          <LabelsSection labels={labels} selectedLabels={selectedLabels} onToggle={toggleLabel} />
 
           <Separator className="bg-zinc-800" />
 
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <UILabel className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                <ListChecks className="w-4 h-4" />
-                Subtasks
-              </UILabel>
-              <Button type="button" variant="ghost" size="sm" onClick={addSubTask} className="text-zinc-400 hover:text-white h-7">
-                <Plus className="w-3.5 h-3.5 mr-1" />
-                Add
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {subTasks.map((subTask, index) => (
-                <div key={subTask.id || index} className="flex items-center gap-2">
-                  <Checkbox
-                    checked={subTask.completed}
-                    onCheckedChange={(checked) => updateSubTask(index, 'completed', checked)}
-                    className="border-zinc-600"
-                  />
-                  <Input
-                    value={subTask.name}
-                    onChange={e => updateSubTask(index, 'name', e.target.value)}
-                    placeholder="Subtask name"
-                    className="flex-1 bg-zinc-800/50 border-zinc-700 text-white text-sm h-8"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeSubTask(index)}
-                    className="h-8 w-8 text-zinc-500 hover:text-red-400"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
+          <SubTasksSection
+            subTasks={subTasks}
+            onAdd={addSubTask}
+            onUpdate={updateSubTask}
+            onRemove={removeSubTask}
+          />
 
           <Separator className="bg-zinc-800" />
 
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <UILabel className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                <Bell className="w-4 h-4" />
-                Reminders
-              </UILabel>
-              <Button type="button" variant="ghost" size="sm" onClick={addReminder} className="text-zinc-400 hover:text-white h-7">
-                <Plus className="w-3.5 h-3.5 mr-1" />
-                Add
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {reminders.map((reminder, index) => (
-                <div key={reminder.id || index} className="flex items-center gap-2">
-                  <Select
-                    value={reminder.type}
-                    onValueChange={(v) => { if (v) updateReminder(index, 'type', v) }}
-                  >
-                    <SelectTrigger className="w-32 bg-zinc-800/50 border-zinc-700 text-white text-sm h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-800 border-zinc-700">
-                      <SelectItem value="notification">Notification</SelectItem>
-                      <SelectItem value="email">Email</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    type="datetime-local"
-                    value={reminder.time ? format(new Date(reminder.time), "yyyy-MM-dd'T'HH:mm") : ''}
-                    onChange={e => {
-                      const parsed = new Date(e.target.value)
-                      if (!isNaN(parsed.getTime())) {
-                        updateReminder(index, 'time', parsed.toISOString())
-                      }
-                    }}
-                    className="flex-1 bg-zinc-800/50 border-zinc-700 text-white text-sm h-8"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeReminder(index)}
-                    className="h-8 w-8 text-zinc-500 hover:text-red-400"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
+          <RemindersSection
+            reminders={reminders}
+            onAdd={addReminder}
+            onUpdate={updateReminder}
+            onRemove={removeReminder}
+          />
 
           <Separator className="bg-zinc-800" />
 
-          <div>
-            <UILabel className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-              <Repeat className="w-4 h-4" />
-              Recurring
-            </UILabel>
-            <Select
-              value={recurringRule?.pattern || 'none'}
-              onValueChange={(v) => {
-                if (v === 'none') {
-                  setRecurringRule(null)
-                } else {
-                  setRecurringRule({ pattern: v as RecurringPattern })
-                }
-              }}
-            >
-              <SelectTrigger className="mt-1.5 bg-zinc-800/50 border-zinc-700 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
-                <SelectItem value="none">No recurrence</SelectItem>
-                <SelectItem value="daily">Every day</SelectItem>
-                <SelectItem value="weekly">Every week</SelectItem>
-                <SelectItem value="weekday">Every weekday</SelectItem>
-                <SelectItem value="monthly">Every month</SelectItem>
-                <SelectItem value="yearly">Every year</SelectItem>
-                <SelectItem value="custom">Custom</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <RecurringSection recurringRule={recurringRule} onChange={setRecurringRule} />
         </div>
       </ScrollArea>
 
