@@ -2,6 +2,101 @@ import { getDb } from './db'
 import { Task, TaskList, Label, SubTask, Reminder, Attachment, TaskChange, Priority, RecurringRule } from './types'
 import { v4 as uuidv4 } from 'uuid'
 
+interface TaskRow {
+  id: string
+  name: string
+  description: string | null
+  list_id: string | null
+  date: string | null
+  deadline: string | null
+  estimate: string | null
+  actual_time: string | null
+  priority: string
+  completed: number
+  completed_at: string | null
+  recurring_rule: string | null
+  created_at: string
+  updated_at: string
+  list_name?: string
+  list_color?: string
+  list_emoji?: string
+}
+
+interface LabelRow {
+  task_id: string
+  id: string
+  name: string
+  color: string
+  icon: string
+  created_at: string
+  updated_at: string
+}
+
+interface SubTaskRow {
+  id: string
+  task_id: string
+  name: string
+  completed: number
+  order: number
+  created_at: string
+  updated_at: string
+}
+
+interface ReminderRow {
+  task_id: string
+  id: string
+  type: 'notification' | 'email'
+  time: string
+  created_at: string
+}
+
+interface AttachmentRow {
+  task_id: string
+  id: string
+  name: string
+  url: string
+  size: number
+  mimeType: string
+  created_at: string
+}
+
+interface TaskChangeRow {
+  id: string
+  task_id: string
+  field: string
+  old_value: string | null
+  new_value: string | null
+  changed_at: string
+}
+
+interface CountRow {
+  count: number
+}
+
+interface MaxOrderRow {
+  maxOrder: number | null
+}
+
+interface ListRow {
+  id: string
+  name: string
+  color: string
+  emoji: string
+  is_default: number
+  order: number
+  created_at: string
+  updated_at: string
+}
+
+interface LabelDbRow {
+  id: string
+  name: string
+  color: string
+  icon: string
+  created_at: string
+  updated_at: string
+}
+
 export const taskRepository = {
   findAll(view: string, listId: string | null, showCompleted: boolean): Task[] {
     const db = getDb()
@@ -11,7 +106,7 @@ export const taskRepository = {
       LEFT JOIN lists l ON t.list_id = l.id
     `
     const conditions: string[] = []
-    const params: any[] = []
+    const params: (string | number | null)[] = []
 
     if (listId) {
       conditions.push('t.list_id = ?')
@@ -63,7 +158,7 @@ export const taskRepository = {
         t.created_at DESC
     `
 
-    const rows = db.prepare(query).all(...params) as any[]
+    const rows = db.prepare(query).all(...params) as TaskRow[]
     if (rows.length === 0) return []
 
     const taskIds = rows.map(r => r.id)
@@ -74,40 +169,69 @@ export const taskRepository = {
       SELECT tl.task_id, lb.* FROM labels lb
       INNER JOIN task_labels tl ON lb.id = tl.label_id
       WHERE tl.task_id IN (${placeholders})
-    `).all(...taskIds) as any[]
+    `).all(...taskIds) as LabelRow[]
     for (const lr of labelsRows) {
       const arr = labelsByTask.get(lr.task_id) || []
-      arr.push(lr)
+      arr.push({
+        id: lr.id,
+        name: lr.name,
+        color: lr.color,
+        icon: lr.icon,
+        createdAt: lr.created_at,
+        updatedAt: lr.updated_at,
+      })
       labelsByTask.set(lr.task_id, arr)
     }
 
     const subTasksByTask = new Map<string, SubTask[]>()
     const subTasksRows = db.prepare(`
       SELECT * FROM subtasks WHERE task_id IN (${placeholders}) ORDER BY "order" ASC
-    `).all(...taskIds) as any[]
+    `).all(...taskIds) as SubTaskRow[]
     for (const st of subTasksRows) {
       const arr = subTasksByTask.get(st.task_id) || []
-      arr.push({ ...st, completed: st.completed === 1 })
+      arr.push({
+        id: st.id,
+        taskId: st.task_id,
+        name: st.name,
+        completed: st.completed === 1,
+        order: st.order,
+        createdAt: st.created_at,
+        updatedAt: st.updated_at,
+      })
       subTasksByTask.set(st.task_id, arr)
     }
 
     const remindersByTask = new Map<string, Reminder[]>()
     const remindersRows = db.prepare(`
       SELECT * FROM reminders WHERE task_id IN (${placeholders})
-    `).all(...taskIds) as any[]
+    `).all(...taskIds) as ReminderRow[]
     for (const r of remindersRows) {
       const arr = remindersByTask.get(r.task_id) || []
-      arr.push(r)
+      arr.push({
+        id: r.id,
+        taskId: r.task_id,
+        type: r.type,
+        time: r.time,
+        createdAt: r.created_at,
+      })
       remindersByTask.set(r.task_id, arr)
     }
 
     const attachmentsByTask = new Map<string, Attachment[]>()
     const attachmentsRows = db.prepare(`
       SELECT * FROM attachments WHERE task_id IN (${placeholders})
-    `).all(...taskIds) as any[]
+    `).all(...taskIds) as AttachmentRow[]
     for (const a of attachmentsRows) {
       const arr = attachmentsByTask.get(a.task_id) || []
-      arr.push(a)
+      arr.push({
+        id: a.id,
+        taskId: a.task_id,
+        name: a.name,
+        url: a.url,
+        size: a.size,
+        mimeType: a.mimeType,
+        createdAt: a.created_at,
+      })
       attachmentsByTask.set(a.task_id, arr)
     }
 
@@ -121,7 +245,7 @@ export const taskRepository = {
       FROM tasks t
       LEFT JOIN lists l ON t.list_id = l.id
       WHERE t.id = ?
-    `).get(id) as any
+    `).get(id) as TaskRow | undefined
 
     if (!row) return null
     return mapTaskRow(row, db)
@@ -144,7 +268,7 @@ export const taskRepository = {
          OR st.name LIKE ? ESCAPE '\\'
       ORDER BY t.created_at DESC
       LIMIT 50
-    `).all(searchQuery, searchQuery, searchQuery, searchQuery) as any[]
+    `).all(searchQuery, searchQuery, searchQuery, searchQuery) as TaskRow[]
 
     return rows.map(row => mapTaskRow(row, db))
   },
@@ -200,9 +324,9 @@ export const taskRepository = {
     if (!existing) return null
 
     const fields: string[] = []
-    const params: any[] = []
+    const params: (string | number | boolean | null)[] = []
 
-    const fieldMappings: Record<string, { key: string; transform?: (v: any) => any }> = {
+    const fieldMappings: Record<string, { key: string; transform?: (v: unknown) => unknown }> = {
       name: { key: 'name' },
       description: { key: 'description' },
       listId: { key: 'list_id' },
@@ -211,22 +335,22 @@ export const taskRepository = {
       estimate: { key: 'estimate' },
       actualTime: { key: 'actual_time' },
       priority: { key: 'priority' },
-      completed: { key: 'completed', transform: (v: boolean) => v ? 1 : 0 },
-      recurringRule: { key: 'recurring_rule', transform: (v) => v ? JSON.stringify(v) : null },
+      completed: { key: 'completed', transform: (v: unknown) => (v as boolean) ? 1 : 0 },
+      recurringRule: { key: 'recurring_rule', transform: (v: unknown) => v ? JSON.stringify(v) : null },
     }
 
     for (const [inputKey, mapping] of Object.entries(fieldMappings)) {
       if (inputKey in data) {
         const value = mapping.transform ? mapping.transform(data[inputKey as keyof typeof data]) : data[inputKey as keyof typeof data]
         fields.push(`${mapping.key} = ?`)
-        params.push(value)
+        params.push(value as string | number | boolean | null)
 
         if (existing) {
           const oldValue = inputKey === 'listId'
             ? existing.listId
             : inputKey === 'recurringRule'
               ? (existing.recurringRule ? JSON.stringify(existing.recurringRule) : null)
-              : (existing as any)[inputKey]
+              : existing[inputKey as keyof Task]
 
           const newValue = value
           if (oldValue !== newValue) {
@@ -315,7 +439,7 @@ export const taskRepository = {
     const db = getDb()
     const rows = db.prepare(`
       SELECT * FROM task_changes WHERE task_id = ? ORDER BY changed_at DESC
-    `).all(taskId) as any[]
+    `).all(taskId) as TaskChangeRow[]
     return rows.map(row => ({
       id: row.id,
       taskId: row.task_id,
@@ -331,19 +455,19 @@ export const taskRepository = {
     const today = new Date().toISOString().split('T')[0]
 
     let query = `SELECT COUNT(*) as count FROM tasks WHERE date < ? AND completed = 0`
-    const params: any[] = [today]
+    const params: (string | number)[] = [today]
 
     if (listId) {
       query += ' AND list_id = ?'
       params.push(listId)
     }
 
-    const result = db.prepare(query).get(...params) as { count: number }
+    const result = db.prepare(query).get(...params) as CountRow
     return result.count
   },
 }
 
-function mapTaskRow(row: any, db: any): Task {
+function mapTaskRow(row: TaskRow, db: ReturnType<typeof getDb>): Task {
   let recurringRule: RecurringRule | null = null
   if (row.recurring_rule) {
     try {
@@ -359,10 +483,15 @@ function mapTaskRow(row: any, db: any): Task {
 
   const rawSubTasks = db.prepare(`
     SELECT * FROM subtasks WHERE task_id = ? ORDER BY "order" ASC
-  `).all(row.id) as any[]
+  `).all(row.id) as SubTaskRow[]
   const subTasks: SubTask[] = rawSubTasks.map(st => ({
-    ...st,
+    id: st.id,
+    taskId: st.task_id,
+    name: st.name,
     completed: st.completed === 1,
+    order: st.order,
+    createdAt: st.created_at,
+    updatedAt: st.updated_at,
   }))
 
   const reminders = db.prepare(`
@@ -396,7 +525,7 @@ function mapTaskRow(row: any, db: any): Task {
 }
 
 function mapTaskRowWithRelations(
-  row: any,
+  row: TaskRow,
   labelsByTask: Map<string, Label[]>,
   subTasksByTask: Map<string, SubTask[]>,
   remindersByTask: Map<string, Reminder[]>,
@@ -434,27 +563,39 @@ function mapTaskRowWithRelations(
 export const listRepository = {
   findAll(): TaskList[] {
     const db = getDb()
-    const rows = db.prepare(`SELECT * FROM lists ORDER BY "order" ASC, name ASC`).all() as any[]
+    const rows = db.prepare(`SELECT * FROM lists ORDER BY "order" ASC, name ASC`).all() as ListRow[]
     return rows.map(row => ({
-      ...row,
+      id: row.id,
+      name: row.name,
+      color: row.color,
+      emoji: row.emoji,
       isDefault: row.is_default === 1,
+      order: row.order,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     }))
   },
 
   findById(id: string): TaskList | null {
     const db = getDb()
-    const row = db.prepare('SELECT * FROM lists WHERE id = ?').get(id) as any
+    const row = db.prepare('SELECT * FROM lists WHERE id = ?').get(id) as ListRow | undefined
     if (!row) return null
     return {
-      ...row,
+      id: row.id,
+      name: row.name,
+      color: row.color,
+      emoji: row.emoji,
       isDefault: row.is_default === 1,
+      order: row.order,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     }
   },
 
   create(data: { name: string; color?: string; emoji?: string }): TaskList {
     const db = getDb()
     const id = uuidv4()
-    const maxOrder = (db.prepare('SELECT MAX("order") as maxOrder FROM lists').get() as { maxOrder: number | null }).maxOrder ?? -1
+    const maxOrder = (db.prepare('SELECT MAX("order") as maxOrder FROM lists').get() as MaxOrderRow).maxOrder ?? -1
 
     db.prepare(`
       INSERT INTO lists (id, name, color, emoji, "order")
@@ -467,7 +608,7 @@ export const listRepository = {
   update(id: string, data: Partial<{ name: string; color: string; emoji: string }>): TaskList | null {
     const db = getDb()
     const fields: string[] = []
-    const params: any[] = []
+    const params: (string | number)[] = []
 
     if (data.name !== undefined) { fields.push('name = ?'); params.push(data.name) }
     if (data.color !== undefined) { fields.push('color = ?'); params.push(data.color) }
@@ -495,7 +636,7 @@ export const listRepository = {
     const db = getDb()
     const result = db.prepare(`
       SELECT COUNT(*) as count FROM tasks WHERE list_id = ? AND completed = 0
-    `).get(listId) as { count: number }
+    `).get(listId) as CountRow
     return result.count
   },
 }
@@ -503,12 +644,29 @@ export const listRepository = {
 export const labelRepository = {
   findAll(): Label[] {
     const db = getDb()
-    return db.prepare('SELECT * FROM labels ORDER BY name ASC').all() as Label[]
+    const rows = db.prepare('SELECT * FROM labels ORDER BY name ASC').all() as LabelDbRow[]
+    return rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      color: row.color,
+      icon: row.icon,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }))
   },
 
   findById(id: string): Label | null {
     const db = getDb()
-    return db.prepare('SELECT * FROM labels WHERE id = ?').get(id) as Label | null
+    const row = db.prepare('SELECT * FROM labels WHERE id = ?').get(id) as LabelDbRow | undefined
+    if (!row) return null
+    return {
+      id: row.id,
+      name: row.name,
+      color: row.color,
+      icon: row.icon,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }
   },
 
   create(data: { name: string; color?: string; icon?: string }): Label {
@@ -526,7 +684,7 @@ export const labelRepository = {
   update(id: string, data: Partial<{ name: string; color: string; icon: string }>): Label | null {
     const db = getDb()
     const fields: string[] = []
-    const params: any[] = []
+    const params: string[] = []
 
     if (data.name !== undefined) { fields.push('name = ?'); params.push(data.name) }
     if (data.color !== undefined) { fields.push('color = ?'); params.push(data.color) }
@@ -551,7 +709,7 @@ export const labelRepository = {
     const db = getDb()
     const result = db.prepare(`
       SELECT COUNT(*) as count FROM task_labels WHERE label_id = ?
-    `).get(labelId) as { count: number }
+    `).get(labelId) as CountRow
     return result.count
   },
 }
