@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppProvider } from "@/hooks/use-app";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { ErrorBoundary } from "@/components/layout/error-boundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,12 +55,14 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-zinc-950 text-white">
-        <TooltipProvider>
-          <AppProvider>
-            {children}
-          </AppProvider>
-        </TooltipProvider>
-        <Toaster />
+        <ErrorBoundary>
+          <TooltipProvider>
+            <AppProvider>
+              {children}
+            </AppProvider>
+          </TooltipProvider>
+          <Toaster />
+        </ErrorBoundary>
       </body>
     </html>
   );
