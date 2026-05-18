@@ -3,298 +3,78 @@
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { Task, TaskList, Label, ViewType } from '@/lib/types'
+import { useCrud } from './use-crud'
 
 export function useTasks(view: ViewType, listId: string | null, showCompleted: boolean) {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchTasks = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const params = new URLSearchParams({
-        view,
-        showCompleted: showCompleted.toString(),
-      })
-      if (listId) params.set('listId', listId)
-
-      const res = await fetch(`/api/tasks?${params}`)
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to fetch tasks')
-      }
-      const data = await res.json()
-      setTasks(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-    } finally {
-      setLoading(false)
-    }
-  }, [view, listId, showCompleted])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchTasks()
-  }, [fetchTasks])
-
-  const createTask = async (taskData: Record<string, unknown>) => {
-    try {
-      const res = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskData),
-      })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        const message = errData.error || 'Failed to create task'
-        const details = (errData.details as Array<{ path?: string[]; message?: string }> | undefined)
-          ?.map(d => `${d.path?.join('.')}: ${d.message}`)
-          .join(', ')
-        throw new Error(details ? `${message}: ${details}` : message)
-      }
-      await fetchTasks()
-      toast.success('Task created')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      toast.error(message)
-      throw err
-    }
+  const params: Record<string, string> = {
+    view,
+    showCompleted: showCompleted.toString(),
   }
+  if (listId) params.listId = listId
 
-  const updateTask = async (id: string, taskData: Record<string, unknown>) => {
-    try {
-      const res = await fetch(`/api/tasks/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskData),
-      })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to update task')
-      }
-      await fetchTasks()
-      toast.success('Task updated')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      toast.error(message)
-      throw err
-    }
-  }
-
-  const deleteTask = async (id: string) => {
-    try {
-      const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to delete task')
-      }
-      await fetchTasks()
-      toast.success('Task deleted')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      toast.error(message)
-      throw err
-    }
-  }
+  const { data: tasks, loading, error, create, update, remove, refresh } = useCrud<Task>({
+    baseUrl: '/api/tasks',
+    entityName: 'task',
+    fetchParams: params,
+    createSuccessMessage: 'Task created',
+    updateSuccessMessage: 'Task updated',
+    deleteSuccessMessage: 'Task deleted',
+  })
 
   const toggleComplete = async (task: Task) => {
-    await updateTask(task.id, { completed: !task.completed })
+    await update(task.id, { completed: !task.completed })
   }
 
   return {
     tasks,
     loading,
     error,
-    createTask,
-    updateTask,
-    deleteTask,
+    createTask: create,
+    updateTask: update,
+    deleteTask: remove,
     toggleComplete,
-    refresh: fetchTasks,
+    refresh,
   }
 }
 
 export function useLists() {
-  const [lists, setLists] = useState<TaskList[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const crud = useCrud<TaskList>({
+    baseUrl: '/api/lists',
+    entityName: 'list',
+    createSuccessMessage: 'List created',
+    updateSuccessMessage: 'List updated',
+    deleteSuccessMessage: 'List deleted',
+  })
 
-  const fetchLists = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/lists')
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to fetch lists')
-      }
-      const data = await res.json()
-      setLists(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchLists()
-  }, [fetchLists])
-
-  const createList = async (data: { name: string; color: string; emoji: string }) => {
-    try {
-      const res = await fetch('/api/lists', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to create list')
-      }
-      await fetchLists()
-      toast.success('List created')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      toast.error(message)
-      throw err
-    }
+  return {
+    lists: crud.data,
+    loading: crud.loading,
+    error: crud.error,
+    createList: crud.create,
+    updateList: crud.update,
+    deleteList: crud.remove,
+    refresh: crud.refresh,
   }
-
-  const updateList = async (id: string, data: Partial<{ name: string; color: string; emoji: string }>) => {
-    try {
-      const res = await fetch(`/api/lists/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to update list')
-      }
-      await fetchLists()
-      toast.success('List updated')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      toast.error(message)
-      throw err
-    }
-  }
-
-  const deleteList = async (id: string) => {
-    try {
-      const res = await fetch(`/api/lists/${id}`, { method: 'DELETE' })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to delete list')
-      }
-      await fetchLists()
-      toast.success('List deleted')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      toast.error(message)
-      throw err
-    }
-  }
-
-  return { lists, loading, error, createList, updateList, deleteList, refresh: fetchLists }
 }
 
 export function useLabels() {
-  const [labels, setLabels] = useState<Label[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const crud = useCrud<Label>({
+    baseUrl: '/api/labels',
+    entityName: 'label',
+    createSuccessMessage: 'Label created',
+    updateSuccessMessage: 'Label updated',
+    deleteSuccessMessage: 'Label deleted',
+  })
 
-  const fetchLabels = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/labels')
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to fetch labels')
-      }
-      const data = await res.json()
-      setLabels(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchLabels()
-  }, [fetchLabels])
-
-  const createLabel = async (data: { name: string; color: string; icon: string }) => {
-    try {
-      const res = await fetch('/api/labels', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to create label')
-      }
-      await fetchLabels()
-      toast.success('Label created')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      toast.error(message)
-      throw err
-    }
+  return {
+    labels: crud.data,
+    loading: crud.loading,
+    error: crud.error,
+    createLabel: crud.create,
+    updateLabel: crud.update,
+    deleteLabel: crud.remove,
+    refresh: crud.refresh,
   }
-
-  const updateLabel = async (id: string, data: Partial<{ name: string; color: string; icon: string }>) => {
-    try {
-      const res = await fetch(`/api/labels/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to update label')
-      }
-      await fetchLabels()
-      toast.success('Label updated')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      toast.error(message)
-      throw err
-    }
-  }
-
-  const deleteLabel = async (id: string) => {
-    try {
-      const res = await fetch(`/api/labels/${id}`, { method: 'DELETE' })
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}))
-        throw new Error(errData.error || 'Failed to delete label')
-      }
-      await fetchLabels()
-      toast.success('Label deleted')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      toast.error(message)
-      throw err
-    }
-  }
-
-  return { labels, loading, error, createLabel, updateLabel, deleteLabel, refresh: fetchLabels }
 }
 
 export function useSearch(query: string) {
