@@ -13,11 +13,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Task } from '@/lib/types'
 
 export default function Home() {
-  const { currentView, currentListId, selectedTaskId, setSelectedTaskId, sidebarOpen, showCompleted } = useApp()
+  const { currentView, currentListId, currentLabelId, selectedTaskId, setSelectedTaskId, sidebarOpen, showCompleted } = useApp()
   const { tasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, refresh } = useTasks(
     currentView,
     currentListId,
-    showCompleted
+    showCompleted,
+    currentLabelId
   )
   const { lists } = useLists()
   const { labels } = useLabels()

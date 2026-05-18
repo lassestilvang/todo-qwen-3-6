@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const view = searchParams.get('view') || 'all'
     const listId = searchParams.get('listId')
+    const labelId = searchParams.get('labelId')
     const showCompleted = searchParams.get('showCompleted') === 'true'
     const search = searchParams.get('search')
 
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(tasks)
     }
 
-    const tasks = taskRepository.findAll(view, listId, showCompleted)
+    const tasks = taskRepository.findAll(view, listId, showCompleted, labelId)
     return NextResponse.json(tasks)
   } catch (error: unknown) {
     console.error('Failed to fetch tasks:', error)

@@ -6,6 +6,7 @@ import { AppState, ViewType } from '@/lib/types'
 interface AppContextType extends AppState {
   setView: (view: ViewType) => void
   setListId: (listId: string | null) => void
+  setLabelId: (labelId: string | null) => void
   setSelectedTaskId: (taskId: string | null) => void
   toggleShowCompleted: () => void
   setSearchQuery: (query: string) => void
@@ -17,6 +18,7 @@ const AppContext = createContext<AppContextType | null>(null)
 export function AppProvider({ children }: { children: ReactNode }) {
   const [currentView, setCurrentView] = useState<ViewType>('today')
   const [currentListId, setCurrentListId] = useState<string | null>(null)
+  const [currentLabelId, setCurrentLabelId] = useState<string | null>(null)
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [showCompleted, setShowCompleted] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -24,6 +26,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setView = useCallback((view: ViewType) => {
     setCurrentView(view)
+    setCurrentListId(null)
+    setCurrentLabelId(null)
+  }, [])
+
+  const setListId = useCallback((listId: string | null) => {
+    setCurrentListId(listId)
+    setCurrentLabelId(null)
+  }, [])
+
+  const setLabelId = useCallback((labelId: string | null) => {
+    setCurrentLabelId(labelId)
     setCurrentListId(null)
   }, [])
 
@@ -38,12 +51,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppContextType>(() => ({
     currentView,
     currentListId,
+    currentLabelId,
     selectedTaskId,
     showCompleted,
     searchQuery,
     sidebarOpen,
     setView,
     setListId: setCurrentListId,
+    setLabelId,
     setSelectedTaskId,
     toggleShowCompleted,
     setSearchQuery,
@@ -51,11 +66,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }), [
     currentView,
     currentListId,
+    currentLabelId,
     selectedTaskId,
     showCompleted,
     searchQuery,
     sidebarOpen,
     setView,
+    setListId,
+    setLabelId,
     toggleShowCompleted,
     toggleSidebar,
   ])

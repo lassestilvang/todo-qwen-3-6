@@ -5,12 +5,13 @@ import { toast } from 'sonner'
 import { Task, TaskList, Label, ViewType } from '@/lib/types'
 import { useCrud } from './use-crud'
 
-export function useTasks(view: ViewType, listId: string | null, showCompleted: boolean) {
+export function useTasks(view: ViewType, listId: string | null, showCompleted: boolean, labelId: string | null = null) {
   const params: Record<string, string> = {
     view,
     showCompleted: showCompleted.toString(),
   }
   if (listId) params.listId = listId
+  if (labelId) params.labelId = labelId
 
   const { data: tasks, loading, error, create, update, remove, refresh, isMutating } = useCrud<Task>({
     baseUrl: '/api/tasks',

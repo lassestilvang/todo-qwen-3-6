@@ -98,7 +98,7 @@ interface LabelDbRow {
 }
 
 export const taskRepository = {
-  findAll(view: string, listId: string | null, showCompleted: boolean): Task[] {
+  findAll(view: string, listId: string | null, showCompleted: boolean, labelId: string | null = null): Task[] {
     const db = getDb()
     let query = `
       SELECT t.*, l.id as list_id, l.name as list_name, l.color as list_color, l.emoji as list_emoji
@@ -111,6 +111,11 @@ export const taskRepository = {
     if (listId) {
       conditions.push('t.list_id = ?')
       params.push(listId)
+    }
+
+    if (labelId) {
+      conditions.push('t.id IN (SELECT task_id FROM task_labels WHERE label_id = ?)')
+      params.push(labelId)
     }
 
     const today = new Date()

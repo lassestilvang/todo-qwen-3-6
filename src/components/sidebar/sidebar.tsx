@@ -37,7 +37,7 @@ const views = [
 ]
 
 export function Sidebar() {
-  const { currentView, currentListId, setView, setListId, sidebarOpen, toggleSidebar } = useApp()
+  const { currentView, currentListId, currentLabelId, setView, setListId, setLabelId, sidebarOpen, toggleSidebar } = useApp()
   const { lists, createList, deleteList } = useLists()
   const { labels } = useLabels()
   const [showCreateList, setShowCreateList] = useState(false)
@@ -205,7 +205,13 @@ export function Sidebar() {
                         {labels.map(label => (
                           <button
                             key={label.id}
-                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:bg-zinc-800/50 hover:text-white transition-colors"
+                            onClick={() => setLabelId(currentLabelId === label.id ? null : label.id)}
+                            className={cn(
+                              'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                              currentLabelId === label.id
+                                ? 'bg-zinc-800 text-white'
+                                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
+                            )}
                           >
                             <span
                               className="w-3 h-3 rounded-full"

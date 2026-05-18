@@ -99,6 +99,7 @@ export type ViewType = 'today' | 'week' | 'upcoming' | 'all'
 export interface AppState {
   currentView: ViewType
   currentListId: string | null
+  currentLabelId: string | null
   selectedTaskId: string | null
   showCompleted: boolean
   searchQuery: string
