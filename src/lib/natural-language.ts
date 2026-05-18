@@ -185,8 +185,8 @@ export function formatTimeDifference(date: Date): string {
   if (diffDays === 0) return 'Today'
   if (diffDays === 1) return 'Tomorrow'
   if (diffDays === -1) return 'Yesterday'
-  if (diffDays > 1 && diffDays <= 7) return `In ${diffDays} days`
+  if (diffDays > 1) return `In ${diffDays} days`
   if (diffDays < -1) return `${Math.abs(diffDays)} days overdue`
 
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
