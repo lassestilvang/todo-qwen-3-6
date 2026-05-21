@@ -23,6 +23,15 @@ interface UseCrudReturn<T> {
   refresh: () => Promise<void>
 }
 
+const cache = new Map<string, { data: unknown; timestamp: number }>()
+const CACHE_TTL = 30_000
+
+function getCacheKey(baseUrl: string, params?: Record<string, string>): string {
+  if (!params) return baseUrl
+  const sorted = Object.entries(params).sort(([a], [b]) => a.localeCompare(b))
+  return `${baseUrl}?${new URLSearchParams(sorted)}`
+}
+
 export function useCrud<T extends { id: string }>({
   baseUrl,
   entityName,
@@ -37,8 +46,19 @@ export function useCrud<T extends { id: string }>({
   const [isMutating, setIsMutating] = useState(false)
   const dataRef = useRef<T[]>([])
   const paramsString = JSON.stringify(fetchParams)
+  const cacheKey = getCacheKey(baseUrl, fetchParams)
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (forceRefresh = false) => {
+    const cached = cache.get(cacheKey)
+    const isStale = !cached || Date.now() - cached.timestamp > CACHE_TTL
+
+    if (!forceRefresh && cached && !isStale) {
+      setData(cached.data as T[])
+      dataRef.current = cached.data as T[]
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError(null)
     try {
@@ -53,17 +73,26 @@ export function useCrud<T extends { id: string }>({
       const result = await res.json()
       setData(result)
       dataRef.current = result
+      cache.set(cacheKey, { data: result, timestamp: Date.now() })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setLoading(false)
     }
-  }, [baseUrl, entityName, paramsString])
+  }, [baseUrl, entityName, paramsString, cacheKey])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData()
   }, [fetchData])
+
+  const invalidateCache = useCallback((prefix: string) => {
+    for (const key of cache.keys()) {
+      if (key.startsWith(prefix)) {
+        cache.delete(key)
+      }
+    }
+  }, [])
 
   const create = useCallback(async (itemData: Record<string, unknown>) => {
     if (isMutating) return
@@ -87,7 +116,8 @@ export function useCrud<T extends { id: string }>({
           .join(', ')
         throw new Error(details ? `${message}: ${details}` : message)
       }
-      await fetchData()
+      invalidateCache(baseUrl)
+      await fetchData(true)
       toast.success(createSuccessMessage || `${entityName} created`)
     } catch (err) {
       setData(dataRef.current)
@@ -98,7 +128,7 @@ export function useCrud<T extends { id: string }>({
     } finally {
       setIsMutating(false)
     }
-  }, [baseUrl, entityName, fetchData, createSuccessMessage, isMutating])
+  }, [baseUrl, entityName, fetchData, createSuccessMessage, isMutating, invalidateCache])
 
   const update = useCallback(async (id: string, itemData: Record<string, unknown>) => {
     if (isMutating) return
@@ -122,7 +152,8 @@ export function useCrud<T extends { id: string }>({
         const errData = await res.json().catch(() => ({}))
         throw new Error(errData.error || `Failed to update ${entityName}`)
       }
-      await fetchData()
+      invalidateCache(baseUrl)
+      await fetchData(true)
       toast.success(updateSuccessMessage || `${entityName} updated`)
     } catch (err) {
       setData(dataRef.current)
@@ -133,7 +164,7 @@ export function useCrud<T extends { id: string }>({
     } finally {
       setIsMutating(false)
     }
-  }, [baseUrl, entityName, fetchData, updateSuccessMessage, isMutating])
+  }, [baseUrl, entityName, fetchData, updateSuccessMessage, isMutating, invalidateCache])
 
   const remove = useCallback(async (id: string) => {
     if (isMutating) return
@@ -147,7 +178,8 @@ export function useCrud<T extends { id: string }>({
         const errData = await res.json().catch(() => ({}))
         throw new Error(errData.error || `Failed to delete ${entityName}`)
       }
-      await fetchData()
+      invalidateCache(baseUrl)
+      await fetchData(true)
       toast.success(deleteSuccessMessage || `${entityName} deleted`)
     } catch (err) {
       setData(dataRef.current)
@@ -158,7 +190,7 @@ export function useCrud<T extends { id: string }>({
     } finally {
       setIsMutating(false)
     }
-  }, [baseUrl, entityName, fetchData, deleteSuccessMessage, isMutating])
+  }, [baseUrl, entityName, fetchData, deleteSuccessMessage, isMutating, invalidateCache])
 
   return {
     data,
@@ -168,6 +200,6 @@ export function useCrud<T extends { id: string }>({
     create,
     update,
     remove,
-    refresh: fetchData,
+    refresh: () => fetchData(true),
   }
 }
