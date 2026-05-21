@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 
 interface UseCrudOptions<T> {
@@ -35,6 +35,8 @@ export function useCrud<T extends { id: string }>({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isMutating, setIsMutating] = useState(false)
+  const dataRef = useRef<T[]>([])
+  const paramsString = JSON.stringify(fetchParams)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -50,12 +52,13 @@ export function useCrud<T extends { id: string }>({
       }
       const result = await res.json()
       setData(result)
+      dataRef.current = result
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setLoading(false)
     }
-  }, [baseUrl, entityName, fetchParams])
+  }, [baseUrl, entityName, paramsString])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -65,6 +68,11 @@ export function useCrud<T extends { id: string }>({
   const create = useCallback(async (itemData: Record<string, unknown>) => {
     if (isMutating) return
     setIsMutating(true)
+
+    const tempId = `temp-${Date.now()}`
+    const optimisticItem = { ...itemData, id: tempId } as T
+    setData(prev => [...prev, optimisticItem])
+
     try {
       const res = await fetch(baseUrl, {
         method: 'POST',
@@ -82,6 +90,7 @@ export function useCrud<T extends { id: string }>({
       await fetchData()
       toast.success(createSuccessMessage || `${entityName} created`)
     } catch (err) {
+      setData(dataRef.current)
       const message = err instanceof Error ? err.message : 'Unknown error'
       setError(message)
       toast.error(message)
@@ -94,6 +103,15 @@ export function useCrud<T extends { id: string }>({
   const update = useCallback(async (id: string, itemData: Record<string, unknown>) => {
     if (isMutating) return
     setIsMutating(true)
+
+    setData(prev => {
+      const idx = prev.findIndex(item => item.id === id)
+      if (idx === -1) return prev
+      const updated = [...prev]
+      updated[idx] = { ...prev[idx], ...itemData } as T
+      return updated
+    })
+
     try {
       const res = await fetch(`${baseUrl}/${id}`, {
         method: 'PATCH',
@@ -107,6 +125,7 @@ export function useCrud<T extends { id: string }>({
       await fetchData()
       toast.success(updateSuccessMessage || `${entityName} updated`)
     } catch (err) {
+      setData(dataRef.current)
       const message = err instanceof Error ? err.message : 'Unknown error'
       setError(message)
       toast.error(message)
@@ -119,6 +138,9 @@ export function useCrud<T extends { id: string }>({
   const remove = useCallback(async (id: string) => {
     if (isMutating) return
     setIsMutating(true)
+
+    setData(prev => prev.filter(item => item.id !== id))
+
     try {
       const res = await fetch(`${baseUrl}/${id}`, { method: 'DELETE' })
       if (!res.ok) {
@@ -128,6 +150,7 @@ export function useCrud<T extends { id: string }>({
       await fetchData()
       toast.success(deleteSuccessMessage || `${entityName} deleted`)
     } catch (err) {
+      setData(dataRef.current)
       const message = err instanceof Error ? err.message : 'Unknown error'
       setError(message)
       toast.error(message)

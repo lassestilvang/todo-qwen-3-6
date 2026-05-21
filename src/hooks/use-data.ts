@@ -1,17 +1,20 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Task, TaskList, Label, ViewType } from '@/lib/types'
 import { useCrud } from './use-crud'
 
 export function useTasks(view: ViewType, listId: string | null, showCompleted: boolean, labelId: string | null = null) {
-  const params: Record<string, string> = {
-    view,
-    showCompleted: showCompleted.toString(),
-  }
-  if (listId) params.listId = listId
-  if (labelId) params.labelId = labelId
+  const params = useMemo(() => {
+    const p: Record<string, string> = {
+      view,
+      showCompleted: showCompleted.toString(),
+    }
+    if (listId) p.listId = listId
+    if (labelId) p.labelId = labelId
+    return p
+  }, [view, listId, showCompleted, labelId])
 
   const { data: tasks, loading, error, create, update, remove, refresh, isMutating } = useCrud<Task>({
     baseUrl: '/api/tasks',
