@@ -6,6 +6,7 @@ import { useTasks, useLists, useLabels } from '@/hooks/use-data'
 import { Sidebar } from '@/components/sidebar/sidebar'
 import { Header } from '@/components/layout/header'
 import { TaskList } from '@/components/tasks/task-list'
+import { TaskListSkeleton } from '@/components/tasks/task-list-skeleton'
 import { TaskForm } from '@/components/tasks/task-form'
 import { TaskDetail } from '@/components/tasks/task-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
@@ -86,9 +87,7 @@ export default function Home() {
         <div className="flex-1 flex min-h-0">
           <div className="flex-1 min-w-0">
             {loading ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="w-6 h-6 border-2 border-zinc-700 border-t-zinc-400 rounded-full animate-spin" />
-              </div>
+              <TaskListSkeleton />
             ) : error ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <p className="text-red-400">{error}</p>
