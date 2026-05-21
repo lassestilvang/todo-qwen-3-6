@@ -42,8 +42,10 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.15 }}
+      whileHover={{ scale: 1.005, transition: { duration: 0.1 } }}
+      whileTap={{ scale: 0.995 }}
       className={cn(
-        'group flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer',
+        'group flex items-start gap-3 p-3 rounded-xl border transition-colors cursor-pointer',
         isSelected
           ? 'bg-zinc-800/80 border-zinc-700 shadow-lg shadow-black/20'
           : 'bg-zinc-900/50 border-zinc-800/50 hover:bg-zinc-800/50 hover:border-zinc-700/50',
@@ -55,15 +57,20 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
       tabIndex={0}
     >
       <div className="pt-0.5" onClick={e => e.stopPropagation()}>
-        <Checkbox
-          checked={task.completed}
-          onCheckedChange={() => onToggle(task)}
-          className={cn(
-            'border-zinc-600 data-[state=checked]:bg-zinc-700 data-[state=checked]:border-zinc-500',
-            task.priority === 'high' && 'data-[state=checked]:bg-red-500/20 data-[state=checked]:border-red-500',
-            task.priority === 'medium' && 'data-[state=checked]:bg-amber-500/20 data-[state=checked]:border-amber-500',
-          )}
-        />
+        <motion.div
+          whileTap={{ scale: 0.85 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+        >
+          <Checkbox
+            checked={task.completed}
+            onCheckedChange={() => onToggle(task)}
+            className={cn(
+              'border-zinc-600 data-[state=checked]:bg-zinc-700 data-[state=checked]:border-zinc-500',
+              task.priority === 'high' && 'data-[state=checked]:bg-red-500/20 data-[state=checked]:border-red-500',
+              task.priority === 'medium' && 'data-[state=checked]:bg-amber-500/20 data-[state=checked]:border-amber-500',
+            )}
+          />
+        </motion.div>
       </div>
 
       <div className="flex-1 min-w-0">
@@ -116,14 +123,17 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
             </span>
           )}
 
-          {task.labels.map(label => (
-            <span
+          {task.labels.map((label, idx) => (
+            <motion.span
               key={label.id}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.03 }}
               className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full"
               style={{ backgroundColor: `${label.color}20`, color: label.color }}
             >
               {label.icon} {label.name}
-            </span>
+            </motion.span>
           ))}
         </div>
       </div>

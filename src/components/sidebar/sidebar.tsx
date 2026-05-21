@@ -97,8 +97,10 @@ export function Sidebar() {
                   const Icon = view.icon
                   const isActive = currentView === view.id && !currentListId
                   return (
-                    <button
+                    <motion.button
                       key={view.id}
+                      whileHover={{ x: 2 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => setView(view.id)}
                       className={cn(
                         'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
@@ -109,7 +111,7 @@ export function Sidebar() {
                     >
                       <Icon className="w-4 h-4" />
                       {view.label}
-                    </button>
+                    </motion.button>
                   )
                 })}
               </nav>
@@ -135,9 +137,17 @@ export function Sidebar() {
                       className="overflow-hidden"
                     >
                       <div className="space-y-0.5">
-                        {lists.map(list => (
-                          <div key={list.id} className="group flex items-center">
-                            <button
+                        {lists.map((list, idx) => (
+                          <motion.div
+                            key={list.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.03 }}
+                            className="group flex items-center"
+                          >
+                            <motion.button
+                              whileHover={{ x: 2 }}
+                              whileTap={{ scale: 0.98 }}
                               onClick={() => setListId(list.id)}
                               className={cn(
                                 'flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
@@ -148,7 +158,7 @@ export function Sidebar() {
                             >
                               <span>{list.emoji}</span>
                               <span className="truncate">{list.name}</span>
-                            </button>
+                            </motion.button>
                             {!list.isDefault && (
                               <DropdownMenu>
                                 <DropdownMenuTrigger className="opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-white transition-opacity">
@@ -165,7 +175,7 @@ export function Sidebar() {
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             )}
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
 
@@ -202,9 +212,14 @@ export function Sidebar() {
                       className="overflow-hidden"
                     >
                       <div className="space-y-0.5">
-                        {labels.map(label => (
-                          <button
+                        {labels.map((label, idx) => (
+                          <motion.button
                             key={label.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.03 }}
+                            whileHover={{ x: 2 }}
+                            whileTap={{ scale: 0.98 }}
                             onClick={() => setLabelId(currentLabelId === label.id ? null : label.id)}
                             className={cn(
                               'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
@@ -219,7 +234,7 @@ export function Sidebar() {
                             />
                             <span>{label.icon}</span>
                             <span className="truncate">{label.name}</span>
-                          </button>
+                          </motion.button>
                         ))}
                       </div>
                     </motion.div>
