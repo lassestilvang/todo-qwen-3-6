@@ -117,6 +117,34 @@ function initializeSchema(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
     CREATE INDEX IF NOT EXISTS idx_subtasks_task_id ON subtasks(task_id);
     CREATE INDEX IF NOT EXISTS idx_task_changes_task_id ON task_changes(task_id);
+
+    CREATE VIRTUAL TABLE IF NOT EXISTS tasks_fts USING fts5(
+      name,
+      description,
+      content='tasks',
+      content_rowid='rowid',
+      tokenize='unicode61'
+    );
+
+    CREATE TRIGGER IF NOT EXISTS tasks_fts_insert AFTER INSERT ON tasks
+    BEGIN
+      INSERT INTO tasks_fts(rowid, name, description)
+      VALUES (new.rowid, new.name, new.description);
+    END;
+
+    CREATE TRIGGER IF NOT EXISTS tasks_fts_delete AFTER DELETE ON tasks
+    BEGIN
+      INSERT INTO tasks_fts(tasks_fts, rowid, name, description)
+      VALUES('delete', old.rowid, old.name, old.description);
+    END;
+
+    CREATE TRIGGER IF NOT EXISTS tasks_fts_update AFTER UPDATE ON tasks
+    BEGIN
+      INSERT INTO tasks_fts(tasks_fts, rowid, name, description)
+      VALUES('delete', old.rowid, old.name, old.description);
+      INSERT INTO tasks_fts(rowid, name, description)
+      VALUES (new.rowid, new.name, new.description);
+    END;
   `)
 
   const inboxExists = database.prepare('SELECT id FROM lists WHERE is_default = 1').get()
@@ -125,6 +153,14 @@ function initializeSchema(database: Database.Database) {
       INSERT INTO lists (id, name, color, emoji, is_default, "order")
       VALUES (?, 'Inbox', '#6366f1', '📥', 1, 0)
     `).run('inbox')
+  }
+
+  const ftsNeedsRebuild = database.prepare("SELECT count(*) as count FROM tasks_fts WHERE tasks_fts = 'inst'").get()
+  if (ftsNeedsRebuild && (ftsNeedsRebuild as { count: number }).count === 0) {
+    const taskCount = database.prepare('SELECT COUNT(*) as count FROM tasks').get() as { count: number }
+    if (taskCount.count > 0) {
+      database.exec(`INSERT INTO tasks_fts(tasks_fts) VALUES('rebuild')`)
+    }
   }
 }
 

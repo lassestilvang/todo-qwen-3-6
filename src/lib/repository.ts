@@ -169,78 +169,7 @@ export const taskRepository = {
     const taskIds = rows.map(r => r.id)
     const placeholders = taskIds.map(() => '?').join(', ')
 
-    const labelsByTask = new Map<string, Label[]>()
-    const labelsRows = db.prepare(`
-      SELECT tl.task_id, lb.* FROM labels lb
-      INNER JOIN task_labels tl ON lb.id = tl.label_id
-      WHERE tl.task_id IN (${placeholders})
-    `).all(...taskIds) as LabelRow[]
-    for (const lr of labelsRows) {
-      const arr = labelsByTask.get(lr.task_id) || []
-      arr.push({
-        id: lr.id,
-        name: lr.name,
-        color: lr.color,
-        icon: lr.icon,
-        createdAt: lr.created_at,
-        updatedAt: lr.updated_at,
-      })
-      labelsByTask.set(lr.task_id, arr)
-    }
-
-    const subTasksByTask = new Map<string, SubTask[]>()
-    const subTasksRows = db.prepare(`
-      SELECT * FROM subtasks WHERE task_id IN (${placeholders}) ORDER BY "order" ASC
-    `).all(...taskIds) as SubTaskRow[]
-    for (const st of subTasksRows) {
-      const arr = subTasksByTask.get(st.task_id) || []
-      arr.push({
-        id: st.id,
-        taskId: st.task_id,
-        name: st.name,
-        completed: st.completed === 1,
-        order: st.order,
-        createdAt: st.created_at,
-        updatedAt: st.updated_at,
-      })
-      subTasksByTask.set(st.task_id, arr)
-    }
-
-    const remindersByTask = new Map<string, Reminder[]>()
-    const remindersRows = db.prepare(`
-      SELECT * FROM reminders WHERE task_id IN (${placeholders})
-    `).all(...taskIds) as ReminderRow[]
-    for (const r of remindersRows) {
-      const arr = remindersByTask.get(r.task_id) || []
-      arr.push({
-        id: r.id,
-        taskId: r.task_id,
-        type: r.type,
-        time: r.time,
-        createdAt: r.created_at,
-      })
-      remindersByTask.set(r.task_id, arr)
-    }
-
-    const attachmentsByTask = new Map<string, Attachment[]>()
-    const attachmentsRows = db.prepare(`
-      SELECT * FROM attachments WHERE task_id IN (${placeholders})
-    `).all(...taskIds) as AttachmentRow[]
-    for (const a of attachmentsRows) {
-      const arr = attachmentsByTask.get(a.task_id) || []
-      arr.push({
-        id: a.id,
-        taskId: a.task_id,
-        name: a.name,
-        url: a.url,
-        size: a.size,
-        mimeType: a.mimeType,
-        createdAt: a.created_at,
-      })
-      attachmentsByTask.set(a.task_id, arr)
-    }
-
-    return rows.map(row => mapTaskRowWithRelations(row, labelsByTask, subTasksByTask, remindersByTask, attachmentsByTask))
+    return batchLoadTaskRelations(db, rows, taskIds, placeholders)
   },
 
   findById(id: string): Task | null {
@@ -325,100 +254,47 @@ export const taskRepository = {
 
   search(query: string): Task[] {
     const db = getDb()
-    const escapedQuery = query.replace(/([%_])/g, '\\$1')
-    const searchQuery = `%${escapedQuery}%`
-    const rows = db.prepare(`
-      SELECT DISTINCT t.*, l.id as list_id, l.name as list_name, l.color as list_color, l.emoji as list_emoji
-      FROM tasks t
-      LEFT JOIN lists l ON t.list_id = l.id
-      LEFT JOIN task_labels tl ON t.id = tl.task_id
-      LEFT JOIN labels lb ON tl.label_id = lb.id
-      LEFT JOIN subtasks st ON t.id = st.task_id
-       WHERE t.name LIKE ? ESCAPE '\\'
-         OR t.description LIKE ? ESCAPE '\\'
-         OR lb.name LIKE ? ESCAPE '\\'
-         OR st.name LIKE ? ESCAPE '\\'
-      ORDER BY t.created_at DESC
+
+    const ftsRows = db.prepare(`
+      SELECT DISTINCT t.id
+      FROM tasks_fts f
+      JOIN tasks t ON t.rowid = f.rowid
+      WHERE tasks_fts MATCH ?
+      ORDER BY rank
       LIMIT 50
-    `).all(searchQuery, searchQuery, searchQuery, searchQuery) as TaskRow[]
+    `).all(query) as { id: string }[]
 
-    if (rows.length === 0) return []
+    if (ftsRows.length === 0) {
+      const escapedQuery = query.replace(/([%_])/g, '\\$1')
+      const searchQuery = `%${escapedQuery}%`
+      const fallbackRows = db.prepare(`
+        SELECT DISTINCT t.*
+        FROM tasks t
+        WHERE t.name LIKE ? ESCAPE '\\'
+          OR t.description LIKE ? ESCAPE '\\'
+        ORDER BY t.created_at DESC
+        LIMIT 50
+      `).all(searchQuery, searchQuery) as TaskRow[]
 
-    const taskIds = rows.map(r => r.id)
+      if (fallbackRows.length === 0) return []
+
+      const taskIds = fallbackRows.map(r => r.id)
+      const placeholders = taskIds.map(() => '?').join(', ')
+      return batchLoadTaskRelations(db, fallbackRows, taskIds, placeholders)
+    }
+
+    const taskIds = ftsRows.map(r => r.id)
     const placeholders = taskIds.map(() => '?').join(', ')
 
-    const labelsByTask = new Map<string, Label[]>()
-    const labelsRows = db.prepare(`
-      SELECT tl.task_id, lb.* FROM labels lb
-      INNER JOIN task_labels tl ON lb.id = tl.label_id
-      WHERE tl.task_id IN (${placeholders})
-    `).all(...taskIds) as LabelRow[]
-    for (const lr of labelsRows) {
-      const arr = labelsByTask.get(lr.task_id) || []
-      arr.push({
-        id: lr.id,
-        name: lr.name,
-        color: lr.color,
-        icon: lr.icon,
-        createdAt: lr.created_at,
-        updatedAt: lr.updated_at,
-      })
-      labelsByTask.set(lr.task_id, arr)
-    }
+    const rows = db.prepare(`
+      SELECT t.*, l.id as list_id, l.name as list_name, l.color as list_color, l.emoji as list_emoji
+      FROM tasks t
+      LEFT JOIN lists l ON t.list_id = l.id
+      WHERE t.id IN (${placeholders})
+      ORDER BY t.created_at DESC
+    `).all(...taskIds) as TaskRow[]
 
-    const subTasksByTask = new Map<string, SubTask[]>()
-    const subTasksRows = db.prepare(`
-      SELECT * FROM subtasks WHERE task_id IN (${placeholders}) ORDER BY "order" ASC
-    `).all(...taskIds) as SubTaskRow[]
-    for (const st of subTasksRows) {
-      const arr = subTasksByTask.get(st.task_id) || []
-      arr.push({
-        id: st.id,
-        taskId: st.task_id,
-        name: st.name,
-        completed: st.completed === 1,
-        order: st.order,
-        createdAt: st.created_at,
-        updatedAt: st.updated_at,
-      })
-      subTasksByTask.set(st.task_id, arr)
-    }
-
-    const remindersByTask = new Map<string, Reminder[]>()
-    const remindersRows = db.prepare(`
-      SELECT * FROM reminders WHERE task_id IN (${placeholders})
-    `).all(...taskIds) as ReminderRow[]
-    for (const r of remindersRows) {
-      const arr = remindersByTask.get(r.task_id) || []
-      arr.push({
-        id: r.id,
-        taskId: r.task_id,
-        type: r.type,
-        time: r.time,
-        createdAt: r.created_at,
-      })
-      remindersByTask.set(r.task_id, arr)
-    }
-
-    const attachmentsByTask = new Map<string, Attachment[]>()
-    const attachmentsRows = db.prepare(`
-      SELECT * FROM attachments WHERE task_id IN (${placeholders})
-    `).all(...taskIds) as AttachmentRow[]
-    for (const a of attachmentsRows) {
-      const arr = attachmentsByTask.get(a.task_id) || []
-      arr.push({
-        id: a.id,
-        taskId: a.task_id,
-        name: a.name,
-        url: a.url,
-        size: a.size,
-        mimeType: a.mimeType,
-        createdAt: a.created_at,
-      })
-      attachmentsByTask.set(a.task_id, arr)
-    }
-
-    return rows.map(row => mapTaskRowWithRelations(row, labelsByTask, subTasksByTask, remindersByTask, attachmentsByTask))
+    return batchLoadTaskRelations(db, rows, taskIds, placeholders)
   },
 
   create(data: {
@@ -613,6 +489,86 @@ export const taskRepository = {
     const result = db.prepare(query).get(...params) as CountRow
     return result.count
   },
+}
+
+function batchLoadTaskRelations(
+  db: ReturnType<typeof getDb>,
+  rows: TaskRow[],
+  taskIds: string[],
+  placeholders: string
+): Task[] {
+  const labelsByTask = new Map<string, Label[]>()
+  const labelsRows = db.prepare(`
+    SELECT tl.task_id, lb.* FROM labels lb
+    INNER JOIN task_labels tl ON lb.id = tl.label_id
+    WHERE tl.task_id IN (${placeholders})
+  `).all(...taskIds) as LabelRow[]
+  for (const lr of labelsRows) {
+    const arr = labelsByTask.get(lr.task_id) || []
+    arr.push({
+      id: lr.id,
+      name: lr.name,
+      color: lr.color,
+      icon: lr.icon,
+      createdAt: lr.created_at,
+      updatedAt: lr.updated_at,
+    })
+    labelsByTask.set(lr.task_id, arr)
+  }
+
+  const subTasksByTask = new Map<string, SubTask[]>()
+  const subTasksRows = db.prepare(`
+    SELECT * FROM subtasks WHERE task_id IN (${placeholders}) ORDER BY "order" ASC
+  `).all(...taskIds) as SubTaskRow[]
+  for (const st of subTasksRows) {
+    const arr = subTasksByTask.get(st.task_id) || []
+    arr.push({
+      id: st.id,
+      taskId: st.task_id,
+      name: st.name,
+      completed: st.completed === 1,
+      order: st.order,
+      createdAt: st.created_at,
+      updatedAt: st.updated_at,
+    })
+    subTasksByTask.set(st.task_id, arr)
+  }
+
+  const remindersByTask = new Map<string, Reminder[]>()
+  const remindersRows = db.prepare(`
+    SELECT * FROM reminders WHERE task_id IN (${placeholders})
+  `).all(...taskIds) as ReminderRow[]
+  for (const r of remindersRows) {
+    const arr = remindersByTask.get(r.task_id) || []
+    arr.push({
+      id: r.id,
+      taskId: r.task_id,
+      type: r.type,
+      time: r.time,
+      createdAt: r.created_at,
+    })
+    remindersByTask.set(r.task_id, arr)
+  }
+
+  const attachmentsByTask = new Map<string, Attachment[]>()
+  const attachmentsRows = db.prepare(`
+    SELECT * FROM attachments WHERE task_id IN (${placeholders})
+  `).all(...taskIds) as AttachmentRow[]
+  for (const a of attachmentsRows) {
+    const arr = attachmentsByTask.get(a.task_id) || []
+    arr.push({
+      id: a.id,
+      taskId: a.task_id,
+      name: a.name,
+      url: a.url,
+      size: a.size,
+      mimeType: a.mimeType,
+      createdAt: a.created_at,
+    })
+    attachmentsByTask.set(a.task_id, arr)
+  }
+
+  return rows.map(row => mapTaskRowWithRelations(row, labelsByTask, subTasksByTask, remindersByTask, attachmentsByTask))
 }
 
 function mapTaskRow(row: TaskRow, db: ReturnType<typeof getDb>): Task {
