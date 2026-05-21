@@ -14,6 +14,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { isBefore, startOfDay } from 'date-fns'
+import { memo } from 'react'
 
 interface TaskItemProps {
   task: Task
@@ -22,7 +23,7 @@ interface TaskItemProps {
   isSelected: boolean
 }
 
-export function TaskItem({ task, onToggle, onSelect, isSelected }: TaskItemProps) {
+function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemProps) {
   const isOverdue = task.date && !task.completed && isBefore(new Date(task.date), startOfDay(new Date()))
   const completedSubtasks = task.subTasks.filter(st => st.completed).length
   const totalSubtasks = task.subTasks.length
@@ -36,7 +37,7 @@ export function TaskItem({ task, onToggle, onSelect, isSelected }: TaskItemProps
 
   return (
     <motion.div
-      layout
+      layout={isSelected}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
@@ -44,7 +45,7 @@ export function TaskItem({ task, onToggle, onSelect, isSelected }: TaskItemProps
       className={cn(
         'group flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer',
         isSelected
-          ? 'bg-zinc-800/80 border-zinc-700'
+          ? 'bg-zinc-800/80 border-zinc-700 shadow-lg shadow-black/20'
           : 'bg-zinc-900/50 border-zinc-800/50 hover:bg-zinc-800/50 hover:border-zinc-700/50',
         task.completed && 'opacity-60'
       )}
@@ -129,3 +130,5 @@ export function TaskItem({ task, onToggle, onSelect, isSelected }: TaskItemProps
     </motion.div>
   )
 }
+
+export const TaskItem = memo(TaskItemComponent)
