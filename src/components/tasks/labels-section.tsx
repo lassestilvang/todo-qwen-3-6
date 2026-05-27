@@ -14,7 +14,7 @@ interface LabelsSectionProps {
 export function LabelsSection({ labels, selectedLabels, onToggle }: LabelsSectionProps) {
   return (
     <div>
-      <UILabel className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+      <UILabel className="text-sm font-medium text-muted-foreground flex items-center gap-2">
         <Tag className="w-4 h-4" />
         Labels
       </UILabel>
@@ -27,10 +27,10 @@ export function LabelsSection({ labels, selectedLabels, onToggle }: LabelsSectio
             aria-pressed={selectedLabels.includes(label.id)}
             aria-label={`${selectedLabels.includes(label.id) ? 'Remove' : 'Add'} label: ${label.name}`}
             className={cn(
-              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-all',
+              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-all cursor-pointer font-medium',
               selectedLabels.includes(label.id)
-                ? 'ring-1 ring-white/20'
-                : 'opacity-50 hover:opacity-75'
+                ? 'ring-1 ring-border/50 shadow-sm'
+                : 'opacity-55 hover:opacity-85'
             )}
             style={{
               backgroundColor: selectedLabels.includes(label.id) ? `${label.color}30` : `${label.color}15`,
@@ -44,3 +44,4 @@ export function LabelsSection({ labels, selectedLabels, onToggle }: LabelsSectio
     </div>
   )
 }
+
