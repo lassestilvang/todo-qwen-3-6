@@ -13,7 +13,7 @@ interface RecurringSectionProps {
 export function RecurringSection({ recurringRule, onChange }: RecurringSectionProps) {
   return (
     <div>
-      <UILabel className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+      <UILabel className="text-sm font-medium text-muted-foreground flex items-center gap-2">
         <Repeat className="w-4 h-4" />
         Recurring
       </UILabel>
@@ -27,10 +27,10 @@ export function RecurringSection({ recurringRule, onChange }: RecurringSectionPr
           }
         }}
       >
-        <SelectTrigger className="mt-1.5 bg-zinc-800/50 border-zinc-700 text-white">
+        <SelectTrigger className="mt-1.5 bg-secondary/50 border-border text-foreground">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
+        <SelectContent className="bg-card border-border text-foreground">
           <SelectItem value="none">No recurrence</SelectItem>
           <SelectItem value="daily">Every day</SelectItem>
           <SelectItem value="weekly">Every week</SelectItem>
@@ -43,3 +43,4 @@ export function RecurringSection({ recurringRule, onChange }: RecurringSectionPr
     </div>
   )
 }
+
