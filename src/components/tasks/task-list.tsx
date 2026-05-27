@@ -26,7 +26,8 @@ export function TaskList({ tasks, onToggle, onSelect, selectedTaskId }: TaskList
   }
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto custom-scrollbar scroller">
+      <div className="indicator-top" />
       <div className="space-y-2.5 p-4 pr-3">
         <AnimatePresence mode="popLayout">
           {tasks.map(task => (
@@ -40,7 +41,9 @@ export function TaskList({ tasks, onToggle, onSelect, selectedTaskId }: TaskList
           ))}
         </AnimatePresence>
       </div>
+      <div className="indicator-bottom" />
     </div>
   )
 }
+
 
