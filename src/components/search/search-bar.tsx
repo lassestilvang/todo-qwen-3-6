@@ -37,19 +37,19 @@ export function SearchBar() {
   return (
     <div className="relative">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
         <Input
           ref={inputRef}
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           placeholder="Search tasks... (⌘K)"
-          className="pl-9 pr-8 bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-600 h-9 text-sm"
+          className="pl-9 pr-8 bg-secondary/50 border-border text-foreground placeholder:text-muted-foreground/60 h-9 text-sm"
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => setSearchQuery('')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -62,12 +62,12 @@ export function SearchBar() {
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="absolute top-full left-0 right-0 mt-2 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl z-50 max-h-80 overflow-hidden"
+            className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl z-50 max-h-80 overflow-hidden"
           >
             {loading ? (
-              <div className="p-4 text-center text-zinc-500 text-sm">Searching...</div>
+              <div className="p-4 text-center text-muted-foreground text-sm">Searching...</div>
             ) : results.length === 0 ? (
-              <div className="p-4 text-center text-zinc-500 text-sm">No results found</div>
+              <div className="p-4 text-center text-muted-foreground text-sm">No results found</div>
             ) : (
               <div className="py-2">
                 {results.map(task => (
@@ -75,11 +75,11 @@ export function SearchBar() {
                     type="button"
                     key={task.id}
                     onClick={() => handleSelect(task)}
-                    className="w-full px-4 py-2.5 text-left hover:bg-zinc-800 transition-colors"
+                    className="w-full px-4 py-2.5 text-left hover:bg-secondary/60 transition-colors"
                   >
-                    <p className="text-sm text-white truncate">{task.name}</p>
+                    <p className="text-sm text-foreground truncate font-medium">{task.name}</p>
                     {task.description && (
-                      <p className="text-xs text-zinc-500 truncate mt-0.5">{task.description}</p>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">{task.description}</p>
                     )}
                   </button>
                 ))}
@@ -91,3 +91,4 @@ export function SearchBar() {
     </div>
   )
 }
+
