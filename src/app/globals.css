@@ -127,3 +127,67 @@
     @apply font-sans;
   }
 }
+
+/* Custom premium scrollbar utility */
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 9999px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
+}
+
+/* Container scroll state queries for scroll shadow indications */
+@utility scroller {
+  overflow-y: auto;
+  container-type: scroll-state;
+  position: relative;
+}
+
+@utility indicator-top {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: linear-gradient(to bottom, var(--background), transparent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@utility indicator-bottom {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: linear-gradient(to top, var(--background), transparent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@container scroll-state(scrollable: top) {
+  .indicator-top {
+    opacity: 1;
+  }
+}
+
+@container scroll-state(scrollable: bottom) {
+  .indicator-bottom {
+    opacity: 1;
+  }
+}
+
