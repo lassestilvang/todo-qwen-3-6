@@ -80,12 +80,14 @@ export function Sidebar() {
         initial={false}
         animate={{ width: sidebarOpen ? 280 : 0, opacity: sidebarOpen ? 1 : 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed left-0 top-0 h-full bg-zinc-950 border-r border-zinc-800 z-40 overflow-hidden"
+        className="fixed left-0 top-0 h-full bg-card/65 backdrop-blur-md border-r border-border z-40 overflow-hidden"
       >
         <div className="w-[280px] h-full flex flex-col">
-          <div className="p-4 flex items-center justify-between border-b border-zinc-800">
-            <h1 className="text-lg font-semibold text-white">Task Planner</h1>
-            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="text-zinc-400 hover:text-white">
+          <div className="p-4 flex items-center justify-between border-b border-border">
+            <h1 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+              Task Planner
+            </h1>
+            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="text-muted-foreground hover:text-foreground">
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
@@ -105,8 +107,8 @@ export function Sidebar() {
                       className={cn(
                         'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
                         isActive
-                          ? 'bg-zinc-800 text-white'
-                          : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
+                          ? 'bg-secondary text-foreground font-medium shadow-sm border border-border/20'
+                          : 'text-muted-foreground hover:bg-secondary/40 hover:text-foreground'
                       )}
                     >
                       <Icon className="w-4 h-4" />
@@ -116,12 +118,12 @@ export function Sidebar() {
                 })}
               </nav>
 
-              <Separator className="my-4 bg-zinc-800" />
+              <Separator className="my-4 bg-border/60" />
 
               <div>
                 <button
                   onClick={() => setListsExpanded(!listsExpanded)}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-zinc-500 uppercase tracking-wider"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
                 >
                   <span>Lists</span>
                   {listsExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
@@ -152,8 +154,8 @@ export function Sidebar() {
                               className={cn(
                                 'flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
                                 currentListId === list.id
-                                  ? 'bg-zinc-800 text-white'
-                                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
+                                  ? 'bg-secondary text-foreground font-medium shadow-sm border border-border/20'
+                                  : 'text-muted-foreground hover:bg-secondary/40 hover:text-foreground'
                               )}
                             >
                               <span>{list.emoji}</span>
@@ -161,13 +163,13 @@ export function Sidebar() {
                             </motion.button>
                             {!list.isDefault && (
                               <DropdownMenu>
-                                <DropdownMenuTrigger className="opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-white transition-opacity">
+                                <DropdownMenuTrigger className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground transition-opacity">
                                   <MoreHorizontal className="w-4 h-4" />
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-zinc-800 border-zinc-700">
+                                <DropdownMenuContent align="end" className="bg-card border-border">
                                   <DropdownMenuItem
                                     onClick={() => setDeleteListId(list.id)}
-                                    className="text-red-400"
+                                    className="text-red-400 focus:bg-destructive/10 focus:text-red-400"
                                   >
                                     <Trash2 className="w-4 h-4 mr-2" />
                                     Delete
@@ -181,7 +183,7 @@ export function Sidebar() {
 
                       <button
                         onClick={() => setShowCreateList(true)}
-                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-800/50 transition-colors mt-1"
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-colors mt-1"
                       >
                         <Plus className="w-4 h-4" />
                         Add List
@@ -191,12 +193,12 @@ export function Sidebar() {
                 </AnimatePresence>
               </div>
 
-              <Separator className="my-4 bg-zinc-800" />
+              <Separator className="my-4 bg-border/60" />
 
               <div>
                 <button
                   onClick={() => setLabelsExpanded(!labelsExpanded)}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-zinc-500 uppercase tracking-wider"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
                 >
                   <span>Labels</span>
                   {labelsExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
@@ -224,8 +226,8 @@ export function Sidebar() {
                             className={cn(
                               'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
                               currentLabelId === label.id
-                                ? 'bg-zinc-800 text-white'
-                                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
+                                ? 'bg-secondary text-foreground font-medium shadow-sm border border-border/20'
+                                : 'text-muted-foreground hover:bg-secondary/40 hover:text-foreground'
                             )}
                           >
                             <span
@@ -243,6 +245,7 @@ export function Sidebar() {
               </div>
             </div>
           </ScrollArea>
+
         </div>
       </motion.aside>
 
