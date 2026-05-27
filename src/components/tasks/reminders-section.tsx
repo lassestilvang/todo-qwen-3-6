@@ -24,11 +24,11 @@ export function RemindersSection({ reminders, onAdd, onUpdate, onRemove }: Remin
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <UILabel className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+        <UILabel className="text-sm font-medium text-muted-foreground flex items-center gap-2">
           <Bell className="w-4 h-4" />
           Reminders
         </UILabel>
-        <Button type="button" variant="ghost" size="sm" onClick={onAdd} className="text-zinc-400 hover:text-white h-7">
+        <Button type="button" variant="ghost" size="sm" onClick={onAdd} className="text-muted-foreground hover:text-foreground h-7">
           <Plus className="w-3.5 h-3.5 mr-1" />
           Add
         </Button>
@@ -40,10 +40,10 @@ export function RemindersSection({ reminders, onAdd, onUpdate, onRemove }: Remin
               value={reminder.type}
               onValueChange={(v) => { if (v) onUpdate(index, 'type', v) }}
             >
-              <SelectTrigger className="w-32 bg-zinc-800/50 border-zinc-700 text-white text-sm h-8">
+              <SelectTrigger className="w-32 bg-secondary/50 border-border text-foreground text-sm h-8">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-800 border-zinc-700">
+              <SelectContent className="bg-card border-border text-foreground">
                 <SelectItem value="notification">Notification</SelectItem>
                 <SelectItem value="email">Email</SelectItem>
               </SelectContent>
@@ -57,14 +57,14 @@ export function RemindersSection({ reminders, onAdd, onUpdate, onRemove }: Remin
                   onUpdate(index, 'time', parsed.toISOString())
                 }
               }}
-              className="flex-1 bg-zinc-800/50 border-zinc-700 text-white text-sm h-8"
+              className="flex-1 bg-secondary/50 border-border text-foreground text-sm h-8"
             />
             <Button
               type="button"
               variant="ghost"
               size="icon"
               onClick={() => onRemove(index)}
-              className="h-8 w-8 text-zinc-500 hover:text-red-400"
+              className="h-8 w-8 text-muted-foreground hover:text-red-400"
             >
               <X className="w-3.5 h-3.5" />
             </Button>
@@ -74,3 +74,4 @@ export function RemindersSection({ reminders, onAdd, onUpdate, onRemove }: Remin
     </div>
   )
 }
+
