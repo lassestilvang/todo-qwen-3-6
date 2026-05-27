@@ -35,6 +35,27 @@ interface TaskDetailProps {
 export function TaskDetail({ task, onClose, onDelete, onEdit, onUpdate }: TaskDetailProps) {
   const [changes, setChanges] = useState<TaskChange[]>([])
   const [loadingChanges, setLoadingChanges] = useState(false)
+  const [newSubTaskName, setNewSubTaskName] = useState('')
+
+  const handleAddSubTask = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newSubTaskName.trim() || !onUpdate) return
+
+    const newSubTask = {
+      id: crypto.randomUUID(),
+      taskId: task.id,
+      name: newSubTaskName.trim(),
+      completed: false,
+      order: task.subTasks.length,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    await onUpdate(task.id, {
+      subTasks: [...task.subTasks, newSubTask],
+    })
+    setNewSubTaskName('')
+  }
 
   const handleToggleSubTask = async (subTaskId: string) => {
     if (!onUpdate) return
@@ -183,14 +204,15 @@ export function TaskDetail({ task, onClose, onDelete, onEdit, onUpdate }: TaskDe
                 </>
               )}
 
-              {task.subTasks.length > 0 && (
-                <>
-                  <Separator className="bg-border/60" />
-                  <div>
-                    <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium">
-                      <ListChecks className="w-3 h-3" /> Subtasks ({completedSubtasks}/{task.subTasks.length})
-                    </p>
-                    <div className="space-y-2">
+              <>
+                <Separator className="bg-border/60" />
+                <div>
+                  <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium">
+                    <ListChecks className="w-3 h-3" /> Subtasks ({completedSubtasks}/{task.subTasks.length})
+                  </p>
+                  
+                  {task.subTasks.length > 0 && (
+                    <div className="space-y-2 mb-3">
                       {task.subTasks.map(subTask => (
                         <button
                           key={subTask.id}
@@ -207,9 +229,28 @@ export function TaskDetail({ task, onClose, onDelete, onEdit, onUpdate }: TaskDe
                         </button>
                       ))}
                     </div>
-                  </div>
-                </>
-              )}
+                  )}
+
+                  {onUpdate && (
+                    <form onSubmit={handleAddSubTask} className="flex gap-2 mt-2">
+                      <input
+                        type="text"
+                        value={newSubTaskName}
+                        onChange={e => setNewSubTaskName(e.target.value)}
+                        placeholder="Add a subtask..."
+                        className="flex-1 bg-secondary/40 border border-border/50 text-xs rounded-lg px-2.5 py-1 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                      />
+                      <Button
+                        type="submit"
+                        disabled={!newSubTaskName.trim()}
+                        className="h-7 px-2.5 text-xs bg-secondary text-foreground hover:bg-secondary/80 border border-border/40"
+                      >
+                        Add
+                      </Button>
+                    </form>
+                  )}
+                </div>
+              </>
 
               {task.reminders.length > 0 && (
                 <>
