@@ -162,11 +162,11 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-full">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full bg-card">
       <ScrollArea className="flex-1">
         <div className="p-6 space-y-6">
           <div>
-            <UILabel htmlFor="task-name" className="text-sm font-medium text-zinc-300">
+            <UILabel htmlFor="task-name" className="text-sm font-medium text-muted-foreground">
               Task Name <span className="text-red-400">*</span>
             </UILabel>
             <div className="flex gap-2 mt-1.5">
@@ -177,7 +177,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
                 onBlur={handleNameBlur}
                 placeholder="What needs to be done? (e.g., Meeting tomorrow at 3pm !high)"
                 className={cn(
-                  'flex-1 bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-600',
+                  'flex-1 bg-secondary/50 border-border text-foreground placeholder:text-muted-foreground/60',
                   errors.name && 'border-red-500'
                 )}
                 autoFocus
@@ -188,22 +188,22 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
                   variant="outline"
                   size="sm"
                   onClick={applyParsedFields}
-                  className="border-zinc-700 text-zinc-300 shrink-0 h-9"
+                  className="border-border text-muted-foreground hover:text-foreground shrink-0 h-9"
                   title="Apply parsed date and priority"
                 >
-                  <Sparkles className="w-3.5 h-3.5 mr-1" />
+                  <Sparkles className="w-3.5 h-3.5 mr-1 text-indigo-400" />
                   Apply
                 </Button>
               )}
             </div>
             {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
             {parsedPreview && (
-              <p className="text-zinc-500 text-xs mt-1">
+              <p className="text-muted-foreground text-xs mt-1 font-medium">
                 Detected:{' '}
                 {parsedPreview.date && `Date: ${format(parsedPreview.date, 'PPP')}`}
                 {parsedPreview.date && parsedPreview.priority && ', '}
                 {parsedPreview.priority && `Priority: ${parsedPreview.priority}`}
-                <button type="button" onClick={applyParsedFields} className="text-blue-400 hover:text-blue-300 ml-1">
+                <button type="button" onClick={applyParsedFields} className="text-indigo-400 hover:text-indigo-300 font-semibold ml-1">
                   (click Apply to fill in)
                 </button>
               </p>
@@ -211,7 +211,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
           </div>
 
           <div>
-            <UILabel htmlFor="task-description" className="text-sm font-medium text-zinc-300">
+            <UILabel htmlFor="task-description" className="text-sm font-medium text-muted-foreground">
               Description
             </UILabel>
             <Textarea
@@ -219,18 +219,18 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Add details..."
-              className="mt-1.5 bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-600 min-h-[100px] resize-none"
+              className="mt-1.5 bg-secondary/50 border-border text-foreground placeholder:text-muted-foreground/60 min-h-[100px] resize-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <UILabel className="text-sm font-medium text-zinc-300">List</UILabel>
+              <UILabel className="text-sm font-medium text-muted-foreground">List</UILabel>
               <Select value={listId} onValueChange={(v) => setListId(v || '')}>
-                <SelectTrigger className="mt-1.5 bg-zinc-800/50 border-zinc-700 text-white">
+                <SelectTrigger className="mt-1.5 bg-secondary/50 border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
+                <SelectContent className="bg-card border-border text-foreground">
                   {lists.map(list => (
                     <SelectItem key={list.id} value={list.id}>
                       {list.emoji} {list.name}
@@ -241,16 +241,16 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
             </div>
 
             <div>
-              <UILabel className="text-sm font-medium text-zinc-300">Priority</UILabel>
+              <UILabel className="text-sm font-medium text-muted-foreground">Priority</UILabel>
               <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
-                <SelectTrigger className="mt-1.5 bg-zinc-800/50 border-zinc-700 text-white">
+                <SelectTrigger className="mt-1.5 bg-secondary/50 border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-800 border-zinc-700 text-white">
+                <SelectContent className="bg-card border-border text-foreground">
                   <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="low"><span className="text-blue-400">Low</span></SelectItem>
-                  <SelectItem value="medium"><span className="text-amber-400">Medium</span></SelectItem>
-                  <SelectItem value="high"><span className="text-red-400">High</span></SelectItem>
+                  <SelectItem value="low"><span className="text-blue-400 font-medium">Low</span></SelectItem>
+                  <SelectItem value="medium"><span className="text-amber-400 font-medium">Medium</span></SelectItem>
+                  <SelectItem value="high"><span className="text-red-400 font-medium">High</span></SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -258,46 +258,46 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <UILabel className="text-sm font-medium text-zinc-300">Date</UILabel>
+              <UILabel className="text-sm font-medium text-muted-foreground">Date</UILabel>
               <Popover>
                 <PopoverTrigger
                   className={cn(
-                    'w-full mt-1.5 inline-flex items-center justify-start gap-2 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white transition-colors',
-                    !date && 'text-zinc-500'
+                    'w-full mt-1.5 inline-flex items-center justify-start gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground transition-colors',
+                    !date && 'text-muted-foreground/60'
                   )}
                 >
-                  <CalendarIcon className="w-4 h-4" />
+                  <CalendarIcon className="w-4 h-4 text-muted-foreground/60" />
                   {date ? format(date, 'PPP') : 'Pick a date'}
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-zinc-800 border-zinc-700" align="start">
+                <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
                   <Calendar
                     mode="single"
                     selected={date}
                     onSelect={setDate}
-                    className="bg-zinc-800 text-white"
+                    className="bg-card text-foreground"
                   />
                 </PopoverContent>
               </Popover>
             </div>
 
             <div>
-              <UILabel className="text-sm font-medium text-zinc-300">Deadline</UILabel>
+              <UILabel className="text-sm font-medium text-muted-foreground">Deadline</UILabel>
               <Popover>
                 <PopoverTrigger
                   className={cn(
-                    'w-full mt-1.5 inline-flex items-center justify-start gap-2 rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-sm text-white transition-colors',
-                    !deadline && 'text-zinc-500'
+                    'w-full mt-1.5 inline-flex items-center justify-start gap-2 rounded-lg border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground transition-colors',
+                    !deadline && 'text-muted-foreground/60'
                   )}
                 >
-                  <CalendarIcon className="w-4 h-4" />
+                  <CalendarIcon className="w-4 h-4 text-muted-foreground/60" />
                   {deadline ? format(deadline, 'PPP') : 'Pick a date'}
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-zinc-800 border-zinc-700" align="start">
+                <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
                   <Calendar
                     mode="single"
                     selected={deadline}
                     onSelect={setDeadline}
-                    className="bg-zinc-800 text-white"
+                    className="bg-card text-foreground"
                   />
                 </PopoverContent>
               </Popover>
@@ -306,7 +306,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <UILabel htmlFor="estimate" className="text-sm font-medium text-zinc-300">
+              <UILabel htmlFor="estimate" className="text-sm font-medium text-muted-foreground">
                 Estimate (HH:mm)
               </UILabel>
               <Input
@@ -315,7 +315,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
                 onChange={e => setEstimate(e.target.value)}
                 placeholder="01:30"
                 className={cn(
-                  'mt-1.5 bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-600',
+                  'mt-1.5 bg-secondary/50 border-border text-foreground placeholder:text-muted-foreground/60',
                   errors.estimate && 'border-red-500'
                 )}
               />
@@ -323,7 +323,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
             </div>
 
             <div>
-              <UILabel htmlFor="actual-time" className="text-sm font-medium text-zinc-300">
+              <UILabel htmlFor="actual-time" className="text-sm font-medium text-muted-foreground">
                 Actual Time (HH:mm)
               </UILabel>
               <Input
@@ -332,7 +332,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
                 onChange={e => setActualTime(e.target.value)}
                 placeholder="01:00"
                 className={cn(
-                  'mt-1.5 bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-600',
+                  'mt-1.5 bg-secondary/50 border-border text-foreground placeholder:text-muted-foreground/60',
                   errors.actualTime && 'border-red-500'
                 )}
               />
@@ -340,11 +340,11 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
             </div>
           </div>
 
-          <Separator className="bg-zinc-800" />
+          <Separator className="bg-border/60" />
 
           <LabelsSection labels={labels} selectedLabels={selectedLabels} onToggle={toggleLabel} />
 
-          <Separator className="bg-zinc-800" />
+          <Separator className="bg-border/60" />
 
           <SubTasksSection
             subTasks={subTasks}
@@ -353,7 +353,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
             onRemove={removeSubTask}
           />
 
-          <Separator className="bg-zinc-800" />
+          <Separator className="bg-border/60" />
 
           <RemindersSection
             reminders={reminders}
@@ -362,20 +362,21 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
             onRemove={removeReminder}
           />
 
-          <Separator className="bg-zinc-800" />
+          <Separator className="bg-border/60" />
 
           <RecurringSection recurringRule={recurringRule} onChange={setRecurringRule} />
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t border-zinc-800 flex gap-2">
-        <Button type="button" variant="outline" onClick={onClose} className="flex-1 border-zinc-700 text-zinc-300">
+      <div className="p-4 border-t border-border bg-card flex gap-2">
+        <Button type="button" variant="outline" onClick={onClose} className="flex-1 border-border text-muted-foreground hover:text-foreground">
           Cancel
         </Button>
-        <Button type="submit" className="flex-1 bg-zinc-100 text-zinc-900 hover:bg-white">
+        <Button type="submit" className="flex-1 bg-primary text-primary-foreground hover:opacity-90 shadow-sm font-semibold">
           {task ? 'Update' : 'Create'} Task
         </Button>
       </div>
     </form>
+
   )
 }
