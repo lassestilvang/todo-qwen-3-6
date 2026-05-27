@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { format } from 'date-fns'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   X,
   Trash2,
@@ -28,11 +29,20 @@ interface TaskDetailProps {
   onClose: () => void
   onDelete: () => void
   onEdit: () => void
+  onUpdate?: (id: string, data: Record<string, unknown>) => Promise<unknown>
 }
 
-export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps) {
+export function TaskDetail({ task, onClose, onDelete, onEdit, onUpdate }: TaskDetailProps) {
   const [changes, setChanges] = useState<TaskChange[]>([])
   const [loadingChanges, setLoadingChanges] = useState(false)
+
+  const handleToggleSubTask = async (subTaskId: string) => {
+    if (!onUpdate) return
+    const updatedSubTasks = task.subTasks.map(st =>
+      st.id === subTaskId ? { ...st, completed: !st.completed } : st
+    )
+    await onUpdate(task.id, { subTasks: updatedSubTasks })
+  }
 
   useEffect(() => {
     const fetchChanges = async () => {
@@ -180,14 +190,21 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
                     <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium">
                       <ListChecks className="w-3 h-3" /> Subtasks ({completedSubtasks}/{task.subTasks.length})
                     </p>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {task.subTasks.map(subTask => (
-                        <div key={subTask.id} className="flex items-center gap-2 text-sm">
-                          <div className={`w-3 h-3 rounded-sm border ${subTask.completed ? 'bg-muted-foreground/35 border-muted-foreground/45' : 'border-border'}`} />
-                          <span className={subTask.completed ? 'text-muted-foreground line-through' : 'text-foreground/95'}>
+                        <button
+                          key={subTask.id}
+                          onClick={() => handleToggleSubTask(subTask.id)}
+                          className="flex items-center gap-2.5 text-sm hover:opacity-85 text-left w-full transition-opacity py-0.5 cursor-pointer"
+                        >
+                          <Checkbox
+                            checked={subTask.completed}
+                            className="border-border/80 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                          />
+                          <span className={subTask.completed ? 'text-muted-foreground line-through decoration-muted-foreground/75' : 'text-foreground/95 font-medium'}>
                             {subTask.name}
                           </span>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>

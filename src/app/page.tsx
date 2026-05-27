@@ -131,6 +131,7 @@ export default function Home() {
                   }}
                   onDelete={handleDeleteTask}
                   onEdit={handleEditTask}
+                  onUpdate={updateTask}
                 />
               </motion.div>
             )}
