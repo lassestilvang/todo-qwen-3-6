@@ -28,6 +28,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { ProductivityDashboard } from '@/components/sidebar/productivity-dashboard'
 
 const views = [
   { id: 'today' as const, label: 'Today', icon: Calendar },
@@ -246,6 +247,9 @@ export function Sidebar() {
             </div>
           </ScrollArea>
 
+          <div className="p-3 border-t border-border/40 bg-secondary/10 flex flex-col gap-2">
+            <ProductivityDashboard />
+          </div>
         </div>
       </motion.aside>
 
