@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useApp } from '@/hooks/use-app'
 import { useTasks, useLists, useLabels } from '@/hooks/use-data'
 import { Sidebar } from '@/components/sidebar/sidebar'
@@ -29,6 +29,15 @@ export default function Home() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   const selectedTask = tasks.find(t => t.id === selectedTaskId)
+
+  useEffect(() => {
+    const handleAddTaskEvent = () => {
+      setEditingTask(null)
+      setShowTaskForm(true)
+    }
+    window.addEventListener('add-task', handleAddTaskEvent)
+    return () => window.removeEventListener('add-task', handleAddTaskEvent)
+  }, [])
 
   const handleSelectTask = (task: Task) => {
     setSelectedTaskId(task.id)
