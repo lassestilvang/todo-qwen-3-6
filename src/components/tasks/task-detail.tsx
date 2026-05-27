@@ -64,17 +64,17 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
   const completedSubtasks = task.subTasks.filter(st => st.completed).length
 
   return (
-    <div className="flex flex-col h-full bg-zinc-900">
-      <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-        <h2 className="text-sm font-medium text-zinc-400">Task Details</h2>
+    <div className="flex flex-col h-full bg-card">
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <h2 className="text-sm font-medium text-muted-foreground">Task Details</h2>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={onEdit} className="text-zinc-400 hover:text-white h-8 w-8" aria-label="Edit task">
+          <Button variant="ghost" size="icon" onClick={onEdit} className="text-muted-foreground hover:text-foreground h-8 w-8" aria-label="Edit task">
             <Pencil className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={onDelete} className="text-zinc-400 hover:text-red-400 h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={onDelete} className="text-muted-foreground hover:text-red-400 h-8 w-8">
             <Trash2 className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-zinc-400 hover:text-white h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={onClose} className="text-muted-foreground hover:text-foreground h-8 w-8">
             <X className="w-4 h-4" />
           </Button>
         </div>
@@ -82,9 +82,9 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
 
       <Tabs defaultValue="details" className="flex-1 flex flex-col">
         <div className="px-4 pt-3">
-          <TabsList className="bg-zinc-800 border-zinc-700">
-            <TabsTrigger value="details" className="data-[state=active]:bg-zinc-700">Details</TabsTrigger>
-            <TabsTrigger value="history" className="data-[state=active]:bg-zinc-700">History</TabsTrigger>
+          <TabsList className="bg-secondary/80 border border-border/20">
+            <TabsTrigger value="details" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">Details</TabsTrigger>
+            <TabsTrigger value="history" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">History</TabsTrigger>
           </TabsList>
         </div>
 
@@ -92,69 +92,69 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
           <ScrollArea className="h-[calc(100%-40px)]">
             <div className="p-4 space-y-4">
               <div>
-                <h3 className="text-lg font-semibold text-white">{task.name}</h3>
+                <h3 className="text-lg font-bold text-foreground">{task.name}</h3>
                 {task.description && (
-                  <p className="text-sm text-zinc-400 mt-2 whitespace-pre-wrap">{task.description}</p>
+                  <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap leading-relaxed">{task.description}</p>
                 )}
               </div>
 
-              <Separator className="bg-zinc-800" />
+              <Separator className="bg-border/60" />
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="w-4 h-4 text-zinc-500" />
+                  <Calendar className="w-4 h-4 text-muted-foreground/60" />
                   <div>
-                    <p className="text-zinc-500 text-xs">Date</p>
-                    <p className="text-zinc-300">{formatDate(task.date)}</p>
+                    <p className="text-muted-foreground text-xs font-medium">Date</p>
+                    <p className="text-foreground/90 font-medium">{formatDate(task.date)}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="w-4 h-4 text-zinc-500" />
+                  <Calendar className="w-4 h-4 text-muted-foreground/60" />
                   <div>
-                    <p className="text-zinc-500 text-xs">Deadline</p>
-                    <p className="text-zinc-300">{formatDate(task.deadline)}</p>
+                    <p className="text-muted-foreground text-xs font-medium">Deadline</p>
+                    <p className="text-foreground/90 font-medium">{formatDate(task.deadline)}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="w-4 h-4 text-zinc-500" />
+                  <Clock className="w-4 h-4 text-muted-foreground/60" />
                   <div>
-                    <p className="text-zinc-500 text-xs">Estimate</p>
-                    <p className="text-zinc-300">{task.estimate || 'Not set'}</p>
+                    <p className="text-muted-foreground text-xs font-medium">Estimate</p>
+                    <p className="text-foreground/90 font-medium">{task.estimate || 'Not set'}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="w-4 h-4 text-zinc-500" />
+                  <Clock className="w-4 h-4 text-muted-foreground/60" />
                   <div>
-                    <p className="text-zinc-500 text-xs">Actual</p>
-                    <p className="text-zinc-300">{task.actualTime || 'Not set'}</p>
+                    <p className="text-muted-foreground text-xs font-medium">Actual</p>
+                    <p className="text-foreground/90 font-medium">{task.actualTime || 'Not set'}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
-                  <Flag className="w-4 h-4 text-zinc-500" />
+                  <Flag className="w-4 h-4 text-muted-foreground/60" />
                   <div>
-                    <p className="text-zinc-500 text-xs">Priority</p>
-                    <p className="text-zinc-300 capitalize">{task.priority}</p>
+                    <p className="text-muted-foreground text-xs font-medium">Priority</p>
+                    <p className="text-foreground/90 font-medium capitalize">{task.priority}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
-                  <Repeat className="w-4 h-4 text-zinc-500" />
+                  <Repeat className="w-4 h-4 text-muted-foreground/60" />
                   <div>
-                    <p className="text-zinc-500 text-xs">Recurring</p>
-                    <p className="text-zinc-300 capitalize">{task.recurringRule?.pattern || 'None'}</p>
+                    <p className="text-muted-foreground text-xs font-medium">Recurring</p>
+                    <p className="text-foreground/90 font-medium capitalize">{task.recurringRule?.pattern || 'None'}</p>
                   </div>
                 </div>
               </div>
 
               {task.labels.length > 0 && (
                 <>
-                  <Separator className="bg-zinc-800" />
+                  <Separator className="bg-border/60" />
                   <div>
-                    <p className="text-zinc-500 text-xs mb-2 flex items-center gap-1">
+                    <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium">
                       <Tag className="w-3 h-3" /> Labels
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -162,7 +162,7 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
                         <Badge
                           key={label.id}
                           variant="secondary"
-                          className="text-xs"
+                          className="text-xs font-medium"
                           style={{ backgroundColor: `${label.color}20`, color: label.color }}
                         >
                           {label.icon} {label.name}
@@ -175,16 +175,16 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
 
               {task.subTasks.length > 0 && (
                 <>
-                  <Separator className="bg-zinc-800" />
+                  <Separator className="bg-border/60" />
                   <div>
-                    <p className="text-zinc-500 text-xs mb-2 flex items-center gap-1">
+                    <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium">
                       <ListChecks className="w-3 h-3" /> Subtasks ({completedSubtasks}/{task.subTasks.length})
                     </p>
                     <div className="space-y-1.5">
                       {task.subTasks.map(subTask => (
                         <div key={subTask.id} className="flex items-center gap-2 text-sm">
-                          <div className={`w-3 h-3 rounded-sm border ${subTask.completed ? 'bg-zinc-600 border-zinc-500' : 'border-zinc-600'}`} />
-                          <span className={subTask.completed ? 'text-zinc-500 line-through' : 'text-zinc-300'}>
+                          <div className={`w-3 h-3 rounded-sm border ${subTask.completed ? 'bg-muted-foreground/35 border-muted-foreground/45' : 'border-border'}`} />
+                          <span className={subTask.completed ? 'text-muted-foreground line-through' : 'text-foreground/95'}>
                             {subTask.name}
                           </span>
                         </div>
@@ -196,14 +196,14 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
 
               {task.reminders.length > 0 && (
                 <>
-                  <Separator className="bg-zinc-800" />
+                  <Separator className="bg-border/60" />
                   <div>
-                    <p className="text-zinc-500 text-xs mb-2 flex items-center gap-1">
+                    <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium">
                       <Bell className="w-3 h-3" /> Reminders
                     </p>
                     <div className="space-y-1.5">
                       {task.reminders.map(reminder => (
-                        <div key={reminder.id} className="text-sm text-zinc-300">
+                        <div key={reminder.id} className="text-sm text-foreground/90">
                           {reminder.type} at {formatDateTime(reminder.time)}
                         </div>
                       ))}
@@ -214,14 +214,14 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
 
               {task.attachments.length > 0 && (
                 <>
-                  <Separator className="bg-zinc-800" />
+                  <Separator className="bg-border/60" />
                   <div>
-                    <p className="text-zinc-500 text-xs mb-2 flex items-center gap-1">
+                    <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium">
                       <Paperclip className="w-3 h-3" /> Attachments
                     </p>
                     <div className="space-y-1.5">
                       {task.attachments.map(attachment => (
-                        <div key={attachment.id} className="text-sm text-zinc-300">
+                        <div key={attachment.id} className="text-sm text-foreground/90">
                           {attachment.name} ({(attachment.size / 1024).toFixed(1)} KB)
                         </div>
                       ))}
@@ -230,8 +230,8 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
                 </>
               )}
 
-              <Separator className="bg-zinc-800" />
-              <div className="text-xs text-zinc-600 space-y-1">
+              <Separator className="bg-border/60" />
+              <div className="text-xs text-muted-foreground/75 space-y-1">
                 <p>Created: {formatDateTime(task.createdAt)}</p>
                 <p>Updated: {formatDateTime(task.updatedAt)}</p>
                 {task.completedAt && <p>Completed: {formatDateTime(task.completedAt)}</p>}
@@ -244,28 +244,28 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
           <ScrollArea className="h-[calc(100%-40px)]">
             <div className="p-4">
               {loadingChanges ? (
-                <p className="text-zinc-500 text-sm">Loading history...</p>
+                <p className="text-muted-foreground text-sm">Loading history...</p>
               ) : changes.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <History className="w-8 h-8 text-zinc-700 mb-2" />
-                  <p className="text-zinc-500 text-sm">No changes recorded yet</p>
+                  <History className="w-8 h-8 text-muted-foreground/40 mb-2" />
+                  <p className="text-muted-foreground text-sm">No changes recorded yet</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {changes.map(change => (
-                    <div key={change.id} className="text-sm">
+                    <div key={change.id} className="text-sm border-b border-border/20 pb-2 last:border-0">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-zinc-400 font-medium capitalize">{change.field}</span>
-                        <span className="text-zinc-600 text-xs">{formatDateTime(change.changedAt)}</span>
+                        <span className="text-foreground font-semibold capitalize text-xs">{change.field}</span>
+                        <span className="text-muted-foreground/60 text-[10px]">{formatDateTime(change.changedAt)}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 mt-1">
                         {change.oldValue && (
-                          <span className="text-red-400 line-through text-xs bg-red-400/10 px-1.5 py-0.5 rounded">
+                          <span className="text-red-500 dark:text-red-400 line-through text-[11px] bg-red-500/10 px-1.5 py-0.5 rounded">
                             {change.oldValue}
                           </span>
                         )}
                         {change.newValue && (
-                          <span className="text-green-400 text-xs bg-green-400/10 px-1.5 py-0.5 rounded">
+                          <span className="text-green-500 dark:text-green-400 text-[11px] bg-green-500/10 px-1.5 py-0.5 rounded font-medium">
                             {change.newValue}
                           </span>
                         )}
@@ -281,3 +281,4 @@ export function TaskDetail({ task, onClose, onDelete, onEdit }: TaskDetailProps)
     </div>
   )
 }
+
