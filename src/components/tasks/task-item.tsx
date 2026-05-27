@@ -45,10 +45,10 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
       whileHover={{ scale: 1.005, transition: { duration: 0.1 } }}
       whileTap={{ scale: 0.995 }}
       className={cn(
-        'group flex items-start gap-3 p-3 rounded-xl border transition-colors cursor-pointer',
+        'group flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer',
         isSelected
-          ? 'bg-zinc-800/80 border-zinc-700 shadow-lg shadow-black/20'
-          : 'bg-zinc-900/50 border-zinc-800/50 hover:bg-zinc-800/50 hover:border-zinc-700/50',
+          ? 'bg-secondary text-foreground border-border/80 shadow-md ring-1 ring-border/20'
+          : 'bg-card/45 border-border/40 hover:bg-secondary/45 hover:border-border/60 hover:shadow-sm',
         task.completed && 'opacity-60'
       )}
       onClick={() => onSelect(task)}
@@ -65,7 +65,7 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
             checked={task.completed}
             onCheckedChange={() => onToggle(task)}
             className={cn(
-              'border-zinc-600 data-[state=checked]:bg-zinc-700 data-[state=checked]:border-zinc-500',
+              'border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary/80',
               task.priority === 'high' && 'data-[state=checked]:bg-red-500/20 data-[state=checked]:border-red-500',
               task.priority === 'medium' && 'data-[state=checked]:bg-amber-500/20 data-[state=checked]:border-amber-500',
             )}
@@ -76,8 +76,8 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <h3 className={cn(
-            'text-sm font-medium text-white leading-snug',
-            task.completed && 'line-through text-zinc-500'
+            'text-sm font-medium text-foreground leading-snug',
+            task.completed && 'line-through text-muted-foreground'
           )}>
             {task.name}
           </h3>
@@ -87,37 +87,37 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
         </div>
 
         {task.description && (
-          <p className="text-xs text-zinc-500 mt-1 line-clamp-2">{task.description}</p>
+          <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{task.description}</p>
         )}
 
         <div className="flex flex-wrap items-center gap-2 mt-2">
           {task.date && (
             <span className={cn(
               'flex items-center gap-1 text-xs',
-              isOverdue ? 'text-red-400' : 'text-zinc-500'
+              isOverdue ? 'text-red-400 font-medium' : 'text-muted-foreground'
             )}>
               <Calendar className="w-3 h-3" />
               {formatTimeDifference(new Date(task.date))}
-              {isOverdue && <Badge variant="destructive" className="text-[10px] h-4 px-1">Overdue</Badge>}
+              {isOverdue && <Badge variant="destructive" className="text-[10px] h-4 px-1 font-medium">Overdue</Badge>}
             </span>
           )}
 
           {task.estimate && (
-            <span className="flex items-center gap-1 text-xs text-zinc-500">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <Clock className="w-3 h-3" />
               {task.estimate}
             </span>
           )}
 
           {totalSubtasks > 0 && (
-            <span className="flex items-center gap-1 text-xs text-zinc-500">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <ChevronRight className="w-3 h-3" />
               {completedSubtasks}/{totalSubtasks}
             </span>
           )}
 
           {task.attachments.length > 0 && (
-            <span className="flex items-center gap-1 text-xs text-zinc-500">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <Paperclip className="w-3 h-3" />
               {task.attachments.length}
             </span>
@@ -129,7 +129,7 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: idx * 0.03 }}
-              className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full"
+              className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium"
               style={{ backgroundColor: `${label.color}20`, color: label.color }}
             >
               {label.icon} {label.name}
@@ -142,3 +142,4 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
 }
 
 export const TaskItem = memo(TaskItemComponent)
+
