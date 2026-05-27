@@ -5,6 +5,7 @@ import { AppProvider } from "@/hooks/use-app";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/layout/error-boundary";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,16 +55,19 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-zinc-950 text-white">
-        <ErrorBoundary>
-          <TooltipProvider>
-            <AppProvider>
-              {children}
-            </AppProvider>
-          </TooltipProvider>
-          <Toaster />
-        </ErrorBoundary>
+      <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-200">
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <ErrorBoundary>
+            <TooltipProvider>
+              <AppProvider>
+                {children}
+              </AppProvider>
+            </TooltipProvider>
+            <Toaster />
+          </ErrorBoundary>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
+

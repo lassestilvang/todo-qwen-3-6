@@ -74,7 +74,7 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen flex bg-zinc-950 text-white">
+    <div className="h-screen flex bg-background text-foreground overflow-hidden">
       <Sidebar />
 
       <motion.main
@@ -91,7 +91,7 @@ export default function Home() {
             ) : error ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <p className="text-red-400">{error}</p>
-                <button type="button" onClick={refresh} className="text-sm text-zinc-400 hover:text-white mt-2">
+                <button type="button" onClick={refresh} className="text-sm text-muted-foreground hover:text-foreground mt-2">
                   Try again
                 </button>
               </div>
@@ -112,7 +112,7 @@ export default function Home() {
                 animate={{ width: 400, opacity: 1 }}
                 exit={{ width: 0, opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="border-l border-zinc-800 overflow-hidden"
+                className="border-l border-border bg-card/30 backdrop-blur-md overflow-hidden"
               >
                 <TaskDetail
                   task={selectedTask}
@@ -130,7 +130,7 @@ export default function Home() {
       </motion.main>
 
       <Dialog open={showTaskForm} onOpenChange={setShowTaskForm}>
-        <DialogContent className="max-w-2xl max-h-[90vh] p-0 bg-zinc-900 border-zinc-800 overflow-hidden">
+        <DialogContent className="max-w-2xl max-h-[90vh] p-0 bg-card border-border overflow-hidden">
           <TaskForm
             task={editingTask}
             lists={lists}
@@ -146,3 +146,4 @@ export default function Home() {
     </div>
   )
 }
+
