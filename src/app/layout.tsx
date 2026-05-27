@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/layout/error-boundary";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Confetti } from "@/components/ui/confetti";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,6 +61,7 @@ export default function RootLayout({
           <ErrorBoundary>
             <TooltipProvider>
               <AppProvider>
+                <Confetti />
                 {children}
               </AppProvider>
             </TooltipProvider>

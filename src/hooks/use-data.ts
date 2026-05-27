@@ -26,7 +26,11 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
   })
 
   const toggleComplete = async (task: Task) => {
-    await update(task.id, { completed: !task.completed })
+    const nextCompletedState = !task.completed
+    await update(task.id, { completed: nextCompletedState })
+    if (nextCompletedState) {
+      window.dispatchEvent(new CustomEvent('trigger-confetti'))
+    }
   }
 
   return {
