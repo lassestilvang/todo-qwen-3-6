@@ -24,11 +24,11 @@ export function SubTasksSection({ subTasks, onAdd, onUpdate, onRemove }: SubTask
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <UILabel className="text-sm font-medium text-zinc-300 flex items-center gap-2">
+        <UILabel className="text-sm font-medium text-muted-foreground flex items-center gap-2">
           <ListChecks className="w-4 h-4" />
           Subtasks
         </UILabel>
-        <Button type="button" variant="ghost" size="sm" onClick={onAdd} className="text-zinc-400 hover:text-white h-7">
+        <Button type="button" variant="ghost" size="sm" onClick={onAdd} className="text-muted-foreground hover:text-foreground h-7">
           <Plus className="w-3.5 h-3.5 mr-1" />
           Add
         </Button>
@@ -39,20 +39,20 @@ export function SubTasksSection({ subTasks, onAdd, onUpdate, onRemove }: SubTask
             <Checkbox
               checked={subTask.completed}
               onCheckedChange={(checked) => onUpdate(index, 'completed', checked)}
-              className="border-zinc-600"
+              className="border-border"
             />
             <Input
               value={subTask.name}
               onChange={e => onUpdate(index, 'name', e.target.value)}
               placeholder="Subtask name"
-              className="flex-1 bg-zinc-800/50 border-zinc-700 text-white text-sm h-8"
+              className="flex-1 bg-secondary/50 border-border text-foreground text-sm h-8 placeholder:text-muted-foreground/60"
             />
             <Button
               type="button"
               variant="ghost"
               size="icon"
               onClick={() => onRemove(index)}
-              className="h-8 w-8 text-zinc-500 hover:text-red-400"
+              className="h-8 w-8 text-muted-foreground hover:text-red-400"
             >
               <X className="w-3.5 h-3.5" />
             </Button>
@@ -62,3 +62,4 @@ export function SubTasksSection({ subTasks, onAdd, onUpdate, onRemove }: SubTask
     </div>
   )
 }
+
