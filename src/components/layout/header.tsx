@@ -3,6 +3,7 @@
 import { useApp } from '@/hooks/use-app'
 import { useLists } from '@/hooks/use-data'
 import { SearchBar } from '@/components/search/search-bar'
+import { PomodoroTimer } from '@/components/layout/pomodoro-timer'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Plus, Menu, Sun, Moon } from 'lucide-react'
@@ -75,6 +76,8 @@ export function Header({ onAddTask, taskCount }: { onAddTask: () => void; taskCo
             Completed
           </Label>
         </div>
+
+        <PomodoroTimer />
 
         <motion.button
           whileHover={{ scale: 1.05, rotate: 15 }}
