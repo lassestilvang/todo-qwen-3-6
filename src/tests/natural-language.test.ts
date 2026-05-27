@@ -50,6 +50,24 @@ describe('Natural Language Parser', () => {
       expect(result.name).toBe('Review')
       expect(result.date).toBeDefined()
     })
+
+    it('should parse "in 3 days"', () => {
+      const result = parseNaturalLanguage('Water plants in 3 days')
+      expect(result.name).toBe('Water plants')
+      expect(result.date?.toDateString()).toBe(addDays(new Date(), 3).toDateString())
+    })
+
+    it('should parse "in 2 weeks"', () => {
+      const result = parseNaturalLanguage('Doctor appointment in 2 weeks')
+      expect(result.name).toBe('Doctor appointment')
+      expect(result.date?.toDateString()).toBe(addDays(new Date(), 14).toDateString())
+    })
+
+    it('should parse "next week"', () => {
+      const result = parseNaturalLanguage('File taxes next week')
+      expect(result.name).toBe('File taxes')
+      expect(result.date?.toDateString()).toBe(addDays(new Date(), 7).toDateString())
+    })
   })
 
   describe('time parsing', () => {

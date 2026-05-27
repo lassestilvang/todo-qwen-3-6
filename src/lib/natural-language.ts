@@ -89,6 +89,43 @@ function extractDate(input: string, now: Date, callback: (date: Date) => void): 
     }
   }
 
+  // Check for "in X days/weeks/months/years"
+  const inPattern = /\bin\s+(\d+)\s+(day|week|month|year)s?\b/i
+  const inMatch = input.match(inPattern)
+  if (inMatch) {
+    const value = parseInt(inMatch[1], 10)
+    const unit = inMatch[2].toLowerCase()
+    let targetDate = new Date(now)
+    if (unit === 'day') {
+      targetDate = addDays(now, value)
+    } else if (unit === 'week') {
+      targetDate = addDays(now, value * 7)
+    } else if (unit === 'month') {
+      targetDate = new Date(now.getFullYear(), now.getMonth() + value, now.getDate())
+    } else if (unit === 'year') {
+      targetDate = new Date(now.getFullYear() + value, now.getMonth(), now.getDate())
+    }
+    callback(startOfDay(targetDate))
+    return input.replace(inMatch[0], '').trim()
+  }
+
+  // Check for "next week/month/year"
+  const nextPattern = /\bnext\s+(week|month|year)\b/i
+  const nextMatch = input.match(nextPattern)
+  if (nextMatch) {
+    const unit = nextMatch[1].toLowerCase()
+    let targetDate = new Date(now)
+    if (unit === 'week') {
+      targetDate = addDays(now, 7)
+    } else if (unit === 'month') {
+      targetDate = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate())
+    } else if (unit === 'year') {
+      targetDate = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate())
+    }
+    callback(startOfDay(targetDate))
+    return input.replace(nextMatch[0], '').trim()
+  }
+
   for (let i = 0; i < 7; i++) {
     const dayName = DAYS[i]
     const regex = new RegExp(`\\b(?:next\\s+)?${dayName}\\b`, 'i')
