@@ -1,16 +1,17 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
-import { useSearch } from '@/hooks/use-data'
+import { useSearch, useLists } from '@/hooks/use-data'
 import { useApp } from '@/hooks/use-app'
 import { Input } from '@/components/ui/input'
 import { Task } from '@/lib/types'
-import { Search, X } from 'lucide-react'
+import { Search, X, Flag } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export function SearchBar() {
   const { searchQuery, setSearchQuery, setSelectedTaskId } = useApp()
   const { results, loading } = useSearch(searchQuery)
+  const { lists } = useLists()
   const isOpen = searchQuery.length > 0
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -34,6 +35,13 @@ export function SearchBar() {
     setSearchQuery('')
   }
 
+  const priorityColors = {
+    high: 'text-red-400',
+    medium: 'text-amber-400',
+    low: 'text-blue-400',
+    none: 'text-muted-foreground/30',
+  }
+
   return (
     <div className="relative">
       <div className="relative">
@@ -43,7 +51,7 @@ export function SearchBar() {
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           placeholder="Search tasks... (⌘K)"
-          className="pl-9 pr-8 bg-secondary/50 border-border text-foreground placeholder:text-muted-foreground/60 h-9 text-sm"
+          className="pl-9 pr-8 bg-secondary/50 border-border text-foreground placeholder:text-muted-foreground/60 h-9 text-sm w-40 focus:w-64 sm:w-48 sm:focus:w-80 transition-all duration-300 ease-in-out shadow-inner"
         />
         {searchQuery && (
           <button
@@ -62,27 +70,52 @@ export function SearchBar() {
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl z-50 max-h-80 overflow-hidden"
+            className="absolute top-full left-0 right-0 mt-2 bg-card/90 backdrop-blur-md border border-border rounded-xl shadow-2xl z-50 max-h-80 overflow-y-auto custom-scrollbar"
           >
             {loading ? (
-              <div className="p-4 text-center text-muted-foreground text-sm">Searching...</div>
+              <div className="p-4 text-center text-muted-foreground text-sm flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                Searching...
+              </div>
             ) : results.length === 0 ? (
               <div className="p-4 text-center text-muted-foreground text-sm">No results found</div>
             ) : (
-              <div className="py-2">
-                {results.map(task => (
-                  <button
-                    type="button"
-                    key={task.id}
-                    onClick={() => handleSelect(task)}
-                    className="w-full px-4 py-2.5 text-left hover:bg-secondary/60 transition-colors"
-                  >
-                    <p className="text-sm text-foreground truncate font-medium">{task.name}</p>
-                    {task.description && (
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{task.description}</p>
-                    )}
-                  </button>
-                ))}
+              <div className="py-2 divide-y divide-border/20">
+                {results.map(task => {
+                  const list = lists.find(l => l.id === task.listId)
+                  return (
+                    <button
+                      type="button"
+                      key={task.id}
+                      onClick={() => handleSelect(task)}
+                      className="w-full px-4 py-2.5 text-left hover:bg-secondary/70 transition-colors flex items-start justify-between gap-3 group"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className={task.completed ? "text-sm text-muted-foreground line-through truncate font-medium" : "text-sm text-foreground truncate font-medium group-hover:text-primary transition-colors"}>
+                            {task.name}
+                          </p>
+                          {task.priority !== 'none' && (
+                            <Flag className={`w-3 h-3 flex-shrink-0 ${priorityColors[task.priority]}`} />
+                          )}
+                        </div>
+                        {task.description && (
+                          <p className="text-xs text-muted-foreground truncate mt-0.5 leading-relaxed">{task.description}</p>
+                        )}
+                      </div>
+
+                      {list && (
+                        <span 
+                          className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-semibold bg-secondary/80 border border-border/40"
+                          style={{ color: list.color }}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: list.color }} />
+                          {list.name}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
             )}
           </motion.div>
