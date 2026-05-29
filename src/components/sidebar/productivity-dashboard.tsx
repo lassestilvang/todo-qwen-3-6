@@ -42,7 +42,8 @@ export function ProductivityDashboard() {
     // Get pomodoro stats
     const saved = localStorage.getItem('pomodoro_sessions_completed')
     if (saved) {
-      setSessionsCompleted(parseInt(saved, 10))
+      const parsed = parseInt(saved, 10)
+      setTimeout(() => setSessionsCompleted(parsed), 0)
     }
   }, [isOpen])
 

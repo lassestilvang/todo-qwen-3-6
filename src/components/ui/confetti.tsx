@@ -30,16 +30,6 @@ export function Confetti() {
   const particlesRef = useRef<Particle[]>([])
   const animationFrameRef = useRef<number | null>(null)
 
-  useEffect(() => {
-    const triggerConfetti = () => {
-      setIsActive(true)
-      initParticles()
-    }
-
-    window.addEventListener('trigger-confetti', triggerConfetti)
-    return () => window.removeEventListener('trigger-confetti', triggerConfetti)
-  }, [])
-
   const initParticles = () => {
     const width = window.innerWidth
     const height = window.innerHeight
@@ -62,6 +52,16 @@ export function Confetti() {
 
     particlesRef.current = particles
   };
+
+  useEffect(() => {
+    const triggerConfetti = () => {
+      setIsActive(true)
+      initParticles()
+    }
+
+    window.addEventListener('trigger-confetti', triggerConfetti)
+    return () => window.removeEventListener('trigger-confetti', triggerConfetti)
+  }, [])
 
   useEffect(() => {
     if (!isActive) return

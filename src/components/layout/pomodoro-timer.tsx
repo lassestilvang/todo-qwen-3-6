@@ -68,7 +68,8 @@ export function PomodoroTimer() {
   useEffect(() => {
     const saved = localStorage.getItem('pomodoro_sessions_completed')
     if (saved) {
-      setSessionsCompleted(parseInt(saved, 10))
+      const parsed = parseInt(saved, 10)
+      setTimeout(() => setSessionsCompleted(parsed), 0)
     }
   }, [])
 
@@ -125,27 +126,6 @@ export function PomodoroTimer() {
     }
   }
 
-  // Timer tick effect
-  useEffect(() => {
-    if (isRunning) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            handleTimerComplete()
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [isRunning, mode])
-
   const handleTimerComplete = () => {
     setIsRunning(false)
     playAlarmSound('complete')
@@ -179,6 +159,32 @@ export function PomodoroTimer() {
       setTimeLeft(MODE_CONFIG.work.duration)
     }
   }
+
+  const handleTimerCompleteRef = useRef(handleTimerComplete)
+  useEffect(() => {
+    handleTimerCompleteRef.current = handleTimerComplete
+  })
+
+  // Timer tick effect
+  useEffect(() => {
+    if (isRunning) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            handleTimerCompleteRef.current()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [isRunning])
 
   const toggleTimer = () => {
     playAlarmSound('click')
