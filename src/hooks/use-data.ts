@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Task, TaskList, Label, ViewType } from '@/lib/types'
 import { useCrud } from './use-crud'
+import { sounds } from '@/lib/sounds'
 
 export function useTasks(view: ViewType, listId: string | null, showCompleted: boolean, labelId: string | null = null) {
   const params = useMemo(() => {
@@ -29,6 +30,7 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
     const nextCompletedState = !task.completed
     await update(task.id, { completed: nextCompletedState })
     if (nextCompletedState) {
+      sounds.playSuccess()
       window.dispatchEvent(new CustomEvent('trigger-confetti'))
     }
   }
