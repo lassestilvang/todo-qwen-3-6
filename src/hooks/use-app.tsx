@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react'
+import { createContext, useContext, useState, useCallback, ReactNode, useMemo, useEffect } from 'react'
 import { AppState, ViewType } from '@/lib/types'
 
 export type SortBy = 'date' | 'priority' | 'name' | 'created'
@@ -42,6 +42,53 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [accentColor, setAccentColor] = useState('#6366f1')
   const [sortBy, setSortBy] = useState<SortBy>('date')
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedAccent = localStorage.getItem('app_accent_color')
+    if (savedAccent) setAccentColor(savedAccent)
+
+    const savedViewMode = localStorage.getItem('app_view_mode')
+    if (savedViewMode === 'kanban' || savedViewMode === 'list') setViewMode(savedViewMode)
+
+    const savedShowCompleted = localStorage.getItem('app_show_completed')
+    if (savedShowCompleted !== null) setShowCompleted(savedShowCompleted === 'true')
+
+    const savedSidebarOpen = localStorage.getItem('app_sidebar_open')
+    if (savedSidebarOpen !== null) setSidebarOpen(savedSidebarOpen === 'true')
+
+    const savedSortBy = localStorage.getItem('app_sort_by') as SortBy
+    if (savedSortBy) setSortBy(savedSortBy)
+
+    const savedSortOrder = localStorage.getItem('app_sort_order') as SortOrder
+    if (savedSortOrder) setSortOrder(savedSortOrder)
+  }, [])
+
+  // Save to localStorage when values change
+  useEffect(() => {
+    localStorage.setItem('app_accent_color', accentColor)
+  }, [accentColor])
+
+  useEffect(() => {
+    localStorage.setItem('app_view_mode', viewMode)
+  }, [viewMode])
+
+  useEffect(() => {
+    localStorage.setItem('app_show_completed', showCompleted.toString())
+  }, [showCompleted])
+
+  useEffect(() => {
+    localStorage.setItem('app_sidebar_open', sidebarOpen.toString())
+  }, [sidebarOpen])
+
+  useEffect(() => {
+    localStorage.setItem('app_sort_by', sortBy)
+  }, [sortBy])
+
+  useEffect(() => {
+    localStorage.setItem('app_sort_order', sortOrder)
+  }, [sortOrder])
+
 
   const setView = useCallback((view: ViewType) => {
     setCurrentView(view)
