@@ -62,12 +62,13 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [parsedPreview, setParsedPreview] = useState<{ date?: Date; time?: string; priority?: Priority } | null>(null)
 
-  const handleNameBlur = () => {
-    if (task || !name.trim()) {
+  const handleNameChange = (newName: string) => {
+    setName(newName)
+    if (task || !newName.trim()) {
       setParsedPreview(null)
       return
     }
-    const parsed = parseNaturalLanguage(name)
+    const parsed = parseNaturalLanguage(newName)
     if (parsed.date || parsed.time || parsed.priority !== 'none') {
       setParsedPreview({
         date: parsed.date ?? undefined,
@@ -173,8 +174,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
               <Input
                 id="task-name"
                 value={name}
-                onChange={e => setName(e.target.value)}
-                onBlur={handleNameBlur}
+                onChange={e => handleNameChange(e.target.value)}
                 placeholder="What needs to be done? (e.g., Meeting tomorrow at 3pm !high)"
                 className={cn(
                   'flex-1 bg-secondary/50 border-border text-foreground placeholder:text-muted-foreground/60',
