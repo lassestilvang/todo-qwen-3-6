@@ -25,6 +25,8 @@ interface AppContextType extends AppState {
   toggleShowCompleted: () => void
   setSearchQuery: (query: string) => void
   toggleSidebar: () => void
+  focusMode: boolean
+  toggleFocusMode: () => void
 }
 
 const AppContext = createContext<AppContextType | null>(null)
@@ -42,6 +44,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [accentColor, setAccentColor] = useState('#6366f1')
   const [sortBy, setSortBy] = useState<SortBy>('date')
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
+  const [focusMode, setFocusMode] = useState(false)
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -62,6 +65,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const savedSortOrder = localStorage.getItem('app_sort_order') as SortOrder
     if (savedSortOrder) setSortOrder(savedSortOrder)
+
+    const savedFocusMode = localStorage.getItem('app_focus_mode')
+    if (savedFocusMode !== null) setFocusMode(savedFocusMode === 'true')
   }, [])
 
   // Save to localStorage when values change
@@ -89,6 +95,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('app_sort_order', sortOrder)
   }, [sortOrder])
 
+  useEffect(() => {
+    localStorage.setItem('app_focus_mode', focusMode.toString())
+  }, [focusMode])
 
   const setView = useCallback((view: ViewType) => {
     setCurrentView(view)
@@ -123,6 +132,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSidebarOpen(prev => !prev)
   }, [])
 
+  const toggleFocusMode = useCallback(() => {
+    setFocusMode(prev => !prev)
+  }, [])
+
   const value = useMemo<AppContextType>(() => ({
     currentView,
     currentListId,
@@ -149,6 +162,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     toggleShowCompleted,
     setSearchQuery,
     toggleSidebar,
+    focusMode,
+    toggleFocusMode,
   }), [
     currentView,
     currentListId,
@@ -169,6 +184,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLabelId,
     toggleShowCompleted,
     toggleSidebar,
+    focusMode,
+    toggleFocusMode,
   ])
 
   return (

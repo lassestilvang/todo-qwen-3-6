@@ -31,7 +31,7 @@ function ShortcutRow({ keys, description }: ShortcutRowProps) {
 
 export function KeyboardShortcuts() {
   const [isOpen, setIsOpen] = useState(false)
-  const { setView, toggleSidebar, toggleShowCompleted } = useApp()
+  const { setView, toggleSidebar, toggleShowCompleted, toggleFocusMode } = useApp()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -82,6 +82,10 @@ export function KeyboardShortcuts() {
           e.preventDefault()
           toggleShowCompleted()
           break
+        case 'f':
+          e.preventDefault()
+          toggleFocusMode()
+          break
         default:
           break
       }
@@ -89,7 +93,7 @@ export function KeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [setView, toggleSidebar, toggleShowCompleted])
+  }, [setView, toggleSidebar, toggleShowCompleted, toggleFocusMode])
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -119,6 +123,7 @@ export function KeyboardShortcuts() {
             <ShortcutRow keys={['?']} description="Toggle shortcuts guide" />
             <ShortcutRow keys={['⌘', 'K']} description="Search tasks" />
             <ShortcutRow keys={['S']} description="Toggle sidebar" />
+            <ShortcutRow keys={['F']} description="Toggle Focus Mode" />
           </div>
 
           <div>

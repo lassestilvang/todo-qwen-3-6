@@ -8,7 +8,7 @@ import { PomodoroTimer } from '@/components/layout/pomodoro-timer'
 import { KeyboardShortcuts } from '@/components/layout/keyboard-shortcuts'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Plus, Menu, Sun, Moon, LayoutList, LayoutGrid, Trash2, ArrowUpDown, Check } from 'lucide-react'
+import { Plus, Menu, Sun, Moon, LayoutList, LayoutGrid, Trash2, ArrowUpDown, Check, Maximize2, Minimize2 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -25,7 +25,7 @@ import { Task } from '@/lib/types'
 export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAddTask: () => void; taskCount: number; tasks: Task[]; onClearCompleted: () => void }) {
   const { 
     showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar, currentListId, currentView, viewMode, setViewMode,
-    sortBy, setSortBy, sortOrder, setSortOrder
+    sortBy, setSortBy, sortOrder, setSortOrder, focusMode, toggleFocusMode
   } = useApp()
   const { theme, setTheme, resolvedTheme } = useTheme()
   const { lists } = useLists()
@@ -201,6 +201,16 @@ export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAd
         </DropdownMenu>
 
         <KeyboardShortcuts />
+
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={toggleFocusMode}
+          className="text-muted-foreground hover:text-foreground h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary/50 transition-colors"
+          title={focusMode ? 'Exit Focus Mode' : 'Enter Focus Mode'}
+        >
+          {focusMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+        </motion.button>
 
         <motion.button
           whileHover={{ scale: 1.05, rotate: 15 }}

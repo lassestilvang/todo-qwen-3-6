@@ -22,6 +22,8 @@ import {
   Sun,
   Search,
   ListTodo,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react'
 import { useApp } from '@/hooks/use-app'
 import { useTasks, useLists } from '@/hooks/use-data'
@@ -32,7 +34,7 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false)
   const { 
     currentView, setView, toggleSidebar, toggleShowCompleted, 
-    viewMode, setViewMode, setSelectedTaskId 
+    viewMode, setViewMode, setSelectedTaskId, focusMode, toggleFocusMode
   } = useApp()
   const { tasks, clearCompleted } = useTasks(currentView, null, true)
   const { lists } = useLists()
@@ -78,6 +80,11 @@ export function CommandPalette() {
         </CommandGroup>
 
         <CommandGroup heading="Views">
+          <CommandItem onSelect={() => runCommand(toggleFocusMode)}>
+            {focusMode ? <Minimize2 className="mr-2 h-4 w-4" /> : <Maximize2 className="mr-2 h-4 w-4" />}
+            <span>{focusMode ? 'Exit' : 'Enter'} Focus Mode</span>
+            <CommandShortcut>F</CommandShortcut>
+          </CommandItem>
           <CommandItem onSelect={() => runCommand(() => setView('today'))}>
             <Calendar className="mr-2 h-4 w-4" />
             <span>Go to Today</span>

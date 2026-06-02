@@ -20,7 +20,8 @@ export default function Home() {
   const { 
     currentView, currentListId, currentLabelId, selectedTaskId, setSelectedTaskId, 
     selectedTaskIds, setSelectedTaskIds, toggleTaskSelection,
-    sidebarOpen, showCompleted, viewMode, sortBy, sortOrder 
+    sidebarOpen, showCompleted, viewMode, sortBy, sortOrder,
+    focusMode, toggleFocusMode
   } = useApp()
   const { tasks: rawTasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, clearCompleted, refresh } = useTasks(
     currentView,
@@ -198,15 +199,21 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen flex bg-background text-foreground overflow-hidden">
-      <Sidebar tasks={tasks} />
+    <div className={cn("h-screen flex bg-background text-foreground overflow-hidden transition-all duration-500", focusMode && "bg-background/95")}>
+      {!focusMode && <Sidebar tasks={tasks} />}
 
       <motion.main
-        animate={{ marginLeft: sidebarOpen ? 280 : 0 }}
-        transition={{ duration: 0.2 }}
-        className="flex-1 flex flex-col min-w-0 relative"
+        animate={{ marginLeft: (sidebarOpen && !focusMode) ? 280 : 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="flex-1 flex flex-col min-w-0"
       >
-        <Header onAddTask={handleAddTask} taskCount={tasks.length} tasks={tasks} onClearCompleted={clearCompleted} />
+        <Header 
+          onAddTask={handleAddTask} 
+          taskCount={tasks.length} 
+          tasks={tasks} 
+          onClearCompleted={clearCompleted} 
+        />
+
 
         <div className="flex-1 flex min-h-0">
           <div className="flex-1 min-w-0">
