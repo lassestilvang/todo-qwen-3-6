@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useApp } from '@/hooks/use-app'
 import { useLists } from '@/hooks/use-data'
 import { SearchBar } from '@/components/search/search-bar'
@@ -48,6 +49,13 @@ export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAd
   const completedToday = taskCount > 0 ? tasks.filter(t => t.completed && t.date && t.date.startsWith(today.toISOString().split('T')[0])).length : 0
   const totalToday = taskCount > 0 ? tasks.filter(t => t.date && t.date.startsWith(today.toISOString().split('T')[0])).length : 0
   const progressPercent = totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0
+
+  // Celebration for reaching daily goal
+  useEffect(() => {
+    if (progressPercent === 100 && totalToday > 0) {
+      window.dispatchEvent(new CustomEvent('trigger-confetti'))
+    }
+  }, [progressPercent, totalToday])
 
   return (
     <header className="h-14 border-b border-border bg-background/80 backdrop-blur-md px-4 flex items-center justify-between gap-4">
