@@ -110,10 +110,20 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
           )}
 
           {totalSubtasks > 0 && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <ChevronRight className="w-3 h-3" />
-              {completedSubtasks}/{totalSubtasks}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                <ChevronRight className="w-3 h-3" />
+                {completedSubtasks}/{totalSubtasks}
+              </span>
+              <div className="w-16 h-1 bg-secondary rounded-full overflow-hidden border border-border/20">
+                <motion.div
+                  className="h-full bg-indigo-500"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(completedSubtasks / totalSubtasks) * 100}%` }}
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
+                />
+              </div>
+            </div>
           )}
 
           {task.attachments.length > 0 && (
