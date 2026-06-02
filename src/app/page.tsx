@@ -32,6 +32,45 @@ export default function Home() {
   const selectedTask = tasks.find(t => t.id === selectedTaskId)
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing
+      if (
+        document.activeElement?.tagName === 'INPUT' ||
+        document.activeElement?.tagName === 'TEXTAREA' ||
+        document.activeElement?.getAttribute('contenteditable') === 'true'
+      ) {
+        return
+      }
+
+      if (tasks.length === 0) return
+
+      const currentIndex = tasks.findIndex(t => t.id === selectedTaskId)
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        const nextIndex = (currentIndex + 1) % tasks.length
+        setSelectedTaskId(tasks[nextIndex].id)
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        const prevIndex = (currentIndex - 1 + tasks.length) % tasks.length
+        setSelectedTaskId(tasks[prevIndex].id)
+      } else if (e.key === 'Enter' && selectedTaskId) {
+        e.preventDefault()
+        setShowTaskDetail(true)
+      } else if (e.key === 'Escape') {
+        if (showTaskDetail) {
+          setShowTaskDetail(false)
+        } else if (selectedTaskId) {
+          setSelectedTaskId(null)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [tasks, selectedTaskId, setSelectedTaskId, showTaskDetail])
+
+  useEffect(() => {
     const handleAddTaskEvent = () => {
       setEditingTask(null)
       setShowTaskForm(true)
