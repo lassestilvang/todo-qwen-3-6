@@ -33,6 +33,22 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
     }
   }
 
+  const clearCompleted = async () => {
+    try {
+      const url = new URL('/api/tasks', window.location.origin)
+      if (listId) url.searchParams.append('listId', listId)
+      
+      const res = await fetch(url.toString(), { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to clear completed tasks')
+      
+      toast.success('Completed tasks cleared')
+      refresh()
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to clear completed tasks')
+    }
+  }
+
   return {
     tasks,
     loading,
@@ -42,6 +58,7 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
     updateTask: update,
     deleteTask: remove,
     toggleComplete,
+    clearCompleted,
     refresh,
   }
 }

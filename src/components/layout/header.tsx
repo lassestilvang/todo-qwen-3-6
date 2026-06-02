@@ -7,13 +7,13 @@ import { PomodoroTimer } from '@/components/layout/pomodoro-timer'
 import { KeyboardShortcuts } from '@/components/layout/keyboard-shortcuts'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Plus, Menu, Sun, Moon, LayoutList, LayoutGrid } from 'lucide-react'
+import { Plus, Menu, Sun, Moon, LayoutList, LayoutGrid, Trash2 } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import { Task } from '@/lib/types'
 
-export function Header({ onAddTask, taskCount, tasks }: { onAddTask: () => void; taskCount: number; tasks: Task[] }) {
+export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAddTask: () => void; taskCount: number; tasks: Task[]; onClearCompleted: () => void }) {
   const { showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar, currentListId, currentView, viewMode, setViewMode } = useApp()
   const { theme, setTheme, resolvedTheme } = useTheme()
   const { lists } = useLists()
@@ -21,6 +21,9 @@ export function Header({ onAddTask, taskCount, tasks }: { onAddTask: () => void;
   const toggleViewMode = () => {
     setViewMode(viewMode === 'list' ? 'kanban' : 'list')
   }
+
+  const completedCount = tasks.filter(t => t.completed).length
+
 
 
   const toggleTheme = () => {
@@ -102,6 +105,20 @@ export function Header({ onAddTask, taskCount, tasks }: { onAddTask: () => void;
           <Label htmlFor="show-completed" className="text-xs text-muted-foreground hidden sm:inline">
             Completed
           </Label>
+          <AnimatePresence>
+            {showCompleted && completedCount > 0 && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                onClick={onClearCompleted}
+                className="text-red-400 hover:text-red-500 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors ml-1"
+                title="Clear all completed tasks"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
 
         <PomodoroTimer />

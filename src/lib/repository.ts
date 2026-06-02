@@ -489,6 +489,15 @@ export const taskRepository = {
     const result = db.prepare(query).get(...params) as CountRow
     return result.count
   },
+
+  clearCompleted(listId: string | null): void {
+    const db = getDb()
+    if (listId) {
+      db.prepare('DELETE FROM tasks WHERE list_id = ? AND completed = 1').run(listId)
+    } else {
+      db.prepare('DELETE FROM tasks WHERE completed = 1').run()
+    }
+  },
 }
 
 function batchLoadTaskRelations(

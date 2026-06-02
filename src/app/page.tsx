@@ -16,7 +16,7 @@ import { Task } from '@/lib/types'
 
 export default function Home() {
   const { currentView, currentListId, currentLabelId, selectedTaskId, setSelectedTaskId, sidebarOpen, showCompleted, viewMode } = useApp()
-  const { tasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, refresh } = useTasks(
+  const { tasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, clearCompleted, refresh } = useTasks(
     currentView,
     currentListId,
     showCompleted,
@@ -92,7 +92,7 @@ export default function Home() {
         transition={{ duration: 0.2 }}
         className="flex-1 flex flex-col min-w-0"
       >
-        <Header onAddTask={handleAddTask} taskCount={tasks.length} tasks={tasks} />
+        <Header onAddTask={handleAddTask} taskCount={tasks.length} tasks={tasks} onClearCompleted={clearCompleted} />
 
         <div className="flex-1 flex min-h-0">
           <div className="flex-1 min-w-0">

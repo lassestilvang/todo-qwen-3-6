@@ -52,3 +52,15 @@ export async function POST(request: NextRequest) {
     return handleApiError(error, 'Failed to create task')
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams
+    const listId = searchParams.get('listId')
+    
+    taskRepository.clearCompleted(listId)
+    return NextResponse.json({ success: true })
+  } catch (error: unknown) {
+    return handleApiError(error, 'Failed to clear completed tasks')
+  }
+}
