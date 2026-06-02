@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Task } from '@/lib/types'
 import { Search, X, Flag } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { highlightText } from '@/lib/utils'
 
 export function SearchBar() {
   const { searchQuery, setSearchQuery, setSelectedTaskId } = useApp()
@@ -93,14 +94,16 @@ export function SearchBar() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <p className={task.completed ? "text-sm text-muted-foreground line-through truncate font-medium" : "text-sm text-foreground truncate font-medium group-hover:text-primary transition-colors"}>
-                            {task.name}
+                            {highlightText(task.name, searchQuery)}
                           </p>
                           {task.priority !== 'none' && (
                             <Flag className={`w-3 h-3 flex-shrink-0 ${priorityColors[task.priority]}`} />
                           )}
                         </div>
                         {task.description && (
-                          <p className="text-xs text-muted-foreground truncate mt-0.5 leading-relaxed">{task.description}</p>
+                          <p className="text-xs text-muted-foreground truncate mt-0.5 leading-relaxed">
+                            {highlightText(task.description, searchQuery)}
+                          </p>
                         )}
                       </div>
 
@@ -124,4 +127,3 @@ export function SearchBar() {
     </div>
   )
 }
-

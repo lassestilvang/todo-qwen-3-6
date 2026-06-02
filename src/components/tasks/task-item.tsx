@@ -4,6 +4,8 @@ import { Task } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { formatTimeDifference } from '@/lib/natural-language'
 import { motion } from 'framer-motion'
+import { highlightText } from '@/lib/utils'
+import { useApp } from '@/hooks/use-app'
 import {
   Flag,
   Clock,
@@ -25,6 +27,7 @@ interface TaskItemProps {
 }
 
 function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelected }: TaskItemProps) {
+  const { searchQuery } = useApp()
   const isOverdue = task.date && !task.completed && isBefore(new Date(task.date), startOfDay(new Date()))
   const completedSubtasks = task.subTasks.filter(st => st.completed).length
   const totalSubtasks = task.subTasks.length
@@ -89,7 +92,7 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelect
             'text-sm font-medium text-foreground leading-snug',
             task.completed && 'line-through text-muted-foreground'
           )}>
-            {task.name}
+            {highlightText(task.name, searchQuery)}
           </h3>
           {task.priority !== 'none' && (
             <Flag className={cn('w-3.5 h-3.5 flex-shrink-0 mt-0.5', priorityColors[task.priority])} />
@@ -97,7 +100,9 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelect
         </div>
 
         {task.description && (
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{task.description}</p>
+          <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+            {highlightText(task.description, searchQuery)}
+          </p>
         )}
 
         <div className="flex flex-wrap items-center gap-2 mt-2">
