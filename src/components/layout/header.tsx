@@ -8,20 +8,39 @@ import { PomodoroTimer } from '@/components/layout/pomodoro-timer'
 import { KeyboardShortcuts } from '@/components/layout/keyboard-shortcuts'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Plus, Menu, Sun, Moon, LayoutList, LayoutGrid, Trash2 } from 'lucide-react'
+import { Plus, Menu, Sun, Moon, LayoutList, LayoutGrid, Trash2, ArrowUpDown, Check } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { motion, AnimatePresence } from 'framer-motion'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu'
 
 import { Task } from '@/lib/types'
 
 export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAddTask: () => void; taskCount: number; tasks: Task[]; onClearCompleted: () => void }) {
-  const { showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar, currentListId, currentView, viewMode, setViewMode } = useApp()
+  const { 
+    showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar, currentListId, currentView, viewMode, setViewMode,
+    sortBy, setSortBy, sortOrder, setSortOrder
+  } = useApp()
   const { theme, setTheme, resolvedTheme } = useTheme()
   const { lists } = useLists()
 
   const toggleViewMode = () => {
     setViewMode(viewMode === 'list' ? 'kanban' : 'list')
   }
+
+  const sortOptions = [
+    { id: 'date', label: 'Due Date' },
+    { id: 'priority', label: 'Priority' },
+    { id: 'name', label: 'Name' },
+    { id: 'created', label: 'Creation Date' },
+  ] as const
+
 
   const completedCount = tasks.filter(t => t.completed).length
 
@@ -140,6 +159,46 @@ export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAd
         >
           {viewMode === 'list' ? <LayoutGrid className="w-4 h-4" /> : <LayoutList className="w-4 h-4" />}
         </motion.button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="text-muted-foreground hover:text-foreground h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary/50 transition-colors"
+              title="Sort tasks"
+            >
+              <ArrowUpDown className="w-4 h-4" />
+            </motion.button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+            <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1.5">
+              Sort By
+            </DropdownMenuLabel>
+            {sortOptions.map((option) => (
+              <DropdownMenuItem
+                key={option.id}
+                onClick={() => setSortBy(option.id)}
+                className="flex items-center justify-between"
+              >
+                {option.label}
+                {sortBy === option.id && <Check className="w-3.5 h-3.5 text-primary" />}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator className="bg-border/40" />
+            <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1.5">
+              Order
+            </DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setSortOrder('asc')} className="flex items-center justify-between">
+              Ascending
+              {sortOrder === 'asc' && <Check className="w-3.5 h-3.5 text-primary" />}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortOrder('desc')} className="flex items-center justify-between">
+              Descending
+              {sortOrder === 'desc' && <Check className="w-3.5 h-3.5 text-primary" />}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <KeyboardShortcuts />
 

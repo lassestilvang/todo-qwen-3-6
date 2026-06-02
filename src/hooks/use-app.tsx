@@ -3,9 +3,18 @@
 import { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react'
 import { AppState, ViewType } from '@/lib/types'
 
+export type SortBy = 'date' | 'priority' | 'name' | 'created'
+export type SortOrder = 'asc' | 'desc'
+
 interface AppContextType extends AppState {
   viewMode: 'list' | 'kanban'
   setViewMode: (mode: 'list' | 'kanban') => void
+  accentColor: string
+  setAccentColor: (color: string) => void
+  sortBy: SortBy
+  setSortBy: (sort: SortBy) => void
+  sortOrder: SortOrder
+  setSortOrder: (order: SortOrder) => void
   setView: (view: ViewType) => void
   setListId: (listId: string | null) => void
   setLabelId: (labelId: string | null) => void
@@ -26,6 +35,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
+  const [accentColor, setAccentColor] = useState('#6366f1')
+  const [sortBy, setSortBy] = useState<SortBy>('date')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
 
   const setView = useCallback((view: ViewType) => {
     setCurrentView(view)
@@ -61,6 +73,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     sidebarOpen,
     viewMode,
     setViewMode,
+    accentColor,
+    setAccentColor,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
     setView,
     setListId: setCurrentListId,
     setLabelId,
@@ -78,6 +96,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     sidebarOpen,
     viewMode,
     setViewMode,
+    accentColor,
+    sortBy,
+    sortOrder,
     setView,
     setListId,
     setLabelId,
