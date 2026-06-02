@@ -31,6 +31,9 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { ProductivityDashboard } from '@/components/sidebar/productivity-dashboard'
 import { Task } from '@/lib/types'
+import { sounds } from '@/lib/sounds'
+import { toast } from 'sonner'
+import { Download, Volume2, VolumeX } from 'lucide-react'
 
 const views = [
   { id: 'today' as const, label: 'Today', icon: Calendar },
@@ -59,7 +62,37 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
   }
   const [showCreateList, setShowCreateList] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
   const [deleteListId, setDeleteListId] = useState<string | null>(null)
+  
+  const handleExportData = () => {
+    try {
+      const data = {
+        tasks,
+        lists,
+        labels,
+        exportedAt: new Date().toISOString(),
+        version: '1.5.0'
+      }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `task-planner-export-${new Date().toISOString().split('T')[0]}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success('Data exported successfully')
+    } catch (err) {
+      toast.error('Failed to export data')
+    }
+  }
+
+  const toggleMute = () => {
+    const nextMuted = !isMuted
+    setIsMuted(nextMuted)
+    sounds.setMuted(nextMuted)
+    if (!nextMuted) sounds.playClick()
+  }
   const [newListName, setNewListName] = useState('')
   const [newListColor, setNewListColor] = useState('#6366f1')
   const [newListEmoji, setNewListEmoji] = useState('📋')
@@ -327,6 +360,35 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
                 ))}
               </div>
               <p className="text-[10px] text-muted-foreground">Select a color to personalize the application interface.</p>
+            </div>
+
+            <Separator className="bg-border/40" />
+
+            <div className="space-y-3">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Preferences</Label>
+              <div className="space-y-2">
+                <button
+                  onClick={toggleMute}
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/40 hover:bg-secondary/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-indigo-400" />}
+                    <span className="text-sm font-medium">Sound Effects</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{isMuted ? 'Off' : 'On'}</span>
+                </button>
+
+                <button
+                  onClick={handleExportData}
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/40 hover:bg-secondary/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Download className="w-4 h-4 text-emerald-400" />
+                    <span className="text-sm font-medium">Export Data</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">JSON</span>
+                </button>
+              </div>
             </div>
 
             <Separator className="bg-border/40" />
