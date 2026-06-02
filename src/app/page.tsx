@@ -84,7 +84,7 @@ export default function Home() {
 
   return (
     <div className="h-screen flex bg-background text-foreground overflow-hidden">
-      <Sidebar />
+      <Sidebar tasks={tasks} />
 
       <motion.main
         animate={{ marginLeft: sidebarOpen ? 280 : 0 }}

@@ -29,6 +29,7 @@ import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { ProductivityDashboard } from '@/components/sidebar/productivity-dashboard'
+import { Task } from '@/lib/types'
 
 const views = [
   { id: 'today' as const, label: 'Today', icon: Calendar },
@@ -37,10 +38,21 @@ const views = [
   { id: 'all' as const, label: 'All', icon: ListTodo },
 ]
 
-export function Sidebar() {
+export function Sidebar({ tasks }: { tasks: Task[] }) {
   const { currentView, currentListId, currentLabelId, setView, setListId, setLabelId, sidebarOpen, toggleSidebar } = useApp()
   const { lists, createList, deleteList } = useLists()
   const { labels } = useLabels()
+  
+  const getTaskCount = (view: string, listId?: string, labelId?: string) => {
+    const activeTasks = tasks.filter(t => !t.completed)
+    if (listId) return activeTasks.filter(t => t.listId === listId).length
+    if (labelId) return activeTasks.filter(t => t.labels.some(l => l.id === labelId)).length
+    
+    const today = new Date().toISOString().split('T')[0]
+    if (view === 'today') return activeTasks.filter(t => t.date && t.date.startsWith(today)).length
+    if (view === 'all') return activeTasks.length
+    return 0 // Other views can be calculated similarly if needed
+  }
   const [showCreateList, setShowCreateList] = useState(false)
   const [deleteListId, setDeleteListId] = useState<string | null>(null)
   const [newListName, setNewListName] = useState('')
@@ -106,14 +118,21 @@ export function Sidebar() {
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setView(view.id)}
                       className={cn(
-                        'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                        'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors group/item',
                         isActive
                           ? 'bg-secondary text-foreground font-medium shadow-sm border border-border/20'
                           : 'text-muted-foreground hover:bg-secondary/40 hover:text-foreground'
                       )}
                     >
-                      <Icon className="w-4 h-4" />
-                      {view.label}
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-4 h-4" />
+                        {view.label}
+                      </div>
+                      {getTaskCount(view.id) > 0 && (
+                        <span className="text-[10px] font-bold bg-secondary/80 px-1.5 py-0.5 rounded-full border border-border/40 text-muted-foreground group-hover/item:text-foreground transition-colors">
+                          {getTaskCount(view.id)}
+                        </span>
+                      )}
                     </motion.button>
                   )
                 })}
@@ -153,14 +172,21 @@ export function Sidebar() {
                               whileTap={{ scale: 0.98 }}
                               onClick={() => setListId(list.id)}
                               className={cn(
-                                'flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                                'flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors group/item',
                                 currentListId === list.id
                                   ? 'bg-secondary text-foreground font-medium shadow-sm border border-border/20'
                                   : 'text-muted-foreground hover:bg-secondary/40 hover:text-foreground'
                               )}
                             >
-                              <span>{list.emoji}</span>
-                              <span className="truncate">{list.name}</span>
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span className="shrink-0">{list.emoji}</span>
+                                <span className="truncate">{list.name}</span>
+                              </div>
+                              {getTaskCount('', list.id) > 0 && (
+                                <span className="text-[10px] font-bold bg-secondary/80 px-1.5 py-0.5 rounded-full border border-border/40 text-muted-foreground group-hover/item:text-foreground transition-colors shrink-0">
+                                  {getTaskCount('', list.id)}
+                                </span>
+                              )}
                             </motion.button>
                             {!list.isDefault && (
                               <DropdownMenu>
@@ -225,18 +251,25 @@ export function Sidebar() {
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setLabelId(currentLabelId === label.id ? null : label.id)}
                             className={cn(
-                              'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                              'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors group/item',
                               currentLabelId === label.id
                                 ? 'bg-secondary text-foreground font-medium shadow-sm border border-border/20'
                                 : 'text-muted-foreground hover:bg-secondary/40 hover:text-foreground'
                             )}
                           >
-                            <span
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: label.color }}
-                            />
-                            <span>{label.icon}</span>
-                            <span className="truncate">{label.name}</span>
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span
+                                className="w-3 h-3 rounded-full shrink-0"
+                                style={{ backgroundColor: label.color }}
+                              />
+                              <span className="shrink-0">{label.icon}</span>
+                              <span className="truncate">{label.name}</span>
+                            </div>
+                            {getTaskCount('', undefined, label.id) > 0 && (
+                              <span className="text-[10px] font-bold bg-secondary/80 px-1.5 py-0.5 rounded-full border border-border/40 text-muted-foreground group-hover/item:text-foreground transition-colors shrink-0">
+                                {getTaskCount('', undefined, label.id)}
+                              </span>
+                            )}
                           </motion.button>
                         ))}
                       </div>
