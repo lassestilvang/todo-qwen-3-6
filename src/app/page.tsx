@@ -6,6 +6,7 @@ import { useTasks, useLists, useLabels } from '@/hooks/use-data'
 import { Sidebar } from '@/components/sidebar/sidebar'
 import { Header } from '@/components/layout/header'
 import { TaskList } from '@/components/tasks/task-list'
+import { KanbanBoard } from '@/components/tasks/kanban-board'
 import { TaskListSkeleton } from '@/components/tasks/task-list-skeleton'
 import { TaskForm } from '@/components/tasks/task-form'
 import { TaskDetail } from '@/components/tasks/task-detail'
@@ -14,7 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Task } from '@/lib/types'
 
 export default function Home() {
-  const { currentView, currentListId, currentLabelId, selectedTaskId, setSelectedTaskId, sidebarOpen, showCompleted } = useApp()
+  const { currentView, currentListId, currentLabelId, selectedTaskId, setSelectedTaskId, sidebarOpen, showCompleted, viewMode } = useApp()
   const { tasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, refresh } = useTasks(
     currentView,
     currentListId,
@@ -107,19 +108,28 @@ export default function Home() {
             ) : (
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={currentView + (currentListId || '') + (currentLabelId || '')}
+                  key={currentView + (currentListId || '') + (currentLabelId || '') + viewMode}
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.2 }}
                   className="h-full"
                 >
-                  <TaskList
-                    tasks={tasks}
-                    onToggle={toggleComplete}
-                    onSelect={handleSelectTask}
-                    selectedTaskId={selectedTaskId}
-                  />
+                  {viewMode === 'list' ? (
+                    <TaskList
+                      tasks={tasks}
+                      onToggle={toggleComplete}
+                      onSelect={handleSelectTask}
+                      selectedTaskId={selectedTaskId}
+                    />
+                  ) : (
+                    <KanbanBoard
+                      tasks={tasks}
+                      onToggle={toggleComplete}
+                      onSelect={handleSelectTask}
+                      selectedTaskId={selectedTaskId}
+                    />
+                  )}
                 </motion.div>
               </AnimatePresence>
             )}

@@ -7,16 +7,21 @@ import { PomodoroTimer } from '@/components/layout/pomodoro-timer'
 import { KeyboardShortcuts } from '@/components/layout/keyboard-shortcuts'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Plus, Menu, Sun, Moon } from 'lucide-react'
+import { Plus, Menu, Sun, Moon, LayoutList, LayoutGrid } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { motion } from 'framer-motion'
 
 import { Task } from '@/lib/types'
 
 export function Header({ onAddTask, taskCount, tasks }: { onAddTask: () => void; taskCount: number; tasks: Task[] }) {
-  const { showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar, currentListId, currentView } = useApp()
+  const { showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar, currentListId, currentView, viewMode, setViewMode } = useApp()
   const { theme, setTheme, resolvedTheme } = useTheme()
   const { lists } = useLists()
+
+  const toggleViewMode = () => {
+    setViewMode(viewMode === 'list' ? 'kanban' : 'list')
+  }
+
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
@@ -100,6 +105,17 @@ export function Header({ onAddTask, taskCount, tasks }: { onAddTask: () => void;
         </div>
 
         <PomodoroTimer />
+
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={toggleViewMode}
+          className="text-muted-foreground hover:text-foreground h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary/50 transition-colors"
+          title={viewMode === 'list' ? 'Switch to Kanban' : 'Switch to List'}
+        >
+          {viewMode === 'list' ? <LayoutGrid className="w-4 h-4" /> : <LayoutList className="w-4 h-4" />}
+        </motion.button>
+
         <KeyboardShortcuts />
 
         <motion.button
