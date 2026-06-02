@@ -14,6 +14,7 @@ import {
   ChevronRight,
   MoreHorizontal,
   Trash2,
+  Settings,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -39,7 +40,10 @@ const views = [
 ]
 
 export function Sidebar({ tasks }: { tasks: Task[] }) {
-  const { currentView, currentListId, currentLabelId, setView, setListId, setLabelId, sidebarOpen, toggleSidebar } = useApp()
+  const { 
+    currentView, currentListId, currentLabelId, setView, setListId, setLabelId, sidebarOpen, toggleSidebar,
+    accentColor, setAccentColor
+  } = useApp()
   const { lists, createList, deleteList } = useLists()
   const { labels } = useLabels()
   
@@ -54,6 +58,7 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
     return 0 // Other views can be calculated similarly if needed
   }
   const [showCreateList, setShowCreateList] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [deleteListId, setDeleteListId] = useState<string | null>(null)
   const [newListName, setNewListName] = useState('')
   const [newListColor, setNewListColor] = useState('#6366f1')
@@ -62,7 +67,8 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
   const [labelsExpanded, setLabelsExpanded] = useState(true)
 
   const commonEmojis = ['📋', '💼', '🏠', '🎯', '💡', '📚', '🎨', '🏃', '💪', '🎵', '🍕', '✈️', '💰', '❤️', '⭐']
-  const colors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#06b6d4']
+  const accentColors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#06b6d4', '#14b8a6', '#f97316']
+  const colors = accentColors
 
   const handleCreateList = async () => {
     if (!newListName.trim()) return
@@ -282,9 +288,65 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
 
           <div className="p-3 border-t border-border/40 bg-secondary/10 flex flex-col gap-2">
             <ProductivityDashboard />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSettings(true)}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground border border-border/20 transition-colors"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Settings
+            </Button>
           </div>
         </div>
       </motion.aside>
+
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="max-w-md bg-card border-border text-card-foreground p-6 rounded-2xl shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2">
+              <Settings className="w-5 h-5 text-indigo-500" /> Settings
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            <div className="space-y-3">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Accent Color</Label>
+              <div className="grid grid-cols-5 gap-3">
+                {accentColors.map(color => (
+                  <button
+                    key={color}
+                    onClick={() => setAccentColor(color)}
+                    className={cn(
+                      'w-10 h-10 rounded-xl transition-all duration-200 border-2',
+                      accentColor === color ? 'border-primary scale-110 shadow-lg' : 'border-transparent hover:scale-105'
+                    )}
+                    style={{ backgroundColor: color }}
+                    title={color}
+                  />
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground">Select a color to personalize the application interface.</p>
+            </div>
+
+            <Separator className="bg-border/40" />
+            
+            <div className="space-y-3">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">About</Label>
+              <div className="p-3 rounded-xl bg-secondary/30 border border-border/40">
+                <p className="text-xs font-medium">Task Planner Pro v1.5.0</p>
+                <p className="text-[10px] text-muted-foreground mt-1">The most advanced daily productivity system ever created.</p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setShowSettings(false)} className="w-full bg-primary text-primary-foreground font-semibold">
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showCreateList} onOpenChange={setShowCreateList}>
         <DialogContent className="bg-zinc-900 border-zinc-800 text-white">

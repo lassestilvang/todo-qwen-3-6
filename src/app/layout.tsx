@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/layout/error-boundary";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Confetti } from "@/components/ui/confetti";
+import { AccentColorHandler } from "@/components/layout/accent-color-handler";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,6 +62,7 @@ export default function RootLayout({
           <ErrorBoundary>
             <TooltipProvider>
               <AppProvider>
+                <AccentColorHandler />
                 <Confetti />
                 {children}
               </AppProvider>
