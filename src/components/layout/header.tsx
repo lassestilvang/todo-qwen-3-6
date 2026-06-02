@@ -11,7 +11,9 @@ import { Plus, Menu, Sun, Moon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { motion } from 'framer-motion'
 
-export function Header({ onAddTask, taskCount }: { onAddTask: () => void; taskCount: number }) {
+import { Task } from '@/lib/types'
+
+export function Header({ onAddTask, taskCount, tasks }: { onAddTask: () => void; taskCount: number; tasks: Task[] }) {
   const { showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar, currentListId, currentView } = useApp()
   const { theme, setTheme, resolvedTheme } = useTheme()
   const { lists } = useLists()
@@ -35,6 +37,10 @@ export function Header({ onAddTask, taskCount }: { onAddTask: () => void; taskCo
   const today = new Date()
   const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
+  const completedToday = taskCount > 0 ? tasks.filter(t => t.completed && t.date && t.date.startsWith(today.toISOString().split('T')[0])).length : 0
+  const totalToday = taskCount > 0 ? tasks.filter(t => t.date && t.date.startsWith(today.toISOString().split('T')[0])).length : 0
+  const progressPercent = totalToday > 0 ? Math.round((completedToday / totalToday) * 100) : 0
+
   return (
     <header className="h-14 border-b border-border bg-background/80 backdrop-blur-md px-4 flex items-center justify-between gap-4">
       <div className="flex items-center gap-3">
@@ -48,8 +54,23 @@ export function Header({ onAddTask, taskCount }: { onAddTask: () => void; taskCo
             <Menu className="w-4 h-4" />
           </motion.button>
         )}
-        <div>
-          <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+            {totalToday > 0 && (
+              <div className="flex items-center gap-1.5 ml-1">
+                <div className="w-12 h-1 bg-secondary rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-emerald-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                  />
+                </div>
+                <span className="text-[10px] font-bold text-muted-foreground">{completedToday}/{totalToday}</span>
+              </div>
+            )}
+          </div>
           {currentView === 'today' && (
             <p className="text-xs text-muted-foreground">{dateStr}</p>
           )}
