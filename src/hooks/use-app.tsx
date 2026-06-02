@@ -19,6 +19,9 @@ interface AppContextType extends AppState {
   setListId: (listId: string | null) => void
   setLabelId: (labelId: string | null) => void
   setSelectedTaskId: (taskId: string | null) => void
+  selectedTaskIds: string[]
+  setSelectedTaskIds: (taskIds: string[]) => void
+  toggleTaskSelection: (taskId: string) => void
   toggleShowCompleted: () => void
   setSearchQuery: (query: string) => void
   toggleSidebar: () => void
@@ -31,6 +34,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [currentListId, setCurrentListId] = useState<string | null>(null)
   const [currentLabelId, setCurrentLabelId] = useState<string | null>(null)
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
   const [showCompleted, setShowCompleted] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -43,16 +47,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCurrentView(view)
     setCurrentListId(null)
     setCurrentLabelId(null)
+    setSelectedTaskIds([])
   }, [])
 
   const setListId = useCallback((listId: string | null) => {
     setCurrentListId(listId)
     setCurrentLabelId(null)
+    setSelectedTaskIds([])
   }, [])
 
   const setLabelId = useCallback((labelId: string | null) => {
     setCurrentLabelId(labelId)
     setCurrentListId(null)
+    setSelectedTaskIds([])
+  }, [])
+
+  const toggleTaskSelection = useCallback((taskId: string) => {
+    setSelectedTaskIds(prev =>
+      prev.includes(taskId) ? prev.filter(id => id !== taskId) : [...prev, taskId]
+    )
   }, [])
 
   const toggleShowCompleted = useCallback(() => {
@@ -68,6 +81,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     currentListId,
     currentLabelId,
     selectedTaskId,
+    selectedTaskIds,
+    setSelectedTaskIds,
+    toggleTaskSelection,
     showCompleted,
     searchQuery,
     sidebarOpen,
@@ -91,6 +107,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     currentListId,
     currentLabelId,
     selectedTaskId,
+    selectedTaskIds,
+    toggleTaskSelection,
     showCompleted,
     searchQuery,
     sidebarOpen,

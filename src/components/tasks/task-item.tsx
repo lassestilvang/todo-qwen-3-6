@@ -19,11 +19,12 @@ import { memo } from 'react'
 interface TaskItemProps {
   task: Task
   onToggle: (task: Task) => void
-  onSelect: (task: Task) => void
+  onSelect: (task: Task, isMultiSelect?: boolean) => void
   isSelected: boolean
+  isMultiSelected?: boolean
 }
 
-function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemProps) {
+function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelected }: TaskItemProps) {
   const isOverdue = task.date && !task.completed && isBefore(new Date(task.date), startOfDay(new Date()))
   const completedSubtasks = task.subTasks.filter(st => st.completed).length
   const totalSubtasks = task.subTasks.length
@@ -33,6 +34,10 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
     medium: 'text-amber-400',
     low: 'text-blue-400',
     none: 'text-zinc-500',
+  }
+
+  const handleClick = (e: React.MouseEvent) => {
+    onSelect(task, e.metaKey || e.ctrlKey || e.shiftKey)
   }
 
   return (
@@ -45,17 +50,22 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected }: TaskItemPro
       whileHover={{ scale: 1.005, transition: { duration: 0.1 } }}
       whileTap={{ scale: 0.995 }}
       className={cn(
-        'group flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer',
+        'group flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer relative',
         isSelected
           ? 'bg-secondary text-foreground border-border/80 shadow-md ring-1 ring-border/20'
-          : 'bg-card/45 border-border/40 hover:bg-secondary/45 hover:border-border/60 hover:shadow-sm',
+          : isMultiSelected
+            ? 'bg-primary/10 border-primary/40 shadow-sm'
+            : 'bg-card/45 border-border/40 hover:bg-secondary/45 hover:border-border/60 hover:shadow-sm',
         task.completed && 'opacity-60'
       )}
-      onClick={() => onSelect(task)}
+      onClick={handleClick}
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(task) } }}
       role="button"
       tabIndex={0}
     >
+      {isMultiSelected && (
+        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary animate-pulse" />
+      )}
       <div className="pt-0.5" onClick={e => e.stopPropagation()}>
         <motion.div
           whileTap={{ scale: 0.85 }}

@@ -8,11 +8,12 @@ import { ClipboardList } from 'lucide-react'
 interface TaskListProps {
   tasks: Task[]
   onToggle: (task: Task) => void
-  onSelect: (task: Task) => void
+  onSelect: (task: Task, isMultiSelect?: boolean) => void
   selectedTaskId: string | null
+  selectedTaskIds: string[]
 }
 
-export function TaskList({ tasks, onToggle, onSelect, selectedTaskId }: TaskListProps) {
+export function TaskList({ tasks, onToggle, onSelect, selectedTaskId, selectedTaskIds }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8 select-none">
@@ -54,6 +55,7 @@ export function TaskList({ tasks, onToggle, onSelect, selectedTaskId }: TaskList
               onToggle={onToggle}
               onSelect={onSelect}
               isSelected={selectedTaskId === task.id}
+              isMultiSelected={selectedTaskIds.includes(task.id)}
             />
           ))}
         </AnimatePresence>

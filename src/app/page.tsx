@@ -13,15 +13,22 @@ import { TaskDetail } from '@/components/tasks/task-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Task } from '@/lib/types'
+import { Trash2, CheckCircle2, X, ListPlus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function Home() {
-  const { currentView, currentListId, currentLabelId, selectedTaskId, setSelectedTaskId, sidebarOpen, showCompleted, viewMode, sortBy, sortOrder } = useApp()
+  const { 
+    currentView, currentListId, currentLabelId, selectedTaskId, setSelectedTaskId, 
+    selectedTaskIds, setSelectedTaskIds, toggleTaskSelection,
+    sidebarOpen, showCompleted, viewMode, sortBy, sortOrder 
+  } = useApp()
   const { tasks: rawTasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, clearCompleted, refresh } = useTasks(
     currentView,
     currentListId,
     showCompleted,
     currentLabelId
   )
+
 
   const tasks = useMemo(() => {
     const sorted = [...rawTasks]
@@ -102,9 +109,16 @@ export default function Home() {
     return () => window.removeEventListener('add-task', handleAddTaskEvent)
   }, [])
 
-  const handleSelectTask = (task: Task) => {
-    setSelectedTaskId(task.id)
-    setShowTaskDetail(true)
+  const handleSelectTask = (task: Task, isMultiSelect?: boolean) => {
+    if (isMultiSelect) {
+      toggleTaskSelection(task.id)
+      setSelectedTaskId(null)
+      setShowTaskDetail(false)
+    } else {
+      setSelectedTaskId(task.id)
+      setSelectedTaskIds([])
+      setShowTaskDetail(true)
+    }
   }
 
   const handleAddTask = () => {
@@ -145,6 +159,27 @@ export default function Home() {
     }
   }
 
+  const handleBatchDelete = async () => {
+    if (selectedTaskIds.length === 0) return
+    try {
+      await Promise.all(selectedTaskIds.map(id => deleteTask(id)))
+      setSelectedTaskIds([])
+    } catch {
+      // Error handled by use-data.ts
+    }
+  }
+
+  const handleBatchToggle = async () => {
+    if (selectedTaskIds.length === 0) return
+    try {
+      const selectedTasks = tasks.filter(t => selectedTaskIds.includes(t.id))
+      await Promise.all(selectedTasks.map(t => toggleComplete(t)))
+      setSelectedTaskIds([])
+    } catch {
+      // Error handled by use-data.ts
+    }
+  }
+
   return (
     <div className="h-screen flex bg-background text-foreground overflow-hidden">
       <Sidebar tasks={tasks} />
@@ -152,7 +187,7 @@ export default function Home() {
       <motion.main
         animate={{ marginLeft: sidebarOpen ? 280 : 0 }}
         transition={{ duration: 0.2 }}
-        className="flex-1 flex flex-col min-w-0"
+        className="flex-1 flex flex-col min-w-0 relative"
       >
         <Header onAddTask={handleAddTask} taskCount={tasks.length} tasks={tasks} onClearCompleted={clearCompleted} />
 
@@ -183,6 +218,7 @@ export default function Home() {
                       onToggle={toggleComplete}
                       onSelect={handleSelectTask}
                       selectedTaskId={selectedTaskId}
+                      selectedTaskIds={selectedTaskIds}
                     />
                   ) : (
                     <KanbanBoard
@@ -220,6 +256,45 @@ export default function Home() {
             )}
           </AnimatePresence>
         </div>
+
+        <AnimatePresence>
+          {selectedTaskIds.length > 0 && (
+            <motion.div
+              initial={{ y: 100, x: '-50%' }}
+              animate={{ y: -20, x: '-50%' }}
+              exit={{ y: 100, x: '-50%' }}
+              className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 bg-card border border-border px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-6"
+            >
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-primary">{selectedTaskIds.length} tasks selected</span>
+                <button onClick={() => setSelectedTaskIds([])} className="text-[10px] text-muted-foreground hover:text-foreground text-left">
+                  Deselect all
+                </button>
+              </div>
+              
+              <div className="h-8 w-px bg-border/40" />
+              
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="ghost" onClick={handleBatchToggle} className="h-9 gap-2 text-xs font-medium px-3 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-500">
+                  <CheckCircle2 className="w-4 h-4" />
+                  Toggle Complete
+                </Button>
+                <Button size="sm" variant="ghost" onClick={handleBatchDelete} className="h-9 gap-2 text-xs font-medium px-3 rounded-xl hover:bg-red-500/10 hover:text-red-500">
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </Button>
+                <Button size="sm" variant="ghost" className="h-9 gap-2 text-xs font-medium px-3 rounded-xl hover:bg-indigo-500/10 hover:text-indigo-500">
+                  <ListPlus className="w-4 h-4" />
+                  Move to List
+                </Button>
+              </div>
+
+              <button onClick={() => setSelectedTaskIds([])} className="ml-2 text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.main>
 
       <Dialog open={showTaskForm} onOpenChange={setShowTaskForm}>
