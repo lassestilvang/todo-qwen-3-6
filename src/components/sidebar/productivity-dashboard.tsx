@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { BarChart3, TrendingUp, Award, Clock, Flame, AlertCircle } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Task, TaskList } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 export function ProductivityDashboard() {
   const [isOpen, setIsOpen] = useState(false)
@@ -166,6 +167,60 @@ export function ProductivityDashboard() {
                   Focus Sessions <Flame className="w-3 h-3 text-orange-500" />
                 </span>
                 <h4 className="text-lg font-bold text-orange-500">{sessionsCompleted}</h4>
+              </div>
+            </div>
+
+            {/* 7-Day Activity Chart */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+                <span>Last 7 Days Activity</span>
+                <span className="text-[10px] lowercase font-normal">Completed tasks</span>
+              </h4>
+              <div className="h-32 w-full flex items-end justify-between gap-1 pt-4 px-1">
+                {Array.from({ length: 7 }).map((_, i) => {
+                  const date = new Date()
+                  date.setDate(date.getDate() - (6 - i))
+                  const dayStr = date.toISOString().split('T')[0]
+                  const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
+                  
+                  const dayTasks = tasks.filter(t => t.completed && t.completedAt && t.completedAt.startsWith(dayStr)).length
+                  const maxTasks = Math.max(...Array.from({ length: 7 }).map((_, j) => {
+                    const d = new Date()
+                    d.setDate(d.getDate() - (6 - j))
+                    const ds = d.toISOString().split('T')[0]
+                    return tasks.filter(t => t.completed && t.completedAt && t.completedAt.startsWith(ds)).length
+                  }), 1)
+                  
+                  const height = (dayTasks / maxTasks) * 100
+                  const isToday = i === 6
+
+                  return (
+                    <div key={dayStr} className="flex-1 flex flex-col items-center gap-2 group relative">
+                      <div className="w-full bg-secondary/30 rounded-t-md overflow-hidden flex items-end h-20">
+                        <motion.div
+                          initial={{ height: 0 }}
+                          animate={{ height: `${height}%` }}
+                          transition={{ duration: 1, delay: i * 0.1, ease: 'easeOut' }}
+                          className={cn(
+                            "w-full rounded-t-sm",
+                            isToday ? "bg-indigo-500" : "bg-indigo-500/40 group-hover:bg-indigo-500/60 transition-colors"
+                          )}
+                        />
+                      </div>
+                      <span className={cn(
+                        "text-[9px] font-bold",
+                        isToday ? "text-indigo-500" : "text-muted-foreground"
+                      )}>
+                        {dayName[0]}
+                      </span>
+                      
+                      {/* Tooltip */}
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded shadow-lg border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                        {dayTasks} tasks
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
