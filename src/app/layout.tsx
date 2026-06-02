@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/layout/error-boundary";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Confetti } from "@/components/ui/confetti";
 import { AccentColorHandler } from "@/components/layout/accent-color-handler";
+import { CommandPalette } from "@/components/layout/command-palette";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -63,6 +64,7 @@ export default function RootLayout({
             <TooltipProvider>
               <AppProvider>
                 <AccentColorHandler />
+                <CommandPalette />
                 <Confetti />
                 {children}
               </AppProvider>
