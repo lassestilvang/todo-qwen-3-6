@@ -159,6 +159,23 @@ export default function Home() {
     }
   }
 
+  const handleDuplicateTask = async () => {
+    if (!selectedTask) return
+    try {
+      const { id, createdAt, updatedAt, completedAt, completed, labels, subTasks, reminders, attachments, ...rest } = selectedTask
+      await createTask({
+        ...rest,
+        name: `${rest.name} (Copy)`,
+        labels: labels.map(l => l.id),
+        subTasks: subTasks.map(st => ({ name: st.name, completed: false, order: st.order })),
+        reminders: reminders.map(r => ({ type: r.type, time: r.time })),
+      })
+      toast.success('Task duplicated')
+    } catch {
+      // Error handled by use-data.ts
+    }
+  }
+
   const handleBatchDelete = async () => {
     if (selectedTaskIds.length === 0) return
     try {
@@ -250,6 +267,7 @@ export default function Home() {
                   }}
                   onDelete={handleDeleteTask}
                   onEdit={handleEditTask}
+                  onDuplicate={handleDuplicateTask}
                   onUpdate={updateTask}
                 />
               </motion.div>

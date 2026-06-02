@@ -22,20 +22,29 @@ import {
   Paperclip,
   History,
   Pencil,
+  Copy,
+  Clipboard,
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface TaskDetailProps {
   task: Task
   onClose: () => void
   onDelete: () => void
   onEdit: () => void
+  onDuplicate?: () => void
   onUpdate?: (id: string, data: Record<string, unknown>) => Promise<unknown>
 }
 
-export function TaskDetail({ task, onClose, onDelete, onEdit, onUpdate }: TaskDetailProps) {
+export function TaskDetail({ task, onClose, onDelete, onEdit, onDuplicate, onUpdate }: TaskDetailProps) {
   const [changes, setChanges] = useState<TaskChange[]>([])
   const [loadingChanges, setLoadingChanges] = useState(false)
   const [newSubTaskName, setNewSubTaskName] = useState('')
+
+  const handleCopyName = () => {
+    navigator.clipboard.writeText(task.name)
+    toast.success('Task name copied to clipboard')
+  }
 
   const handleAddSubTask = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,6 +108,12 @@ export function TaskDetail({ task, onClose, onDelete, onEdit, onUpdate }: TaskDe
       <div className="flex items-center justify-between p-4 border-b border-border">
         <h2 className="text-sm font-medium text-muted-foreground">Task Details</h2>
         <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={handleCopyName} className="text-muted-foreground hover:text-foreground h-8 w-8" title="Copy task name">
+            <Clipboard className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={onDuplicate} className="text-muted-foreground hover:text-foreground h-8 w-8" title="Duplicate task">
+            <Copy className="w-4 h-4" />
+          </Button>
           <Button variant="ghost" size="icon" onClick={onEdit} className="text-muted-foreground hover:text-foreground h-8 w-8" aria-label="Edit task">
             <Pencil className="w-4 h-4" />
           </Button>
