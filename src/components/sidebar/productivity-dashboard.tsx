@@ -81,6 +81,44 @@ export function ProductivityDashboard() {
     (t) => t.date && !t.completed && new Date(t.date).getTime() < todayStart.getTime()
   ).length
 
+  // Streak calculation
+  const calculateStreak = () => {
+    if (tasks.length === 0) return 0
+    
+    const completedDates = tasks
+      .filter(t => t.completed && t.completedAt)
+      .map(t => new Date(t.completedAt!).toISOString().split('T')[0])
+    
+    if (completedDates.length === 0) return 0
+    
+    const uniqueDates = Array.from(new Set(completedDates)).sort().reverse()
+    
+    let streak = 0
+    const today = new Date().toISOString().split('T')[0]
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+    
+    // If no tasks completed today or yesterday, streak is broken
+    if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) return 0
+    
+    let currentDate = new Date(uniqueDates[0])
+    
+    for (let i = 0; i < uniqueDates.length; i++) {
+      const dateStr = uniqueDates[i]
+      const expectedDateStr = currentDate.toISOString().split('T')[0]
+      
+      if (dateStr === expectedDateStr) {
+        streak++
+        currentDate.setDate(currentDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+    
+    return streak
+  }
+
+  const streak = calculateStreak()
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger
@@ -152,9 +190,12 @@ export function ProductivityDashboard() {
               </div>
               <div className="p-3 rounded-xl bg-card border border-border/60">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                  Active Tasks
+                  Daily Streak
                 </span>
-                <h4 className="text-lg font-bold text-indigo-500">{pendingTasks}</h4>
+                <div className="flex items-center gap-1.5">
+                  <h4 className="text-lg font-bold text-orange-500">{streak}</h4>
+                  {streak > 0 && <Flame className="w-4 h-4 text-orange-500 fill-orange-500/20" />}
+                </div>
               </div>
               <div className="p-3 rounded-xl bg-card border border-border/60">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
@@ -164,9 +205,9 @@ export function ProductivityDashboard() {
               </div>
               <div className="p-3 rounded-xl bg-card border border-border/60">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                  Focus Sessions <Flame className="w-3 h-3 text-orange-500" />
+                  Focus Sessions
                 </span>
-                <h4 className="text-lg font-bold text-orange-500">{sessionsCompleted}</h4>
+                <h4 className="text-lg font-bold text-indigo-500">{sessionsCompleted}</h4>
               </div>
             </div>
 
