@@ -148,6 +148,33 @@ describe('Natural Language Parser', () => {
     })
   })
 
+  describe('label and list parsing', () => {
+    it('should parse single label', () => {
+      const result = parseNaturalLanguage('Buy milk #groceries')
+      expect(result.name).toBe('Buy milk')
+      expect(result.labels).toEqual(['groceries'])
+    })
+
+    it('should parse multiple labels', () => {
+      const result = parseNaturalLanguage('Call boss #work #urgent')
+      expect(result.name).toBe('Call boss')
+      expect(result.labels).toEqual(['work', 'urgent'])
+    })
+
+    it('should parse list name', () => {
+      const result = parseNaturalLanguage('Meeting @work')
+      expect(result.name).toBe('Meeting')
+      expect(result.listName).toBe('work')
+    })
+
+    it('should parse label and list together', () => {
+      const result = parseNaturalLanguage('Buy bread @shopping #food')
+      expect(result.name).toBe('Buy bread')
+      expect(result.listName).toBe('shopping')
+      expect(result.labels).toEqual(['food'])
+    })
+  })
+
   describe('combined parsing', () => {
     it('should parse date and time together', () => {
       const result = parseNaturalLanguage('Meeting tomorrow at 10:00')

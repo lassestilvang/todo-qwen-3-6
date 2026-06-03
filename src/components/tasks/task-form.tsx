@@ -60,7 +60,13 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
   )
   const [recurringRule, setRecurringRule] = useState<RecurringRule | null>(task?.recurringRule || null)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [parsedPreview, setParsedPreview] = useState<{ date?: Date; time?: string; priority?: Priority } | null>(null)
+  const [parsedPreview, setParsedPreview] = useState<{ 
+    date?: Date; 
+    time?: string; 
+    priority?: Priority;
+    labels?: string[];
+    listName?: string | null;
+  } | null>(null)
 
   const handleNameChange = (newName: string) => {
     setName(newName)
@@ -69,11 +75,13 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
       return
     }
     const parsed = parseNaturalLanguage(newName)
-    if (parsed.date || parsed.time || parsed.priority !== 'none') {
+    if (parsed.date || parsed.time || parsed.priority !== 'none' || parsed.labels.length > 0 || parsed.listName) {
       setParsedPreview({
         date: parsed.date ?? undefined,
         time: parsed.time ?? undefined,
         priority: parsed.priority as Priority,
+        labels: parsed.labels,
+        listName: parsed.listName,
       })
     } else {
       setParsedPreview(null)
@@ -82,8 +90,28 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
 
   const applyParsedFields = () => {
     if (!parsedPreview) return
+    
     if (parsedPreview.date) setDate(parsedPreview.date)
-    if (parsedPreview.priority) setPriority(parsedPreview.priority)
+    if (parsedPreview.priority && parsedPreview.priority !== 'none') setPriority(parsedPreview.priority)
+    
+    if (parsedPreview.labels && parsedPreview.labels.length > 0) {
+      const foundLabelIds = labels
+        .filter(l => parsedPreview.labels?.some(pl => pl.toLowerCase() === l.name.toLowerCase()))
+        .map(l => l.id)
+      
+      if (foundLabelIds.length > 0) {
+        setSelectedLabels(prev => {
+          const combined = [...new Set([...prev, ...foundLabelIds])]
+          return combined
+        })
+      }
+    }
+
+    if (parsedPreview.listName) {
+      const foundList = lists.find(l => l.name.toLowerCase() === parsedPreview.listName?.toLowerCase())
+      if (foundList) setListId(foundList.id)
+    }
+
     const parsed = parseNaturalLanguage(name)
     setName(parsed.name)
     setParsedPreview(null)
@@ -201,8 +229,12 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
               <p className="text-muted-foreground text-xs mt-1 font-medium">
                 Detected:{' '}
                 {parsedPreview.date && `Date: ${format(parsedPreview.date, 'PPP')}`}
-                {parsedPreview.date && parsedPreview.priority && ', '}
-                {parsedPreview.priority && `Priority: ${parsedPreview.priority}`}
+                {parsedPreview.date && (parsedPreview.priority !== 'none' || (parsedPreview.labels?.length ?? 0) > 0 || parsedPreview.listName) && ', '}
+                {parsedPreview.priority && parsedPreview.priority !== 'none' && `Priority: ${parsedPreview.priority}`}
+                {parsedPreview.priority !== 'none' && ((parsedPreview.labels?.length ?? 0) > 0 || parsedPreview.listName) && ', '}
+                {parsedPreview.labels && parsedPreview.labels.length > 0 && `Labels: ${parsedPreview.labels.join(', ')}`}
+                {parsedPreview.labels && parsedPreview.labels.length > 0 && parsedPreview.listName && ', '}
+                {parsedPreview.listName && `List: ${parsedPreview.listName}`}
                 <button type="button" onClick={applyParsedFields} className="text-indigo-400 hover:text-indigo-300 font-semibold ml-1">
                   (click Apply to fill in)
                 </button>
