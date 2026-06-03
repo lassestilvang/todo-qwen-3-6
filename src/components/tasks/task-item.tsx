@@ -39,6 +39,13 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelect
     none: 'text-zinc-500',
   }
 
+  const priorityBorderColors = {
+    high: 'border-l-red-500/80',
+    medium: 'border-l-amber-500/80',
+    low: 'border-l-blue-500/80',
+    none: 'border-l-transparent',
+  }
+
   const handleClick = (e: React.MouseEvent) => {
     onSelect(task, e.metaKey || e.ctrlKey || e.shiftKey)
   }
@@ -53,13 +60,15 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelect
       whileHover={{ scale: 1.005, transition: { duration: 0.1 } }}
       whileTap={{ scale: 0.995 }}
       className={cn(
-        'group flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer relative',
+        'group flex items-start gap-3 p-3 rounded-xl border transition-all duration-200 cursor-pointer relative border-l-4',
+        priorityBorderColors[task.priority],
         isSelected
           ? 'bg-secondary text-foreground border-border/80 shadow-md ring-1 ring-border/20'
           : isMultiSelected
             ? 'bg-primary/10 border-primary/40 shadow-sm'
             : 'bg-card/45 border-border/40 hover:bg-secondary/45 hover:border-border/60 hover:shadow-sm',
-        task.completed && 'opacity-60'
+        task.priority === 'high' && !task.completed && 'shadow-[0_0_15px_-5px_rgba(239,68,68,0.15)] hover:shadow-[0_0_20px_-5px_rgba(239,68,68,0.25)]',
+        task.completed && 'opacity-60 grayscale-[0.3]'
       )}
       onClick={handleClick}
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(task) } }}
