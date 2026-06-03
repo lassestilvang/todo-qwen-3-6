@@ -5,6 +5,8 @@ interface ParsedTask {
   date: Date | null
   time: string | null
   priority: 'high' | 'medium' | 'low' | 'none'
+  labels: string[]
+  listName: string | null
 }
 
 const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
@@ -30,9 +32,13 @@ export function parseNaturalLanguage(input: string): ParsedTask {
   let date: Date | null = null
   let time: string | null = null
   let priority: 'high' | 'medium' | 'low' | 'none' = 'none'
+  let labels: string[] = []
+  let listName: string | null = null
 
   const now = new Date()
 
+  remaining = extractLabels(remaining, (l) => { labels = l })
+  remaining = extractList(remaining, (l) => { listName = l })
   remaining = extractTime(remaining, (t) => { time = t })
   remaining = extractDate(remaining, now, (d) => { date = d })
   remaining = extractPriority(remaining, (p) => { priority = p })
@@ -48,7 +54,29 @@ export function parseNaturalLanguage(input: string): ParsedTask {
     date,
     time,
     priority,
+    labels,
+    listName,
   }
+}
+
+function extractLabels(input: string, callback: (labels: string[]) => void): string {
+  const labelRegex = /#(\w+)/g
+  const matches = [...input.matchAll(labelRegex)]
+  if (matches.length > 0) {
+    callback(matches.map(m => m[1]))
+    return input.replace(labelRegex, '').trim()
+  }
+  return input
+}
+
+function extractList(input: string, callback: (list: string) => void): string {
+  const listRegex = /@(\w+)/
+  const match = input.match(listRegex)
+  if (match) {
+    callback(match[1])
+    return input.replace(listRegex, '').trim()
+  }
+  return input
 }
 
 function extractTime(input: string, callback: (time: string) => void): string {
