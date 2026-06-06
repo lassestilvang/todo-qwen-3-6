@@ -1,4 +1,5 @@
 import { addDays, startOfDay, isValid } from 'date-fns'
+import { RecurringRule, RecurringPattern } from './types'
 
 interface ParsedTask {
   name: string
@@ -7,9 +8,10 @@ interface ParsedTask {
   priority: 'high' | 'medium' | 'low' | 'none'
   labels: string[]
   listName: string | null
+  recurringRule: RecurringRule | null
 }
 
-const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+export const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
 
 const RELATIVE_DATES: Record<string, (date: Date) => Date> = {
@@ -34,11 +36,13 @@ export function parseNaturalLanguage(input: string): ParsedTask {
   let priority: 'high' | 'medium' | 'low' | 'none' = 'none'
   let labels: string[] = []
   let listName: string | null = null
+  let recurringRule: RecurringRule | null = null
 
   const now = new Date()
 
   remaining = extractLabels(remaining, (l) => { labels = l })
   remaining = extractList(remaining, (l) => { listName = l })
+  remaining = extractRecurring(remaining, (r) => { recurringRule = r })
   remaining = extractTime(remaining, (t) => { time = t })
   remaining = extractDate(remaining, now, (d) => { date = d })
   remaining = extractPriority(remaining, (p) => { priority = p })
@@ -56,7 +60,46 @@ export function parseNaturalLanguage(input: string): ParsedTask {
     priority,
     labels,
     listName,
+    recurringRule,
   }
+}
+
+function extractRecurring(input: string, callback: (rule: RecurringRule) => void): string {
+  const lowerInput = input.toLowerCase()
+  
+  const patterns: { regex: RegExp; pattern: RecurringPattern; daysOfWeek?: number[] }[] = [
+    { regex: /\bevery\s+day\b/i, pattern: 'daily' },
+    { regex: /\bdaily\b/i, pattern: 'daily' },
+    { regex: /\bevery\s+week\b/i, pattern: 'weekly' },
+    { regex: /\bweekly\b/i, pattern: 'weekly' },
+    { regex: /\bevery\s+weekday\b/i, pattern: 'weekday' },
+    { regex: /\bevery\s+month\b/i, pattern: 'monthly' },
+    { regex: /\bmonthly\b/i, pattern: 'monthly' },
+    { regex: /\bevery\s+year\b/i, pattern: 'yearly' },
+    { regex: /\byearly\b/i, pattern: 'yearly' },
+  ]
+
+  // Check for specific days: "every monday"
+  DAYS.forEach((day, index) => {
+    patterns.push({
+      regex: new RegExp(`\\bevery\\s+${day}\\b`, 'i'),
+      pattern: 'weekly',
+      daysOfWeek: [index]
+    })
+  })
+
+  for (const p of patterns) {
+    const match = input.match(p.regex)
+    if (match) {
+      callback({
+        pattern: p.pattern,
+        daysOfWeek: p.daysOfWeek,
+      })
+      return input.replace(match[0], '').trim()
+    }
+  }
+
+  return input
 }
 
 function extractLabels(input: string, callback: (labels: string[]) => void): string {

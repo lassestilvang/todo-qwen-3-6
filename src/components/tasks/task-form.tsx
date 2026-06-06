@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Task, Priority, Label, RecurringRule, RecurringPattern } from '@/lib/types'
-import { parseNaturalLanguage } from '@/lib/natural-language'
+import { parseNaturalLanguage, DAYS } from '@/lib/natural-language'
 import { timeRegex } from '@/lib/validation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +15,7 @@ import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
-import { Calendar as CalendarIcon, Sparkles } from 'lucide-react'
+import { Calendar as CalendarIcon, Sparkles, Repeat } from 'lucide-react'
 import { SubTasksSection } from './subtasks-section'
 import { RemindersSection } from './reminders-section'
 import { LabelsSection } from './labels-section'
@@ -66,6 +66,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
     priority?: Priority;
     labels?: string[];
     listName?: string | null;
+    recurringRule?: RecurringRule | null;
   } | null>(null)
 
   const handleNameChange = (newName: string) => {
@@ -75,13 +76,14 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
       return
     }
     const parsed = parseNaturalLanguage(newName)
-    if (parsed.date || parsed.time || parsed.priority !== 'none' || parsed.labels.length > 0 || parsed.listName) {
+    if (parsed.date || parsed.time || parsed.priority !== 'none' || parsed.labels.length > 0 || parsed.listName || parsed.recurringRule) {
       setParsedPreview({
         date: parsed.date ?? undefined,
         time: parsed.time ?? undefined,
         priority: parsed.priority as Priority,
         labels: parsed.labels,
         listName: parsed.listName,
+        recurringRule: parsed.recurringRule,
       })
     } else {
       setParsedPreview(null)
@@ -93,6 +95,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
     
     if (parsedPreview.date) setDate(parsedPreview.date)
     if (parsedPreview.priority && parsedPreview.priority !== 'none') setPriority(parsedPreview.priority)
+    if (parsedPreview.recurringRule) setRecurringRule(parsedPreview.recurringRule)
     
     if (parsedPreview.labels && parsedPreview.labels.length > 0) {
       const foundLabelIds = labels
@@ -254,6 +257,13 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
                     {parsedPreview.listName && (
                       <span className="flex items-center gap-1.5 bg-indigo-500/10 px-2 py-1 rounded-md border border-indigo-500/20">
                         @ {parsedPreview.listName}
+                      </span>
+                    )}
+                    {parsedPreview.recurringRule && (
+                      <span className="flex items-center gap-1.5 bg-indigo-500/10 px-2 py-1 rounded-md border border-indigo-500/20 capitalize">
+                        <Repeat className="w-3 h-3" />
+                        {parsedPreview.recurringRule.pattern}
+                        {parsedPreview.recurringRule.daysOfWeek && ` (on ${parsedPreview.recurringRule.daysOfWeek.map(d => DAYS[d]).join(', ')})`}
                       </span>
                     )}
                     {parsedPreview.labels && parsedPreview.labels.map(l => (
