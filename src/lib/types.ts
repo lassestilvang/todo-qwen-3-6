@@ -94,7 +94,7 @@ export interface TaskList {
   updatedAt: string
 }
 
-export type ViewType = 'today' | 'week' | 'upcoming' | 'all'
+export type ViewType = 'today' | 'week' | 'upcoming' | 'all' | 'trash'
 
 export interface AppState {
   currentView: ViewType

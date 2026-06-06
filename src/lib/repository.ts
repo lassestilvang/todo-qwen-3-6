@@ -118,6 +118,12 @@ export const taskRepository = {
       params.push(labelId)
     }
 
+    if (view === 'trash') {
+      conditions.push('t.deleted_at IS NOT NULL')
+    } else {
+      conditions.push('t.deleted_at IS NULL')
+    }
+
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const todayStr = today.toISOString()
@@ -259,7 +265,7 @@ export const taskRepository = {
       SELECT DISTINCT t.id
       FROM tasks_fts f
       JOIN tasks t ON t.rowid = f.rowid
-      WHERE tasks_fts MATCH ?
+      WHERE tasks_fts MATCH ? AND t.deleted_at IS NULL
       ORDER BY rank
       LIMIT 50
     `).all(query) as { id: string }[]
@@ -270,10 +276,12 @@ export const taskRepository = {
       const fallbackRows = db.prepare(`
         SELECT DISTINCT t.*
         FROM tasks t
-        WHERE t.name LIKE ? ESCAPE '\\'
-          OR t.description LIKE ? ESCAPE '\\'
+        WHERE (t.name LIKE ? ESCAPE '\\'
+            OR t.description LIKE ? ESCAPE '\\')
+            AND t.deleted_at IS NULL
         ORDER BY t.created_at DESC
         LIMIT 50
+
       `).all(searchQuery, searchQuery) as TaskRow[]
 
       if (fallbackRows.length === 0) return []
@@ -404,6 +412,18 @@ export const taskRepository = {
   },
 
   delete(id: string): boolean {
+    const db = getDb()
+    const result = db.prepare("UPDATE tasks SET deleted_at = datetime('now') WHERE id = ?").run(id)
+    return result.changes > 0
+  },
+
+  restore(id: string): boolean {
+    const db = getDb()
+    const result = db.prepare("UPDATE tasks SET deleted_at = NULL WHERE id = ?").run(id)
+    return result.changes > 0
+  },
+
+  purge(id: string): boolean {
     const db = getDb()
     const result = db.prepare('DELETE FROM tasks WHERE id = ?').run(id)
     return result.changes > 0
