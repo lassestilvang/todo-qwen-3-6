@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useApp } from '@/hooks/use-app'
 import { useTasks, useLists, useLabels } from '@/hooks/use-data'
 import { useSortedTasks } from '@/hooks/use-sorted-tasks'
+import { useTaskOperations } from '@/hooks/use-task-operations'
 import { Sidebar } from '@/components/sidebar/sidebar'
 import { Header } from '@/components/layout/header'
 import { TaskList } from '@/components/tasks/task-list'
@@ -14,8 +15,6 @@ import { TaskForm } from '@/components/tasks/task-form'
 import { TaskDetail } from '@/components/tasks/task-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Task } from '@/lib/types'
-import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 export default function Home() {
@@ -25,6 +24,7 @@ export default function Home() {
     sidebarOpen, showCompleted, viewMode, sortBy, sortOrder,
     focusMode
   } = useApp()
+  
   const { tasks: rawTasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, clearCompleted, refresh } = useTasks(
     currentView,
     currentListId,
@@ -32,17 +32,37 @@ export default function Home() {
     currentLabelId
   )
 
-
   const tasks = useSortedTasks(rawTasks, sortBy, sortOrder)
-
   const { lists } = useLists()
   const { labels } = useLabels()
 
-  const [showTaskForm, setShowTaskForm] = useState(false)
-  const [showTaskDetail, setShowTaskDetail] = useState(false)
-  const [editingTask, setEditingTask] = useState<Task | null>(null)
-
-  const selectedTask = tasks.find(t => t.id === selectedTaskId)
+  const {
+    showTaskForm,
+    setShowTaskForm,
+    showTaskDetail,
+    setShowTaskDetail,
+    editingTask,
+    selectedTask,
+    handleSelectTask,
+    handleAddTask,
+    handleEditTask,
+    handleSaveTask,
+    handleDeleteTask,
+    handleDuplicateTask,
+    handleBatchDelete,
+    handleBatchToggle
+  } = useTaskOperations({
+    tasks,
+    createTask,
+    updateTask,
+    deleteTask,
+    toggleComplete,
+    selectedTaskId,
+    setSelectedTaskId,
+    selectedTaskIds,
+    setSelectedTaskIds,
+    toggleTaskSelection
+  })
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -81,104 +101,7 @@ export default function Home() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [tasks, selectedTaskId, setSelectedTaskId, showTaskDetail])
-
-  useEffect(() => {
-    const handleAddTaskEvent = () => {
-      setEditingTask(null)
-      setShowTaskForm(true)
-    }
-    window.addEventListener('add-task', handleAddTaskEvent)
-    return () => window.removeEventListener('add-task', handleAddTaskEvent)
-  }, [])
-
-  const handleSelectTask = (task: Task, isMultiSelect?: boolean) => {
-    if (isMultiSelect) {
-      toggleTaskSelection(task.id)
-      setSelectedTaskId(null)
-      setShowTaskDetail(false)
-    } else {
-      setSelectedTaskId(task.id)
-      setSelectedTaskIds([])
-      setShowTaskDetail(true)
-    }
-  }
-
-  const handleAddTask = () => {
-    setEditingTask(null)
-    setShowTaskForm(true)
-  }
-
-  const handleEditTask = () => {
-    if (selectedTask) {
-      setEditingTask(selectedTask)
-      setShowTaskForm(true)
-      setShowTaskDetail(false)
-    }
-  }
-
-  const handleSaveTask = async (data: Record<string, unknown>) => {
-    try {
-      if (editingTask) {
-        await updateTask(editingTask.id, data)
-      } else {
-        await createTask(data)
-      }
-      setShowTaskForm(false)
-      setEditingTask(null)
-    } catch {
-      // Error already handled by toast in use-data.ts, keep form open
-    }
-  }
-
-  const handleDeleteTask = async () => {
-    if (!selectedTask) return
-    try {
-      await deleteTask(selectedTask.id)
-      setShowTaskDetail(false)
-      setSelectedTaskId(null)
-    } catch {
-      // Error already handled by toast in use-data.ts
-    }
-  }
-
-  const handleDuplicateTask = async () => {
-    if (!selectedTask) return
-    try {
-      const { id, createdAt, updatedAt, completedAt, completed, labels, subTasks, reminders, attachments, ...rest } = selectedTask
-      await createTask({
-        ...rest,
-        name: `${rest.name} (Copy)`,
-        labels: labels.map(l => l.id),
-        subTasks: subTasks.map(st => ({ name: st.name, completed: false, order: st.order })),
-        reminders: reminders.map(r => ({ type: r.type, time: r.time })),
-      })
-      toast.success('Task duplicated')
-    } catch {
-      // Error handled by use-data.ts
-    }
-  }
-
-  const handleBatchDelete = async () => {
-    if (selectedTaskIds.length === 0) return
-    try {
-      await Promise.all(selectedTaskIds.map(id => deleteTask(id)))
-      setSelectedTaskIds([])
-    } catch {
-      // Error handled by use-data.ts
-    }
-  }
-
-  const handleBatchToggle = async () => {
-    if (selectedTaskIds.length === 0) return
-    try {
-      const selectedTasks = tasks.filter(t => selectedTaskIds.includes(t.id))
-      await Promise.all(selectedTasks.map(t => toggleComplete(t)))
-      setSelectedTaskIds([])
-    } catch {
-      // Error handled by use-data.ts
-    }
-  }
+  }, [tasks, selectedTaskId, setSelectedTaskId, showTaskDetail, setShowTaskDetail])
 
   return (
     <div className={cn("h-screen flex bg-background text-foreground overflow-hidden transition-all duration-500", focusMode && "bg-background/95")}>
@@ -195,7 +118,6 @@ export default function Home() {
           tasks={tasks} 
           onClearCompleted={clearCompleted} 
         />
-
 
         <div className="flex-1 flex min-h-0">
           <div className="flex-1 min-w-0">
@@ -282,7 +204,6 @@ export default function Home() {
             onSave={handleSaveTask}
             onClose={() => {
               setShowTaskForm(false)
-              setEditingTask(null)
             }}
           />
         </DialogContent>
