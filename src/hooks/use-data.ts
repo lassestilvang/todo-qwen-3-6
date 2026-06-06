@@ -51,6 +51,30 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
     }
   }
 
+  const restoreTask = async (id: string) => {
+    try {
+      const res = await fetch(`/api/tasks/${id}/restore`, { method: 'POST' })
+      if (!res.ok) throw new Error('Failed to restore task')
+      toast.success('Task restored')
+      refresh()
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to restore task')
+    }
+  }
+
+  const purgeTask = async (id: string) => {
+    try {
+      const res = await fetch(`/api/tasks/${id}?purge=true`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to permanently delete task')
+      toast.success('Task permanently deleted')
+      refresh()
+    } catch (err) {
+      console.error(err)
+      toast.error('Failed to permanently delete task')
+    }
+  }
+
   return {
     tasks,
     loading,
@@ -61,6 +85,8 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
     deleteTask: remove,
     toggleComplete,
     clearCompleted,
+    restoreTask,
+    purgeTask,
     refresh,
   }
 }
