@@ -135,21 +135,33 @@ export function useTaskOperations({
   }
 
   const handleRestoreTask = async () => {
-    if (!selectedTaskId) return
-    try {
-      await restoreTask(selectedTaskId)
-      setShowTaskDetail(false)
-      setSelectedTaskId(null)
-    } catch {}
+    if (selectedTaskIds.length > 0) {
+      try {
+        await Promise.all(selectedTaskIds.map(id => restoreTask(id)))
+        setSelectedTaskIds([])
+      } catch {}
+    } else if (selectedTaskId) {
+      try {
+        await restoreTask(selectedTaskId)
+        setShowTaskDetail(false)
+        setSelectedTaskId(null)
+      } catch {}
+    }
   }
 
   const handlePurgeTask = async () => {
-    if (!selectedTaskId) return
-    try {
-      await purgeTask(selectedTaskId)
-      setShowTaskDetail(false)
-      setSelectedTaskId(null)
-    } catch {}
+    if (selectedTaskIds.length > 0) {
+      try {
+        await Promise.all(selectedTaskIds.map(id => purgeTask(id)))
+        setSelectedTaskIds([])
+      } catch {}
+    } else if (selectedTaskId) {
+      try {
+        await purgeTask(selectedTaskId)
+        setShowTaskDetail(false)
+        setSelectedTaskId(null)
+      } catch {}
+    }
   }
 
   return {

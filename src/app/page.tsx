@@ -195,9 +195,10 @@ export default function Home() {
         <MultiSelectBar
           selectedCount={selectedTaskIds.length}
           onDeselectAll={() => setSelectedTaskIds([])}
-          onToggleComplete={handleBatchToggle}
-          onDelete={handleBatchDelete}
+          onToggleComplete={currentView === 'trash' ? handleRestoreTask : handleBatchToggle}
+          onDelete={currentView === 'trash' ? handlePurgeTask : handleBatchDelete}
           onMoveToList={() => {}}
+          labels={currentView === 'trash' ? { toggle: 'Restore', delete: 'Purge' } : undefined}
         />
       </motion.main>
 

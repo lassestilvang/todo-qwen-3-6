@@ -10,6 +10,10 @@ interface MultiSelectBarProps {
   onToggleComplete: () => void
   onDelete: () => void
   onMoveToList: () => void
+  labels?: {
+    toggle?: string
+    delete?: string
+  }
 }
 
 export function MultiSelectBar({
@@ -18,6 +22,7 @@ export function MultiSelectBar({
   onToggleComplete,
   onDelete,
   onMoveToList,
+  labels = { toggle: 'Toggle Complete', delete: 'Delete' }
 }: MultiSelectBarProps) {
   if (selectedCount === 0) return null
 
@@ -49,7 +54,7 @@ export function MultiSelectBar({
             className="h-9 gap-2 text-xs font-medium px-3 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-500"
           >
             <CheckCircle2 className="w-4 h-4" />
-            Toggle Complete
+            {labels.toggle}
           </Button>
           <Button 
             size="sm" 
@@ -58,17 +63,19 @@ export function MultiSelectBar({
             className="h-9 gap-2 text-xs font-medium px-3 rounded-xl hover:bg-red-500/10 hover:text-red-500"
           >
             <Trash2 className="w-4 h-4" />
-            Delete
+            {labels.delete}
           </Button>
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            onClick={onMoveToList}
-            className="h-9 gap-2 text-xs font-medium px-3 rounded-xl hover:bg-indigo-500/10 hover:text-indigo-500"
-          >
-            <ListPlus className="w-4 h-4" />
-            Move to List
-          </Button>
+          {labels.toggle === 'Toggle Complete' && (
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={onMoveToList}
+              className="h-9 gap-2 text-xs font-medium px-3 rounded-xl hover:bg-indigo-500/10 hover:text-indigo-500"
+            >
+              <ListPlus className="w-4 h-4" />
+              Move to List
+            </Button>
+          )}
         </div>
 
         <button 
