@@ -25,8 +25,25 @@ import {
   Copy,
   Clipboard,
   RotateCcw,
+  GripVertical,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { SortableSubTaskItem } from './sortable-subtask-item'
 
 interface TaskDetailProps {
   task: Task
@@ -43,6 +60,26 @@ export function TaskDetail({ task, onClose, onDelete, onEdit, onDuplicate, onUpd
   const [changes, setChanges] = useState<TaskChange[]>([])
   const [loadingChanges, setLoadingChanges] = useState(false)
   const [newSubTaskName, setNewSubTaskName] = useState('')
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id || !onUpdate) return
+
+    const oldIndex = task.subTasks.findIndex(st => st.id === active.id)
+    const newIndex = task.subTasks.findIndex(st => st.id === over.id)
+
+    const reorderedSubTasks = arrayMove(task.subTasks, oldIndex, newIndex).map((st, i) => ({
+      ...st,
+      order: i
+    }))
+
+    await onUpdate(task.id, { subTasks: reorderedSubTasks })
+  }
 
   const handleCopyName = () => {
     navigator.clipboard.writeText(task.name)
@@ -243,23 +280,26 @@ export function TaskDetail({ task, onClose, onDelete, onEdit, onDuplicate, onUpd
                   </p>
                   
                   {task.subTasks.length > 0 && (
-                    <div className="space-y-2 mb-3">
-                      {task.subTasks.map(subTask => (
-                        <button
-                          key={subTask.id}
-                          onClick={() => handleToggleSubTask(subTask.id)}
-                          className="flex items-center gap-2.5 text-sm hover:opacity-85 text-left w-full transition-opacity py-0.5 cursor-pointer"
-                        >
-                          <Checkbox
-                            checked={subTask.completed}
-                            className="border-border/80 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                          />
-                          <span className={subTask.completed ? 'text-muted-foreground line-through decoration-muted-foreground/75' : 'text-foreground/95 font-medium'}>
-                            {subTask.name}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext
+                        items={task.subTasks.map(st => st.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="space-y-1 mb-3">
+                          {task.subTasks.map(subTask => (
+                            <SortableSubTaskItem
+                              key={subTask.id}
+                              subTask={subTask}
+                              onToggle={handleToggleSubTask}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
                   )}
 
                   {onUpdate && (
