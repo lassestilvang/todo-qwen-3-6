@@ -58,12 +58,17 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-    const deleted = taskRepository.delete(id)
+    const { searchParams } = new URL(request.url)
+    const purge = searchParams.get('purge') === 'true'
+
+    const deleted = purge 
+      ? taskRepository.purge(id)
+      : taskRepository.delete(id)
 
     if (!deleted) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
