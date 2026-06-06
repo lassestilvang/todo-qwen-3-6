@@ -24,6 +24,7 @@ import {
   Pencil,
   Copy,
   Clipboard,
+  RotateCcw,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -34,9 +35,11 @@ interface TaskDetailProps {
   onEdit: () => void
   onDuplicate?: () => void
   onUpdate?: (id: string, data: Record<string, unknown>) => Promise<unknown>
+  onRestore?: () => void
+  onPurge?: () => void
 }
 
-export function TaskDetail({ task, onClose, onDelete, onEdit, onDuplicate, onUpdate }: TaskDetailProps) {
+export function TaskDetail({ task, onClose, onDelete, onEdit, onDuplicate, onUpdate, onRestore, onPurge }: TaskDetailProps) {
   const [changes, setChanges] = useState<TaskChange[]>([])
   const [loadingChanges, setLoadingChanges] = useState(false)
   const [newSubTaskName, setNewSubTaskName] = useState('')
@@ -108,18 +111,31 @@ export function TaskDetail({ task, onClose, onDelete, onEdit, onDuplicate, onUpd
       <div className="flex items-center justify-between p-4 border-b border-border">
         <h2 className="text-sm font-medium text-muted-foreground">Task Details</h2>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={handleCopyName} className="text-muted-foreground hover:text-foreground h-8 w-8" title="Copy task name">
-            <Clipboard className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onDuplicate} className="text-muted-foreground hover:text-foreground h-8 w-8" title="Duplicate task">
-            <Copy className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onEdit} className="text-muted-foreground hover:text-foreground h-8 w-8" aria-label="Edit task">
-            <Pencil className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onDelete} className="text-muted-foreground hover:text-red-400 h-8 w-8">
-            <Trash2 className="w-4 h-4" />
-          </Button>
+          {task.deletedAt ? (
+            <>
+              <Button variant="ghost" size="icon" onClick={onRestore} className="text-indigo-400 hover:text-indigo-300 h-8 w-8" title="Restore task">
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={onPurge} className="text-red-400 hover:text-red-300 h-8 w-8" title="Permanently delete task">
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="icon" onClick={handleCopyName} className="text-muted-foreground hover:text-foreground h-8 w-8" title="Copy task name">
+                <Clipboard className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={onDuplicate} className="text-muted-foreground hover:text-foreground h-8 w-8" title="Duplicate task">
+                <Copy className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={onEdit} className="text-muted-foreground hover:text-foreground h-8 w-8" aria-label="Edit task">
+                <Pencil className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={onDelete} className="text-muted-foreground hover:text-red-400 h-8 w-8">
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </>
+          )}
           <Button variant="ghost" size="icon" onClick={onClose} className="text-muted-foreground hover:text-foreground h-8 w-8">
             <X className="w-4 h-4" />
           </Button>

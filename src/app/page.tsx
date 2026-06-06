@@ -50,13 +50,17 @@ export default function Home() {
     handleDeleteTask,
     handleDuplicateTask,
     handleBatchDelete,
-    handleBatchToggle
+    handleBatchToggle,
+    handleRestoreTask,
+    handlePurgeTask
   } = useTaskOperations({
     tasks,
     createTask,
     updateTask,
     deleteTask,
     toggleComplete,
+    restoreTask,
+    purgeTask,
     selectedTaskId,
     setSelectedTaskId,
     selectedTaskIds,
@@ -180,6 +184,8 @@ export default function Home() {
                   onEdit={handleEditTask}
                   onDuplicate={handleDuplicateTask}
                   onUpdate={updateTask}
+                  onRestore={handleRestoreTask}
+                  onPurge={handlePurgeTask}
                 />
               </motion.div>
             )}

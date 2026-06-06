@@ -8,6 +8,8 @@ interface UseTaskOperationsProps {
   updateTask: (id: string, data: any) => Promise<any>
   deleteTask: (id: string) => Promise<any>
   toggleComplete: (task: Task) => Promise<any>
+  restoreTask: (id: string) => Promise<any>
+  purgeTask: (id: string) => Promise<any>
   selectedTaskId: string | null
   setSelectedTaskId: (id: string | null) => void
   selectedTaskIds: string[]
@@ -21,6 +23,8 @@ export function useTaskOperations({
   updateTask,
   deleteTask,
   toggleComplete,
+  restoreTask,
+  purgeTask,
   selectedTaskId,
   setSelectedTaskId,
   selectedTaskIds,
@@ -130,6 +134,24 @@ export function useTaskOperations({
     }
   }
 
+  const handleRestoreTask = async () => {
+    if (!selectedTaskId) return
+    try {
+      await restoreTask(selectedTaskId)
+      setShowTaskDetail(false)
+      setSelectedTaskId(null)
+    } catch {}
+  }
+
+  const handlePurgeTask = async () => {
+    if (!selectedTaskId) return
+    try {
+      await purgeTask(selectedTaskId)
+      setShowTaskDetail(false)
+      setSelectedTaskId(null)
+    } catch {}
+  }
+
   return {
     showTaskForm,
     setShowTaskForm,
@@ -144,6 +166,8 @@ export function useTaskOperations({
     handleDeleteTask,
     handleDuplicateTask,
     handleBatchDelete,
-    handleBatchToggle
+    handleBatchToggle,
+    handleRestoreTask,
+    handlePurgeTask
   }
 }
