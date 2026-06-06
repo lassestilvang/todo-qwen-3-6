@@ -55,6 +55,7 @@ export interface Task {
   priority: Priority
   completed: boolean
   completedAt: string | null
+  deletedAt?: string | null
   recurringRule: RecurringRule | null
   createdAt: string
   updatedAt: string

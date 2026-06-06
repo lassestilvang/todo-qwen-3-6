@@ -40,6 +40,7 @@ const views = [
   { id: 'week' as const, label: 'Next 7 Days', icon: CalendarRange },
   { id: 'upcoming' as const, label: 'Upcoming', icon: CalendarDays },
   { id: 'all' as const, label: 'All', icon: ListTodo },
+  { id: 'trash' as const, label: 'Trash', icon: Trash2 },
 ]
 
 export function Sidebar({ tasks }: { tasks: Task[] }) {
@@ -51,14 +52,18 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
   const { labels } = useLabels()
   
   const getTaskCount = (view: string, listId?: string, labelId?: string) => {
-    const activeTasks = tasks.filter(t => !t.completed)
+    if (view === 'trash') {
+      return tasks.filter(t => t.deletedAt).length
+    }
+    
+    const activeTasks = tasks.filter(t => !t.completed && !t.deletedAt)
     if (listId) return activeTasks.filter(t => t.listId === listId).length
     if (labelId) return activeTasks.filter(t => t.labels.some(l => l.id === labelId)).length
     
     const today = new Date().toISOString().split('T')[0]
     if (view === 'today') return activeTasks.filter(t => t.date && t.date.startsWith(today)).length
     if (view === 'all') return activeTasks.length
-    return 0 // Other views can be calculated similarly if needed
+    return 0
   }
   const [showCreateList, setShowCreateList] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
