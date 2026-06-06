@@ -26,6 +26,16 @@ export function getDb(): Database.Database {
 
   initializeSchema(db)
 
+  // Migration: Add deleted_at to tasks if it doesn't exist
+  try {
+    const tableInfo = db.prepare("PRAGMA table_info(tasks)").all() as any[]
+    if (!tableInfo.some(col => col.name === 'deleted_at')) {
+      db.exec("ALTER TABLE tasks ADD COLUMN deleted_at TEXT")
+    }
+  } catch (err) {
+    console.error("Migration failed:", err)
+  }
+
   return db
 }
 
@@ -64,6 +74,7 @@ function initializeSchema(database: Database.Database) {
       completed INTEGER NOT NULL DEFAULT 0,
       completed_at TEXT,
       recurring_rule TEXT,
+      deleted_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
