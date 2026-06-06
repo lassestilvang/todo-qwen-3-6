@@ -226,19 +226,56 @@ export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps
             </div>
             {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
             {parsedPreview && (
-              <p className="text-muted-foreground text-xs mt-1 font-medium">
-                Detected:{' '}
-                {parsedPreview.date && `Date: ${format(parsedPreview.date, 'PPP')}`}
-                {parsedPreview.date && (parsedPreview.priority !== 'none' || (parsedPreview.labels?.length ?? 0) > 0 || parsedPreview.listName) && ', '}
-                {parsedPreview.priority && parsedPreview.priority !== 'none' && `Priority: ${parsedPreview.priority}`}
-                {parsedPreview.priority !== 'none' && ((parsedPreview.labels?.length ?? 0) > 0 || parsedPreview.listName) && ', '}
-                {parsedPreview.labels && parsedPreview.labels.length > 0 && `Labels: ${parsedPreview.labels.join(', ')}`}
-                {parsedPreview.labels && parsedPreview.labels.length > 0 && parsedPreview.listName && ', '}
-                {parsedPreview.listName && `List: ${parsedPreview.listName}`}
-                <button type="button" onClick={applyParsedFields} className="text-indigo-400 hover:text-indigo-300 font-semibold ml-1">
-                  (click Apply to fill in)
-                </button>
-              </p>
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-3 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 overflow-hidden"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex flex-wrap gap-2 text-xs font-medium text-indigo-300">
+                    {parsedPreview.date && (
+                      <span className="flex items-center gap-1.5 bg-indigo-500/10 px-2 py-1 rounded-md border border-indigo-500/20">
+                        <CalendarIcon className="w-3 h-3" />
+                        {format(parsedPreview.date, 'PPP')}
+                      </span>
+                    )}
+                    {parsedPreview.priority && parsedPreview.priority !== 'none' && (
+                      <span className={cn(
+                        "flex items-center gap-1.5 px-2 py-1 rounded-md border",
+                        parsedPreview.priority === 'high' && "bg-red-500/10 text-red-400 border-red-500/20",
+                        parsedPreview.priority === 'medium' && "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                        parsedPreview.priority === 'low' && "bg-blue-500/10 text-blue-400 border-blue-500/20",
+                      )}>
+                        <Sparkles className="w-3 h-3" />
+                        Priority: {parsedPreview.priority}
+                      </span>
+                    )}
+                    {parsedPreview.listName && (
+                      <span className="flex items-center gap-1.5 bg-indigo-500/10 px-2 py-1 rounded-md border border-indigo-500/20">
+                        @ {parsedPreview.listName}
+                      </span>
+                    )}
+                    {parsedPreview.labels && parsedPreview.labels.map(l => (
+                      <span key={l} className="flex items-center gap-1.5 bg-indigo-500/10 px-2 py-1 rounded-md border border-indigo-500/20">
+                        # {l}
+                      </span>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={applyParsedFields}
+                    className="h-7 text-[10px] font-bold uppercase tracking-wider text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/20 rounded-lg px-2"
+                  >
+                    Apply All
+                  </Button>
+                </div>
+                <p className="text-[10px] text-indigo-400/60 mt-2 italic">
+                  Press Enter to create or click Apply to confirm smart fields
+                </p>
+              </motion.div>
             )}
           </div>
 
