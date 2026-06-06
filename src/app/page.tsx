@@ -1,27 +1,28 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useApp } from '@/hooks/use-app'
 import { useTasks, useLists, useLabels } from '@/hooks/use-data'
 import { Sidebar } from '@/components/sidebar/sidebar'
 import { Header } from '@/components/layout/header'
 import { TaskList } from '@/components/tasks/task-list'
 import { KanbanBoard } from '@/components/tasks/kanban-board'
+import { MultiSelectBar } from '@/components/tasks/multi-select-bar'
 import { TaskListSkeleton } from '@/components/tasks/task-list-skeleton'
 import { TaskForm } from '@/components/tasks/task-form'
 import { TaskDetail } from '@/components/tasks/task-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Task } from '@/lib/types'
-import { Trash2, CheckCircle2, X, ListPlus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 export default function Home() {
   const { 
     currentView, currentListId, currentLabelId, selectedTaskId, setSelectedTaskId, 
     selectedTaskIds, setSelectedTaskIds, toggleTaskSelection,
     sidebarOpen, showCompleted, viewMode, sortBy, sortOrder,
-    focusMode, toggleFocusMode
+    focusMode
   } = useApp()
   const { tasks: rawTasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, clearCompleted, refresh } = useTasks(
     currentView,
@@ -282,44 +283,13 @@ export default function Home() {
           </AnimatePresence>
         </div>
 
-        <AnimatePresence>
-          {selectedTaskIds.length > 0 && (
-            <motion.div
-              initial={{ y: 100, x: '-50%' }}
-              animate={{ y: -20, x: '-50%' }}
-              exit={{ y: 100, x: '-50%' }}
-              className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 bg-card border border-border px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-6"
-            >
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-primary">{selectedTaskIds.length} tasks selected</span>
-                <button onClick={() => setSelectedTaskIds([])} className="text-[10px] text-muted-foreground hover:text-foreground text-left">
-                  Deselect all
-                </button>
-              </div>
-              
-              <div className="h-8 w-px bg-border/40" />
-              
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="ghost" onClick={handleBatchToggle} className="h-9 gap-2 text-xs font-medium px-3 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-500">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Toggle Complete
-                </Button>
-                <Button size="sm" variant="ghost" onClick={handleBatchDelete} className="h-9 gap-2 text-xs font-medium px-3 rounded-xl hover:bg-red-500/10 hover:text-red-500">
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </Button>
-                <Button size="sm" variant="ghost" className="h-9 gap-2 text-xs font-medium px-3 rounded-xl hover:bg-indigo-500/10 hover:text-indigo-500">
-                  <ListPlus className="w-4 h-4" />
-                  Move to List
-                </Button>
-              </div>
-
-              <button onClick={() => setSelectedTaskIds([])} className="ml-2 text-muted-foreground hover:text-foreground">
-                <X className="w-4 h-4" />
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <MultiSelectBar
+          selectedCount={selectedTaskIds.length}
+          onDeselectAll={() => setSelectedTaskIds([])}
+          onToggleComplete={handleBatchToggle}
+          onDelete={handleBatchDelete}
+          onMoveToList={() => {}}
+        />
       </motion.main>
 
       <Dialog open={showTaskForm} onOpenChange={setShowTaskForm}>
@@ -339,4 +309,3 @@ export default function Home() {
     </div>
   )
 }
-
