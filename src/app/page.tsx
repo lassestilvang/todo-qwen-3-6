@@ -21,16 +21,17 @@ export default function Home() {
   const { 
     currentView, currentListId, currentLabelId, selectedTaskId, setSelectedTaskId, 
     selectedTaskIds, setSelectedTaskIds, toggleTaskSelection,
-    sidebarOpen, showCompleted, viewMode, sortBy, sortOrder,
+    sidebarOpen, showCompleted, showOverdue, viewMode, sortBy, sortOrder,
     focusMode
   } = useApp()
-  
   const { tasks: rawTasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, clearCompleted, refresh } = useTasks(
     currentView,
     currentListId,
     showCompleted,
-    currentLabelId
+    currentLabelId,
+    showOverdue
   )
+
 
   const tasks = useSortedTasks(rawTasks, sortBy, sortOrder)
   const { lists } = useLists()
