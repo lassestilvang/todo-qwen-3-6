@@ -323,6 +323,24 @@ export function TaskDetail({ task, onClose, onDelete, onEdit, onDuplicate, onUpd
                 </div>
               </>
 
+              {task.dependencies.length > 0 && (
+                <>
+                  <Separator className="bg-border/60" />
+                  <div>
+                    <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium">
+                      <ListChecks className="w-3 h-3" /> Blocked by ({task.dependencies.length})
+                    </p>
+                    <div className="space-y-1.5">
+                      {task.dependencies.map(depId => (
+                        <div key={depId} className="text-sm text-foreground/90">
+                          {depId}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
               {task.reminders.length > 0 && (
                 <>
                   <Separator className="bg-border/60" />
