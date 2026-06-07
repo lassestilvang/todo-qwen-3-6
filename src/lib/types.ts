@@ -103,6 +103,7 @@ export interface AppState {
   currentLabelId: string | null
   selectedTaskId: string | null
   showCompleted: boolean
+  showOverdue: boolean
   searchQuery: string
   sidebarOpen: boolean
 }
