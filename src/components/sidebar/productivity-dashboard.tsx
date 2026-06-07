@@ -118,6 +118,17 @@ export function ProductivityDashboard() {
   }
 
   const streak = calculateStreak()
+  
+  // Productivity Score Calculation
+  const calculateProductivityScore = () => {
+    const score = Math.round(
+      (completionRate * 0.4) + 
+      (Math.min(streak, 10) * 3) + 
+      (Math.min(sessionsCompleted, 10) * 2) 
+    )
+    return Math.min(score, 100)
+  }
+  const productivityScore = calculateProductivityScore()
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -148,35 +159,35 @@ export function ProductivityDashboard() {
           </div>
         ) : (
           <div className="mt-4 space-y-6">
-            {/* Completion rate ring/progress */}
-            <div className="p-4 rounded-2xl bg-secondary/40 border border-border/20 flex items-center justify-between gap-4">
+            {/* Productivity Score card */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/10 flex items-center justify-between gap-4">
               <div className="space-y-1">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Overall Completion Rate
+                <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">
+                  Productivity Score
                 </span>
-                <h3 className="text-2xl font-extrabold">{completionRate}%</h3>
-                <p className="text-xs text-muted-foreground">
-                  You have completed {completedTasks} of your {totalTasks} total tasks.
+                <h3 className="text-4xl font-extrabold text-indigo-100">{productivityScore}</h3>
+                <p className="text-xs text-indigo-300/70">
+                  Based on completion, streak, and focus.
                 </p>
               </div>
-              <div className="relative w-16 h-16 flex items-center justify-center">
+              <div className="relative w-20 h-20 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="16" className="stroke-muted/20" strokeWidth="3" fill="none" />
+                  <circle cx="18" cy="18" r="16" className="stroke-indigo-900/40" strokeWidth="3" fill="none" />
                   <motion.circle
                     cx="18"
                     cy="18"
                     r="16"
-                    className="stroke-indigo-500"
+                    className="stroke-indigo-400"
                     strokeWidth="3"
                     fill="none"
                     strokeDasharray="100, 100"
                     initial={{ strokeDashoffset: 100 }}
-                    animate={{ strokeDashoffset: 100 - completionRate }}
+                    animate={{ strokeDashoffset: 100 - productivityScore }}
                     transition={{ duration: 0.8, ease: 'easeOut' }}
                     strokeLinecap="round"
                   />
                 </svg>
-                <Award className="absolute w-6 h-6 text-indigo-500" />
+                <TrendingUp className="absolute w-8 h-8 text-indigo-300" />
               </div>
             </div>
 
