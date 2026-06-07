@@ -24,7 +24,7 @@ import { Task } from '@/lib/types'
 
 export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAddTask: () => void; taskCount: number; tasks: Task[]; onClearCompleted: () => void }) {
   const { 
-    showCompleted, toggleShowCompleted, sidebarOpen, toggleSidebar, currentListId, currentView, viewMode, setViewMode,
+    showCompleted, toggleShowCompleted, showOverdue, toggleShowOverdue, sidebarOpen, toggleSidebar, currentListId, currentView, viewMode, setViewMode,
     sortBy, setSortBy, sortOrder, setSortOrder, focusMode, toggleFocusMode
   } = useApp()
   const { theme, setTheme, resolvedTheme } = useTheme()
@@ -131,6 +131,14 @@ export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAd
           />
           <Label htmlFor="show-completed" className="text-xs text-muted-foreground hidden sm:inline">
             Completed
+          </Label>
+          <Switch
+            id="show-overdue"
+            checked={showOverdue}
+            onCheckedChange={toggleShowOverdue}
+          />
+          <Label htmlFor="show-overdue" className="text-xs text-muted-foreground hidden sm:inline">
+            Overdue
           </Label>
           <AnimatePresence>
             {showCompleted && completedCount > 0 && (

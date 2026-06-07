@@ -6,16 +6,17 @@ import { Task, TaskList, Label, ViewType } from '@/lib/types'
 import { useCrud } from './use-crud'
 import { sounds } from '@/lib/sounds'
 
-export function useTasks(view: ViewType, listId: string | null, showCompleted: boolean, labelId: string | null = null) {
+export function useTasks(view: ViewType, listId: string | null, showCompleted: boolean, labelId: string | null = null, showOverdue: boolean = false) {
   const params = useMemo(() => {
     const p: Record<string, string> = {
       view,
       showCompleted: showCompleted.toString(),
+      showOverdue: showOverdue.toString(),
     }
     if (listId) p.listId = listId
     if (labelId) p.labelId = labelId
     return p
-  }, [view, listId, showCompleted, labelId])
+  }, [view, listId, showCompleted, labelId, showOverdue])
 
   const { data: tasks, loading, error, create, update, remove, refresh, isMutating } = useCrud<Task>({
     baseUrl: '/api/tasks',

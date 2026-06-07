@@ -23,6 +23,8 @@ interface AppContextType extends AppState {
   setSelectedTaskIds: (taskIds: string[]) => void
   toggleTaskSelection: (taskId: string) => void
   toggleShowCompleted: () => void
+  showOverdue: boolean
+  toggleShowOverdue: () => void
   setSearchQuery: (query: string) => void
   toggleSidebar: () => void
   focusMode: boolean
@@ -38,6 +40,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
   const [showCompleted, setShowCompleted] = useState(false)
+  const [showOverdue, setShowOverdue] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
@@ -56,6 +59,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const savedShowCompleted = localStorage.getItem('app_show_completed')
     if (savedShowCompleted !== null) setShowCompleted(savedShowCompleted === 'true')
+
+    const savedShowOverdue = localStorage.getItem('app_show_overdue')
+    if (savedShowOverdue !== null) setShowOverdue(savedShowOverdue === 'true')
 
     const savedSidebarOpen = localStorage.getItem('app_sidebar_open')
     if (savedSidebarOpen !== null) setSidebarOpen(savedSidebarOpen === 'true')
@@ -82,6 +88,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem('app_show_completed', showCompleted.toString())
   }, [showCompleted])
+
+  useEffect(() => {
+    localStorage.setItem('app_show_overdue', showOverdue.toString())
+  }, [showOverdue])
 
   useEffect(() => {
     localStorage.setItem('app_sidebar_open', sidebarOpen.toString())
@@ -128,6 +138,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setShowCompleted(prev => !prev)
   }, [])
 
+  const toggleShowOverdue = useCallback(() => {
+    setShowOverdue(prev => !prev)
+  }, [])
+
   const toggleSidebar = useCallback(() => {
     setSidebarOpen(prev => !prev)
   }, [])
@@ -145,6 +159,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSelectedTaskIds,
     toggleTaskSelection,
     showCompleted,
+    showOverdue,
     searchQuery,
     sidebarOpen,
     viewMode,
@@ -160,6 +175,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLabelId,
     setSelectedTaskId,
     toggleShowCompleted,
+    toggleShowOverdue,
     setSearchQuery,
     toggleSidebar,
     focusMode,
@@ -172,6 +188,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     selectedTaskIds,
     toggleTaskSelection,
     showCompleted,
+    showOverdue,
     searchQuery,
     sidebarOpen,
     viewMode,
@@ -183,6 +200,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setListId,
     setLabelId,
     toggleShowCompleted,
+    toggleShowOverdue,
     toggleSidebar,
     focusMode,
     toggleFocusMode,

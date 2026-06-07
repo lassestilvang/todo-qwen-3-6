@@ -98,7 +98,7 @@ interface LabelDbRow {
 }
 
 export const taskRepository = {
-  findAll(view: string, listId: string | null, showCompleted: boolean, labelId: string | null = null): Task[] {
+  findAll(view: string, listId: string | null, showCompleted: boolean, labelId: string | null = null, showOverdue: boolean = false): Task[] {
     const db = getDb()
     let query = `
       SELECT t.*, l.id as list_id, l.name as list_name, l.color as list_color, l.emoji as list_emoji
@@ -127,6 +127,12 @@ export const taskRepository = {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const todayStr = today.toISOString()
+    const todayDateStr = todayStr.split('T')[0]
+
+    if (showOverdue) {
+      conditions.push('date(t.date) < date(?) AND t.completed = 0')
+      params.push(todayDateStr)
+    }
 
     const weekEnd = new Date(today)
     weekEnd.setDate(weekEnd.getDate() + 7)
