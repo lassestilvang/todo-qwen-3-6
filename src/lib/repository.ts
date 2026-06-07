@@ -446,6 +446,17 @@ export const taskRepository = {
     transaction()
   },
 
+  setDependencies(taskId: string, dependencyIds: string[]) {
+    const db = getDb()
+    const transaction = db.transaction(() => {
+      db.prepare('DELETE FROM task_dependencies WHERE task_id = ?').run(taskId)
+      for (const dependencyId of dependencyIds) {
+        db.prepare('INSERT INTO task_dependencies (task_id, dependency_id) VALUES (?, ?)').run(taskId, dependencyId)
+      }
+    })
+    transaction()
+  },
+
   setSubTasks(taskId: string, subTasks: { id?: string; name: string; completed: boolean; order: number }[]) {
     const db = getDb()
     const transaction = db.transaction(() => {
@@ -608,7 +619,17 @@ function batchLoadTaskRelations(
     attachmentsByTask.set(a.task_id, arr)
   }
 
-  return rows.map(row => mapTaskRowWithRelations(row, labelsByTask, subTasksByTask, remindersByTask, attachmentsByTask))
+  const dependenciesByTask = new Map<string, string[]>()
+  const dependenciesRows = db.prepare(`
+    SELECT * FROM task_dependencies WHERE task_id IN (${placeholders})
+  `).all(...taskIds) as { task_id: string; dependency_id: string }[]
+  for (const d of dependenciesRows) {
+    const arr = dependenciesByTask.get(d.task_id) || []
+    arr.push(d.dependency_id)
+    dependenciesByTask.set(d.task_id, arr)
+  }
+
+  return rows.map(row => mapTaskRowWithRelations(row, labelsByTask, subTasksByTask, remindersByTask, attachmentsByTask, dependenciesByTask))
 }
 
 function mapTaskRow(row: TaskRow, db: ReturnType<typeof getDb>): Task {
@@ -673,7 +694,8 @@ function mapTaskRowWithRelations(
   labelsByTask: Map<string, Label[]>,
   subTasksByTask: Map<string, SubTask[]>,
   remindersByTask: Map<string, Reminder[]>,
-  attachmentsByTask: Map<string, Attachment[]>
+  attachmentsByTask: Map<string, Attachment[]>,
+  dependenciesByTask: Map<string, string[]>
 ): Task {
   let recurringRule: RecurringRule | null = null
   if (row.recurring_rule) {
@@ -701,6 +723,7 @@ function mapTaskRowWithRelations(
     subTasks: subTasksByTask.get(row.id) || [],
     reminders: remindersByTask.get(row.id) || [],
     attachments: attachmentsByTask.get(row.id) || [],
+    dependencies: dependenciesByTask.get(row.id) || [],
   }
 }
 
