@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Task, Priority } from '@/lib/types'
 import { KanbanTaskCard } from './kanban-task-card'
 import { KanbanQuickAdd } from './kanban-quick-add'
@@ -42,18 +42,47 @@ const COLUMNS: { id: Priority; label: string; color: string }[] = [
   { id: 'low', label: 'Low Priority', color: 'bg-blue-500' },
   { id: 'none', label: 'No Priority', color: 'bg-zinc-500' },
 ]
-
 export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedTaskId }: KanbanBoardProps) {
   const { currentView, currentListId, showCompleted, currentLabelId } = useApp()
   const { updateTask, createTask } = useTasks(currentView, currentListId, showCompleted, currentLabelId)
-  
+
   const handleQuickAdd = async (name: string, priority: Priority) => {
     await createTask({ name, priority })
   }
-  
+
   const [activeTask, setActiveTask] = useState<Task | null>(null)
-  
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedTaskId) return
+
+      const task = initialTasks.find(t => t.id === selectedTaskId)
+      if (!task) return
+
+      const colIndex = COLUMNS.findIndex(c => c.id === task.priority)
+      if (colIndex === -1) return
+
+      let nextColIndex = colIndex
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        nextColIndex = Math.max(0, colIndex - 1)
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        nextColIndex = Math.min(COLUMNS.length - 1, colIndex + 1)
+      }
+
+      if (nextColIndex !== colIndex) {
+        updateTask(task.id, { priority: COLUMNS[nextColIndex].id })
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedTaskId, initialTasks, updateTask])
+
   const sensors = useSensors(
+// ...
+
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 5,
