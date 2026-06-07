@@ -58,10 +58,15 @@ export async function DELETE(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const listId = searchParams.get('listId')
+    const purgeTrash = searchParams.get('purgeTrash') === 'true'
     
-    taskRepository.clearCompleted(listId)
+    if (purgeTrash) {
+      taskRepository.purgeAllTrash()
+    } else {
+      taskRepository.clearCompleted(listId)
+    }
     return NextResponse.json({ success: true })
   } catch (error: unknown) {
-    return handleApiError(error, 'Failed to clear completed tasks')
+    return handleApiError(error, 'Failed to perform delete operation')
   }
 }

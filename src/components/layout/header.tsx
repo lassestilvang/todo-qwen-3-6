@@ -141,7 +141,7 @@ export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAd
             Overdue
           </Label>
           <AnimatePresence>
-            {showCompleted && completedCount > 0 && (
+            {showCompleted && completedCount > 0 && currentView !== 'trash' && (
               <motion.button
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -149,6 +149,23 @@ export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAd
                 onClick={onClearCompleted}
                 className="text-red-400 hover:text-red-500 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors ml-1"
                 title="Clear all completed tasks"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </motion.button>
+            )}
+            {currentView === 'trash' && taskCount > 0 && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                onClick={async () => {
+                  if (confirm('Are you sure you want to permanently delete all tasks in the trash?')) {
+                    await fetch('/api/tasks?purgeTrash=true', { method: 'DELETE' })
+                    window.location.reload()
+                  }
+                }}
+                className="text-red-400 hover:text-red-500 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors ml-1"
+                title="Empty Trash"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </motion.button>

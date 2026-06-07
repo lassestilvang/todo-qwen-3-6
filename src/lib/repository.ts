@@ -524,6 +524,11 @@ export const taskRepository = {
       db.prepare('DELETE FROM tasks WHERE completed = 1').run()
     }
   },
+
+  purgeAllTrash(): void {
+    const db = getDb()
+    db.prepare("DELETE FROM tasks WHERE deleted_at IS NOT NULL").run()
+  },
 }
 
 function batchLoadTaskRelations(
