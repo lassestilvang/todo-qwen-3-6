@@ -66,6 +66,7 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
     return 0
   }
   const [showCreateList, setShowCreateList] = useState(false)
+  const [showCreateLabel, setShowCreateLabel] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [deleteListId, setDeleteListId] = useState<string | null>(null)
@@ -101,6 +102,7 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
   const [newListName, setNewListName] = useState('')
   const [newListColor, setNewListColor] = useState('#6366f1')
   const [newListEmoji, setNewListEmoji] = useState('📋')
+  const [newLabelName, setNewLabelName] = useState('')
   const [listsExpanded, setListsExpanded] = useState(true)
   const [labelsExpanded, setLabelsExpanded] = useState(true)
 
@@ -116,6 +118,18 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
       setNewListColor('#6366f1')
       setNewListEmoji('📋')
       setShowCreateList(false)
+    } catch {
+      // Error handled by toast in use-data.ts
+    }
+  }
+
+  const { createLabel } = useLabels()
+  const handleCreateLabel = async () => {
+    if (!newLabelName.trim()) return
+    try {
+      await createLabel({ name: newLabelName.trim() })
+      setNewLabelName('')
+      setShowCreateLabel(false)
     } catch {
       // Error handled by toast in use-data.ts
     }
@@ -333,6 +347,30 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
                             )}
                           </motion.button>
                         ))}
+                        {showCreateLabel ? (
+                          <div className="flex items-center gap-2 px-3 py-2 mt-1">
+                            <Input
+                              value={newLabelName}
+                              onChange={e => setNewLabelName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleCreateLabel()
+                                if (e.key === 'Escape') setShowCreateLabel(false)
+                              }}
+                              placeholder="New label..."
+                              className="bg-secondary/40 border-border/50 text-sm h-8"
+                              autoFocus
+                            />
+                            <Button variant="ghost" size="sm" onClick={() => setShowCreateLabel(false)} className="h-8">Cancel</Button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowCreateLabel(true)}
+                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-colors mt-1"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add Label
+                          </button>
+                        )}
                       </div>
                     </motion.div>
                   )}
