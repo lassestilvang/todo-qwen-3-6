@@ -31,7 +31,7 @@ function ShortcutRow({ keys, description }: ShortcutRowProps) {
 
 export function KeyboardShortcuts() {
   const [isOpen, setIsOpen] = useState(false)
-  const { setView, toggleSidebar, toggleShowCompleted, toggleFocusMode } = useApp()
+  const { setView, toggleSidebar, toggleShowCompleted, toggleShowOverdue, toggleFocusMode } = useApp()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -82,6 +82,10 @@ export function KeyboardShortcuts() {
           e.preventDefault()
           toggleShowCompleted()
           break
+        case 'o':
+          e.preventDefault()
+          toggleShowOverdue()
+          break
         case 'f':
           e.preventDefault()
           toggleFocusMode()
@@ -130,6 +134,7 @@ export function KeyboardShortcuts() {
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Tasks</h3>
             <ShortcutRow keys={['N', 'or', 'A']} description="Create new task" />
             <ShortcutRow keys={['C']} description="Toggle completed tasks" />
+            <ShortcutRow keys={['O']} description="Toggle overdue tasks" />
           </div>
 
           <div>
