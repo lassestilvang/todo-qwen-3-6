@@ -63,6 +63,7 @@ export interface Task {
   subTasks: SubTask[]
   reminders: Reminder[]
   attachments: Attachment[]
+  dependencies: string[]
 }
 
 export interface Attachment {

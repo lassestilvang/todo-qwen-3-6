@@ -113,6 +113,12 @@ function initializeSchema(database: Database.Database) {
       PRIMARY KEY (task_id, label_id)
     );
 
+    CREATE TABLE IF NOT EXISTS task_dependencies (
+      task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+      dependency_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+      PRIMARY KEY (task_id, dependency_id)
+    );
+
     CREATE TABLE IF NOT EXISTS task_changes (
       id TEXT PRIMARY KEY,
       task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
