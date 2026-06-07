@@ -250,15 +250,32 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
                             )}
                           </motion.div>
                         ))}
+                        
+                        {showCreateList ? (
+                          <div className="flex items-center gap-2 px-3 py-2 mt-1">
+                            <Input
+                              value={newListName}
+                              onChange={e => setNewListName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleCreateList()
+                                if (e.key === 'Escape') setShowCreateList(false)
+                              }}
+                              placeholder="New list..."
+                              className="bg-secondary/40 border-border/50 text-sm h-8"
+                              autoFocus
+                            />
+                            <Button variant="ghost" size="sm" onClick={() => setShowCreateList(false)} className="h-8">Cancel</Button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowCreateList(true)}
+                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-colors mt-1"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add List
+                          </button>
+                        )}
                       </div>
-
-                      <button
-                        onClick={() => setShowCreateList(true)}
-                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/40 transition-colors mt-1"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Add List
-                      </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
