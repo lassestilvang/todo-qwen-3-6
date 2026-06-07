@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Task, Priority } from '@/lib/types'
 import { KanbanTaskCard } from './kanban-task-card'
+import { KanbanQuickAdd } from './kanban-quick-add'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import {
@@ -44,7 +45,11 @@ const COLUMNS: { id: Priority; label: string; color: string }[] = [
 
 export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedTaskId }: KanbanBoardProps) {
   const { currentView, currentListId, showCompleted, currentLabelId } = useApp()
-  const { updateTask } = useTasks(currentView, currentListId, showCompleted, currentLabelId)
+  const { updateTask, createTask } = useTasks(currentView, currentListId, showCompleted, currentLabelId)
+  
+  const handleQuickAdd = async (name: string, priority: Priority) => {
+    await createTask({ name, priority })
+  }
   
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   
@@ -195,6 +200,9 @@ export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedT
                   )}
                 </div>
               </SortableContext>
+              <div className="p-2 border-t border-border/40 bg-secondary/30">
+                <KanbanQuickAdd priority={column.id} onAdd={handleQuickAdd} />
+              </div>
             </div>
           )
         })}
