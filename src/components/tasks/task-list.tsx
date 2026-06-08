@@ -11,9 +11,23 @@ interface TaskListProps {
   onSelect: (task: Task, isMultiSelect?: boolean) => void
   selectedTaskId: string | null
   selectedTaskIds: string[]
+  activeTrackedTaskId: string | null
+  toggleTimeTracking: (taskId: string) => void
+  formatTime: (totalSeconds: number) => string
+  currentSessionElapsed: number
 }
 
-export function TaskList({ tasks, onToggle, onSelect, selectedTaskId, selectedTaskIds }: TaskListProps) {
+export function TaskList({ 
+  tasks, 
+  onToggle, 
+  onSelect, 
+  selectedTaskId, 
+  selectedTaskIds,
+  activeTrackedTaskId,
+  toggleTimeTracking,
+  formatTime,
+  currentSessionElapsed
+}: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8 select-none overflow-hidden relative">
@@ -85,6 +99,10 @@ export function TaskList({ tasks, onToggle, onSelect, selectedTaskId, selectedTa
               onSelect={onSelect}
               isSelected={selectedTaskId === task.id}
               isMultiSelected={selectedTaskIds.includes(task.id)}
+              activeTrackedTaskId={activeTrackedTaskId}
+              toggleTimeTracking={toggleTimeTracking}
+              formatTime={formatTime}
+              currentSessionElapsed={currentSessionElapsed}
             />
           ))}
         </AnimatePresence>
