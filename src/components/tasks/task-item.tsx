@@ -12,6 +12,8 @@ import {
   Calendar,
   ChevronRight,
   Paperclip,
+  PlayCircle,
+  PauseCircle,
 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
@@ -24,13 +26,22 @@ interface TaskItemProps {
   onSelect: (task: Task, isMultiSelect?: boolean) => void
   isSelected: boolean
   isMultiSelected?: boolean
+  activeTrackedTaskId: string | null
+  toggleTimeTracking: (taskId: string) => void
+  formatTime: (totalSeconds: number) => string
+  currentSessionElapsed: number
 }
 
-function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelected }: TaskItemProps) {
+function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelected, activeTrackedTaskId, toggleTimeTracking, formatTime, currentSessionElapsed }: TaskItemProps) {
   const { searchQuery } = useApp()
   const isOverdue = task.date && !task.completed && isBefore(new Date(task.date), startOfDay(new Date()))
   const completedSubtasks = task.subTasks.filter(st => st.completed).length
   const totalSubtasks = task.subTasks.length
+
+  const isTracking = activeTrackedTaskId === task.id
+  const actualTimeDisplay = isTracking 
+    ? formatTime(task.actualTimeSeconds + currentSessionElapsed)
+    : formatTime(task.actualTimeSeconds)
 
   const priorityColors = {
     high: 'text-red-400',
@@ -93,6 +104,24 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelect
             )}
           />
         </motion.div>
+
+        {!task.completed && (
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleTimeTracking(task.id)
+            }}
+            className={cn(
+              "mt-2.5 flex items-center justify-center transition-colors",
+              isTracking ? "text-red-500 animate-pulse" : "text-muted-foreground hover:text-primary"
+            )}
+            title={isTracking ? "Pause timer" : "Start timer"}
+          >
+            {isTracking ? <PauseCircle className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />}
+          </motion.button>
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
@@ -130,6 +159,16 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelect
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <Clock className="w-3 h-3" />
               {task.estimate}
+            </span>
+          )}
+
+          {(task.actualTimeSeconds > 0 || isTracking) && (
+            <span className={cn(
+              "flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md font-medium",
+              isTracking ? "bg-red-500/10 text-red-500" : "bg-indigo-500/10 text-indigo-500"
+            )}>
+              <Clock className="w-3 h-3" />
+              {actualTimeDisplay}
             </span>
           )}
 
