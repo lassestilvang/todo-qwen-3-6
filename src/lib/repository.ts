@@ -1,7 +1,6 @@
 import { getDb } from './db'
 import { Task, TaskList, Label, SubTask, Reminder, Attachment, TaskChange, Priority, RecurringRule } from './types'
 import { v4 as uuidv4 } from 'uuid'
-
 interface TaskRow {
   id: string
   name: string
@@ -11,16 +10,19 @@ interface TaskRow {
   deadline: string | null
   estimate: string | null
   actual_time: string | null
+  actual_time_seconds: number
   priority: string
   completed: number
   completed_at: string | null
   recurring_rule: string | null
+  deleted_at: string | null
   created_at: string
   updated_at: string
   list_name?: string
   list_color?: string
   list_emoji?: string
 }
+
 
 interface LabelRow {
   task_id: string
@@ -327,8 +329,8 @@ export const taskRepository = {
     const recurringRuleJson = data.recurringRule ? JSON.stringify(data.recurringRule) : null
 
     db.prepare(`
-      INSERT INTO tasks (id, name, description, list_id, date, deadline, estimate, actual_time, priority, recurring_rule)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO tasks (id, name, description, list_id, date, deadline, estimate, actual_time, actual_time_seconds, priority, recurring_rule)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id,
       data.name,
@@ -338,6 +340,7 @@ export const taskRepository = {
       data.deadline || null,
       data.estimate || null,
       data.actualTime || null,
+      data.actualTimeSeconds || 0,
       data.priority || 'none',
       recurringRuleJson
     )
@@ -353,6 +356,7 @@ export const taskRepository = {
     deadline: string | null
     estimate: string | null
     actualTime: string | null
+    actualTimeSeconds: number
     priority: Priority
     completed: boolean
     recurringRule: RecurringRule | null
@@ -372,6 +376,7 @@ export const taskRepository = {
       deadline: { key: 'deadline' },
       estimate: { key: 'estimate' },
       actualTime: { key: 'actual_time' },
+      actualTimeSeconds: { key: 'actual_time_seconds' },
       priority: { key: 'priority' },
       completed: { key: 'completed', transform: (v: unknown) => (v as boolean) ? 1 : 0 },
       recurringRule: { key: 'recurring_rule', transform: (v: unknown) => v ? JSON.stringify(v) : null },
@@ -676,6 +681,7 @@ function mapTaskRow(row: TaskRow, db: ReturnType<typeof getDb>): Task {
     deadline: row.deadline,
     estimate: row.estimate,
     actualTime: row.actual_time,
+    actualTimeSeconds: row.actual_time_seconds,
     priority: row.priority as Priority,
     completed: row.completed === 1,
     completedAt: row.completed_at,
@@ -713,6 +719,7 @@ function mapTaskRowWithRelations(
     deadline: row.deadline,
     estimate: row.estimate,
     actualTime: row.actual_time,
+    actualTimeSeconds: row.actual_time_seconds,
     priority: row.priority as Priority,
     completed: row.completed === 1,
     completedAt: row.completed_at,
