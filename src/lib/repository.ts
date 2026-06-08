@@ -279,13 +279,13 @@ export const taskRepository = {
     `).all(query) as { id: string }[]
 
     if (ftsRows.length === 0) {
-      const escapedQuery = query.replace(/([%_])/g, '\\$1')
+      const escapedQuery = query.replace(/([%_])/g, '\$1')
       const searchQuery = `%${escapedQuery}%`
       const fallbackRows = db.prepare(`
         SELECT DISTINCT t.*
         FROM tasks t
-        WHERE (t.name LIKE ? ESCAPE '\\'
-            OR t.description LIKE ? ESCAPE '\\')
+        WHERE (t.name LIKE ? ESCAPE ''
+            OR t.description LIKE ? ESCAPE '')
             AND t.deleted_at IS NULL
         ORDER BY t.created_at DESC
         LIMIT 50
@@ -321,6 +321,7 @@ export const taskRepository = {
     deadline?: string | null
     estimate?: string | null
     actualTime?: string | null
+    actualTimeSeconds?: number
     priority?: Priority
     recurringRule?: RecurringRule | null
   }): Task {
@@ -414,7 +415,7 @@ export const taskRepository = {
 
     if (fields.length === 0) return existing
 
-    fields.push('updated_at = datetime(\'now\')')
+    fields.push('updated_at = datetime('now')')
     params.push(id)
 
     db.prepare(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`).run(...params)
@@ -790,7 +791,7 @@ export const listRepository = {
 
     if (fields.length === 0) return this.findById(id)
 
-    fields.push('updated_at = datetime(\'now\')')
+    fields.push('updated_at = datetime('now')')
     params.push(id)
 
     db.prepare(`UPDATE lists SET ${fields.join(', ')} WHERE id = ?`).run(...params)
@@ -866,7 +867,7 @@ export const labelRepository = {
 
     if (fields.length === 0) return this.findById(id)
 
-    fields.push('updated_at = datetime(\'now\')')
+    fields.push('updated_at = datetime('now')')
     params.push(id)
 
     db.prepare(`UPDATE labels SET ${fields.join(', ')} WHERE id = ?`).run(...params)
