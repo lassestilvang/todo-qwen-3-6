@@ -32,6 +32,9 @@ export function getDb(): Database.Database {
     if (!tableInfo.some(col => col.name === 'deleted_at')) {
       db.exec("ALTER TABLE tasks ADD COLUMN deleted_at TEXT")
     }
+    if (!tableInfo.some(col => col.name === 'actual_time_seconds')) {
+      db.exec("ALTER TABLE tasks ADD COLUMN actual_time_seconds INTEGER NOT NULL DEFAULT 0")
+    }
   } catch (err) {
     console.error("Migration failed:", err)
   }
@@ -70,6 +73,7 @@ function initializeSchema(database: Database.Database) {
       deadline TEXT,
       estimate TEXT,
       actual_time TEXT,
+      actual_time_seconds INTEGER NOT NULL DEFAULT 0,
       priority TEXT NOT NULL DEFAULT 'none' CHECK(priority IN ('high', 'medium', 'low', 'none')),
       completed INTEGER NOT NULL DEFAULT 0,
       completed_at TEXT,

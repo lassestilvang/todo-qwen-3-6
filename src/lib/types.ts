@@ -52,6 +52,7 @@ export interface Task {
   deadline: string | null
   estimate: string | null
   actualTime: string | null
+  actualTimeSeconds: number
   priority: Priority
   completed: boolean
   completedAt: string | null
