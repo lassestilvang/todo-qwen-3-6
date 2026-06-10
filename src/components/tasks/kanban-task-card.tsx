@@ -14,9 +14,10 @@ interface KanbanTaskCardProps {
   toggleTimeTracking: (taskId: string) => void
   formatTime: (totalSeconds: number) => string
   currentSessionElapsed: number
+  onUpdateTask?: (id: string, data: Record<string, unknown>) => Promise<unknown>
 }
 
-export function KanbanTaskCard({ task, onToggle, onSelect, isSelected, activeTrackedTaskId, toggleTimeTracking, formatTime, currentSessionElapsed }: KanbanTaskCardProps) {
+export function KanbanTaskCard({ task, onToggle, onSelect, isSelected, activeTrackedTaskId, toggleTimeTracking, formatTime, currentSessionElapsed, onUpdateTask }: KanbanTaskCardProps) {
   const {
     attributes,
     listeners,
@@ -56,6 +57,7 @@ export function KanbanTaskCard({ task, onToggle, onSelect, isSelected, activeTra
         toggleTimeTracking={toggleTimeTracking}
         formatTime={formatTime}
         currentSessionElapsed={currentSessionElapsed}
+        onUpdateTask={onUpdateTask}
       />
     </div>
   )

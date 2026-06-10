@@ -18,7 +18,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { isBefore, startOfDay } from 'date-fns'
-import { memo } from 'react'
+import { memo, useState, useRef, useEffect } from 'react'
 
 interface TaskItemProps {
   task: Task
@@ -30,9 +30,43 @@ interface TaskItemProps {
   toggleTimeTracking: (taskId: string) => void
   formatTime: (totalSeconds: number) => string
   currentSessionElapsed: number
+  onUpdateTask?: (id: string, data: Record<string, unknown>) => Promise<unknown>
 }
 
-function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelected, activeTrackedTaskId, toggleTimeTracking, formatTime, currentSessionElapsed }: TaskItemProps) {
+function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelected, activeTrackedTaskId, toggleTimeTracking, formatTime, currentSessionElapsed, onUpdateTask }: TaskItemProps) {
+  const [editing, setEditing] = useState(false)
+  const [editName, setEditName] = useState(task.name)
+  const editInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editing && editInputRef.current) {
+      editInputRef.current.focus()
+      editInputRef.current.select()
+    }
+  }, [editing])
+
+  useEffect(() => {
+    setEditName(task.name)
+  }, [task.name])
+
+  const startEditing = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditName(task.name)
+    setEditing(true)
+  }
+
+  const saveEdit = () => {
+    const trimmed = editName.trim()
+    if (trimmed && trimmed !== task.name && onUpdateTask) {
+      onUpdateTask(task.id, { name: trimmed })
+    }
+    setEditing(false)
+  }
+
+  const cancelEdit = () => {
+    setEditName(task.name)
+    setEditing(false)
+  }
   const { searchQuery } = useApp()
   const isOverdue = task.date && !task.completed && isBefore(new Date(task.date), startOfDay(new Date()))
   const completedSubtasks = task.subTasks.filter(st => st.completed).length
@@ -126,12 +160,31 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelect
 
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <h3 className={cn(
-            'text-sm font-medium text-foreground leading-snug',
-            task.completed && 'line-through text-muted-foreground'
-          )}>
-            {highlightText(task.name, searchQuery)}
-          </h3>
+          {editing ? (
+            <input
+              ref={editInputRef}
+              value={editName}
+              onChange={e => setEditName(e.target.value)}
+              onBlur={saveEdit}
+              onKeyDown={e => {
+                if (e.key === 'Enter') saveEdit()
+                if (e.key === 'Escape') cancelEdit()
+                e.stopPropagation()
+              }}
+              onClick={e => e.stopPropagation()}
+              className="text-sm font-medium bg-secondary/60 border border-primary/40 rounded-md px-2 py-0.5 text-foreground outline-none w-full"
+            />
+          ) : (
+            <h3
+              className={cn(
+                'text-sm font-medium text-foreground leading-snug',
+                task.completed && 'line-through text-muted-foreground'
+              )}
+              onDoubleClick={task.completed ? undefined : startEditing}
+            >
+              {highlightText(task.name, searchQuery)}
+            </h3>
+          )}
           {task.priority !== 'none' && (
             <Flag className={cn('w-3.5 h-3.5 flex-shrink-0 mt-0.5', priorityColors[task.priority])} />
           )}

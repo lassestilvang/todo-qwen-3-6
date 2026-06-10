@@ -15,6 +15,7 @@ interface TaskListProps {
   toggleTimeTracking: (taskId: string) => void
   formatTime: (totalSeconds: number) => string
   currentSessionElapsed: number
+  onUpdateTask?: (id: string, data: Record<string, unknown>) => Promise<unknown>
 }
 
 export function TaskList({ 
@@ -26,7 +27,8 @@ export function TaskList({
   activeTrackedTaskId,
   toggleTimeTracking,
   formatTime,
-  currentSessionElapsed
+  currentSessionElapsed,
+  onUpdateTask
 }: TaskListProps) {
   if (tasks.length === 0) {
     return (
@@ -103,6 +105,7 @@ export function TaskList({
               toggleTimeTracking={toggleTimeTracking}
               formatTime={formatTime}
               currentSessionElapsed={currentSessionElapsed}
+              onUpdateTask={onUpdateTask}
             />
           ))}
         </AnimatePresence>

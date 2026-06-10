@@ -5,6 +5,7 @@ import { useApp } from '@/hooks/use-app'
 import { useTasks, useLists, useLabels } from '@/hooks/use-data'
 import { useSortedTasks } from '@/hooks/use-sorted-tasks'
 import { useTaskOperations } from '@/hooks/use-task-operations'
+import { useTimeTracking } from '@/hooks/use-time-tracking'
 import { Sidebar } from '@/components/sidebar/sidebar'
 import { Header } from '@/components/layout/header'
 import { TaskList } from '@/components/tasks/task-list'
@@ -36,6 +37,9 @@ export default function Home() {
   const tasks = useSortedTasks(rawTasks, sortBy, sortOrder)
   const { lists } = useLists()
   const { labels } = useLabels()
+  const { activeTaskId: activeTrackedTaskId, timeElapsed: currentSessionElapsed, toggleTimeTracking, formatTime } = useTimeTracking(
+    currentView, currentListId, showCompleted, currentLabelId
+  )
 
   const {
     showTaskForm,
@@ -152,6 +156,11 @@ export default function Home() {
                       onSelect={handleSelectTask}
                       selectedTaskId={selectedTaskId}
                       selectedTaskIds={selectedTaskIds}
+                      onUpdateTask={updateTask}
+                      activeTrackedTaskId={activeTrackedTaskId}
+                      toggleTimeTracking={toggleTimeTracking}
+                      formatTime={formatTime}
+                      currentSessionElapsed={currentSessionElapsed}
                     />
                   ) : (
                     <KanbanBoard
@@ -159,6 +168,11 @@ export default function Home() {
                       onToggle={toggleComplete}
                       onSelect={handleSelectTask}
                       selectedTaskId={selectedTaskId}
+                      activeTrackedTaskId={activeTrackedTaskId}
+                      toggleTimeTracking={toggleTimeTracking}
+                      formatTime={formatTime}
+                      currentSessionElapsed={currentSessionElapsed}
+                      onUpdateTask={updateTask}
                     />
                   )}
                 </motion.div>

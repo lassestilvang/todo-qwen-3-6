@@ -38,6 +38,7 @@ interface KanbanBoardProps {
   toggleTimeTracking: (taskId: string) => void
   formatTime: (totalSeconds: number) => string
   currentSessionElapsed: number
+  onUpdateTask?: (id: string, data: Record<string, unknown>) => Promise<unknown>
 }
 
 const COLUMNS: { id: Priority; label: string; color: string }[] = [
@@ -46,7 +47,7 @@ const COLUMNS: { id: Priority; label: string; color: string }[] = [
   { id: 'low', label: 'Low Priority', color: 'bg-blue-500' },
   { id: 'none', label: 'No Priority', color: 'bg-zinc-500' },
 ]
-export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedTaskId, activeTrackedTaskId, toggleTimeTracking, formatTime, currentSessionElapsed }: KanbanBoardProps) {
+export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedTaskId, activeTrackedTaskId, toggleTimeTracking, formatTime, currentSessionElapsed, onUpdateTask }: KanbanBoardProps) {
   const { currentView, currentListId, showCompleted, currentLabelId } = useApp()
   const { updateTask, createTask } = useTasks(currentView, currentListId, showCompleted, currentLabelId)
 
@@ -226,6 +227,7 @@ export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedT
                         toggleTimeTracking={toggleTimeTracking}
                         formatTime={formatTime}
                         currentSessionElapsed={currentSessionElapsed}
+                        onUpdateTask={onUpdateTask}
                       />
                     ))}
                   </AnimatePresence>
@@ -266,6 +268,7 @@ export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedT
               toggleTimeTracking={toggleTimeTracking}
               formatTime={formatTime}
               currentSessionElapsed={currentSessionElapsed}
+              onUpdateTask={onUpdateTask}
             />
           </div>
         ) : null}
