@@ -5,16 +5,38 @@ import { useSearch, useLists } from '@/hooks/use-data'
 import { useApp } from '@/hooks/use-app'
 import { Input } from '@/components/ui/input'
 import { Task } from '@/lib/types'
-import { Search, X, Flag } from 'lucide-react'
+import { useCrud } from '@/hooks/use-crud'
+import { parseNaturalLanguage } from '@/lib/natural-language'
+import { Search, X, Flag, Zap, Calendar, Clock, Tag } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { highlightText } from '@/lib/utils'
 
 export function SearchBar() {
-  const { searchQuery, setSearchQuery, setSelectedTaskId } = useApp()
+  const { searchQuery, setSearchQuery, setSelectedTaskId, currentListId } = useApp()
   const { results, loading } = useSearch(searchQuery)
   const { lists } = useLists()
+  const { create } = useCrud<Task>({ baseUrl: '/api/tasks', entityName: 'task' })
   const isOpen = searchQuery.length > 0
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const parsed = searchQuery.trim() ? parseNaturalLanguage(searchQuery) : null
+  const showQuickCreate = searchQuery.trim().length > 0 && results.length === 0 && !loading
+
+  const handleQuickCreate = async () => {
+    if (!parsed) return
+    const matchedList = parsed.listName
+      ? lists.find(l => l.name.toLowerCase() === parsed.listName.toLowerCase())
+      : null
+    await create({
+      name: parsed.name,
+      priority: parsed.priority,
+      date: parsed.date?.toISOString() || null,
+      listId: matchedList?.id || currentListId || null,
+      recurringRule: parsed.recurringRule || null,
+    })
+    setSearchQuery('')
+    inputRef.current?.blur()
+  }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -26,10 +48,14 @@ export function SearchBar() {
         inputRef.current?.blur()
         setSearchQuery('')
       }
+      if (e.key === 'Enter' && showQuickCreate && parsed) {
+        e.preventDefault()
+        handleQuickCreate()
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [setSearchQuery])
+  }, [setSearchQuery, showQuickCreate, parsed])
 
   const handleSelect = (task: Task) => {
     setSelectedTaskId(task.id)
@@ -77,6 +103,46 @@ export function SearchBar() {
               <div className="p-4 text-center text-muted-foreground text-sm flex items-center justify-center gap-2">
                 <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 Searching...
+              </div>
+            ) : showQuickCreate && parsed ? (
+              <div className="p-2">
+                <button
+                  type="button"
+                  onClick={handleQuickCreate}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors text-left"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      Create: &ldquo;{parsed.name}&rdquo;
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {parsed.date && (
+                        <span className="text-[10px] flex items-center gap-1 text-muted-foreground bg-secondary/60 px-1.5 py-0.5 rounded">
+                          <Calendar className="w-2.5 h-2.5" />
+                          {parsed.date.toLocaleDateString()}
+                        </span>
+                      )}
+                      {parsed.priority !== 'none' && (
+                        <span className="text-[10px] flex items-center gap-1 text-muted-foreground bg-secondary/60 px-1.5 py-0.5 rounded">
+                          <Flag className="w-2.5 h-2.5" />
+                          {parsed.priority}
+                        </span>
+                      )}
+                      {parsed.listName && (
+                        <span className="text-[10px] flex items-center gap-1 text-muted-foreground bg-secondary/60 px-1.5 py-0.5 rounded">
+                          <Tag className="w-2.5 h-2.5" />
+                          @{parsed.listName}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <kbd className="text-[10px] font-mono text-muted-foreground bg-secondary px-1.5 py-0.5 rounded border border-border/60">
+                    Enter
+                  </kbd>
+                </button>
               </div>
             ) : results.length === 0 ? (
               <div className="p-4 text-center text-muted-foreground text-sm">No results found</div>
