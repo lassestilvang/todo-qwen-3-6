@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Confetti } from "@/components/ui/confetti";
 import { AccentColorHandler } from "@/components/layout/accent-color-handler";
 import { CommandPalette } from "@/components/layout/command-palette";
+import { ReminderNotifier } from "@/components/layout/reminder-notifier";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -66,6 +67,7 @@ export default function RootLayout({
                 <AccentColorHandler />
                 <CommandPalette />
                 <Confetti />
+                <ReminderNotifier />
                 {children}
               </AppProvider>
             </TooltipProvider>
