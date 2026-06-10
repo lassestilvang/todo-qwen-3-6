@@ -10,9 +10,13 @@ interface KanbanTaskCardProps {
   onToggle: (task: Task) => void
   onSelect: (task: Task) => void
   isSelected: boolean
+  activeTrackedTaskId: string | null
+  toggleTimeTracking: (taskId: string) => void
+  formatTime: (totalSeconds: number) => string
+  currentSessionElapsed: number
 }
 
-export function KanbanTaskCard({ task, onToggle, onSelect, isSelected }: KanbanTaskCardProps) {
+export function KanbanTaskCard({ task, onToggle, onSelect, isSelected, activeTrackedTaskId, toggleTimeTracking, formatTime, currentSessionElapsed }: KanbanTaskCardProps) {
   const {
     attributes,
     listeners,
@@ -47,6 +51,11 @@ export function KanbanTaskCard({ task, onToggle, onSelect, isSelected }: KanbanT
         onToggle={onToggle}
         onSelect={onSelect}
         isSelected={isSelected}
+        isMultiSelected={false}
+        activeTrackedTaskId={activeTrackedTaskId}
+        toggleTimeTracking={toggleTimeTracking}
+        formatTime={formatTime}
+        currentSessionElapsed={currentSessionElapsed}
       />
     </div>
   )
