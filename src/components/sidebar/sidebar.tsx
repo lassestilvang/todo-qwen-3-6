@@ -16,7 +16,7 @@ import {
   Trash2,
   Settings,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -33,7 +33,7 @@ import { ProductivityDashboard } from '@/components/sidebar/productivity-dashboa
 import { Task } from '@/lib/types'
 import { sounds } from '@/lib/sounds'
 import { toast } from 'sonner'
-import { Download, Volume2, VolumeX } from 'lucide-react'
+import { Download, Upload, Volume2, VolumeX, AlertTriangle } from 'lucide-react'
 
 const views = [
   { id: 'today' as const, label: 'Today', icon: Calendar },
@@ -71,6 +71,8 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
   const [isMuted, setIsMuted] = useState(false)
   const [deleteListId, setDeleteListId] = useState<string | null>(null)
   
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const handleExportData = () => {
     try {
       const data = {
@@ -90,6 +92,48 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
       toast.success('Data exported successfully')
     } catch {
       toast.error('Failed to export data')
+    }
+  }
+
+  const handleImportData = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const data = JSON.parse(text)
+
+      if (!data.tasks || !Array.isArray(data.tasks)) {
+        throw new Error('Invalid import file: missing tasks array')
+      }
+
+      const res = await fetch('/api/tasks/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Import failed')
+      }
+
+      toast.success(`Imported ${data.tasks.length} tasks successfully`)
+      window.location.reload()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to import data')
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleEmptyTrash = async () => {
+    try {
+      const res = await fetch('/api/tasks?purgeTrash=true', { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to empty trash')
+      toast.success('Trash emptied successfully')
+    } catch {
+      toast.error('Failed to empty trash')
     }
   }
 
@@ -448,8 +492,45 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
                   </div>
                   <span className="text-xs text-muted-foreground">JSON</span>
                 </button>
+
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/40 hover:bg-secondary/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Upload className="w-4 h-4 text-amber-400" />
+                    <span className="text-sm font-medium">Import Data</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">JSON</span>
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleImportData}
+                  className="hidden"
+                />
               </div>
             </div>
+
+            {currentView === 'trash' && (
+              <>
+                <Separator className="bg-border/40" />
+                <div className="space-y-3">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Trash Actions</Label>
+                  <button
+                    onClick={handleEmptyTrash}
+                    className="w-full flex items-center justify-between p-3 rounded-xl bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                      <span className="text-sm font-medium text-red-400">Empty Trash</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">Permanent</span>
+                  </button>
+                </div>
+              </>
+            )}
 
             <Separator className="bg-border/40" />
             
