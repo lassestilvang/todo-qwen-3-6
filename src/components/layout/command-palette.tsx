@@ -15,7 +15,6 @@ import {
   Calendar,
   CheckCircle2,
   Trash2,
-  Settings,
   LayoutGrid,
   LayoutList,
   Moon,
@@ -24,19 +23,21 @@ import {
   ListTodo,
   Maximize2,
   Minimize2,
+  Zap,
 } from 'lucide-react'
 import { useApp } from '@/hooks/use-app'
 import { useTasks, useLists } from '@/hooks/use-data'
 import { useTheme } from 'next-themes'
-import { useRouter } from 'next/navigation'
+import { parseNaturalLanguage } from '@/lib/natural-language'
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false)
+  const [searchValue, setSearchValue] = useState('')
   const { 
-    currentView, setView, toggleSidebar, toggleShowCompleted, 
+    currentView, setView, toggleSidebar, toggleShowCompleted, currentListId,
     viewMode, setViewMode, setSelectedTaskId, focusMode, toggleFocusMode
   } = useApp()
-  const { tasks, clearCompleted } = useTasks(currentView, null, true)
+  const { tasks, clearCompleted, createTask } = useTasks(currentView, null, true)
   const { lists } = useLists()
   const { setTheme, resolvedTheme } = useTheme()
 
@@ -45,6 +46,7 @@ export function CommandPalette() {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
         setOpen((open) => !open)
+        setSearchValue('')
       }
     }
     document.addEventListener('keydown', down)
@@ -53,14 +55,47 @@ export function CommandPalette() {
 
   const runCommand = (command: () => void) => {
     setOpen(false)
+    setSearchValue('')
     command()
   }
 
+  const handleCreateFromSearch = async () => {
+    if (!searchValue.trim()) return
+    const parsed = parseNaturalLanguage(searchValue)
+    const matchedList = parsed.listName
+      ? lists.find(l => l.name.toLowerCase() === parsed.listName.toLowerCase())
+      : null
+
+    await createTask({
+      name: parsed.name,
+      priority: parsed.priority === 'none' ? 'none' : parsed.priority,
+      date: parsed.date?.toISOString() || null,
+      listId: matchedList?.id || currentListId || null,
+      recurringRule: parsed.recurringRule || null,
+    })
+
+    setOpen(false)
+    setSearchValue('')
+  }
+
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Type a command or search tasks..." />
+    <CommandDialog open={open} onOpenChange={(isOpen) => { setOpen(isOpen); if (!isOpen) setSearchValue('') }}>
+      <CommandInput
+        value={searchValue}
+        onValueChange={setSearchValue}
+        placeholder="Type a command, search tasks, or create one..."
+      />
       <CommandList className="max-h-[400px]">
-        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandEmpty>
+          {searchValue.trim() ? (
+            <CommandItem onSelect={handleCreateFromSearch} className="text-primary">
+              <Zap className="mr-2 h-4 w-4" />
+              <span>Create task: &ldquo;{searchValue.trim()}&rdquo;</span>
+            </CommandItem>
+          ) : (
+            <span className="text-sm text-muted-foreground">No results found.</span>
+          )}
+        </CommandEmpty>
         
         <CommandGroup heading="Tasks">
           <CommandItem onSelect={() => runCommand(() => window.dispatchEvent(new CustomEvent('add-task')))}>
