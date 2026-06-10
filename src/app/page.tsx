@@ -227,6 +227,8 @@ export default function Home() {
             onClose={() => {
               setShowTaskForm(false)
             }}
+            defaultListId={currentListId}
+            defaultDate={currentView === 'today' ? new Date() : currentView === 'week' ? new Date() : null}
           />
         </DialogContent>
       </Dialog>

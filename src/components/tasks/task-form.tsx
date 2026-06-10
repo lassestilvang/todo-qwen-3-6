@@ -40,13 +40,15 @@ interface TaskFormProps {
   labels: Label[]
   onSave: (data: Record<string, unknown>) => void
   onClose: () => void
+  defaultListId?: string | null
+  defaultDate?: Date | null
 }
 
-export function TaskForm({ task, lists, labels, onSave, onClose }: TaskFormProps) {
+export function TaskForm({ task, lists, labels, onSave, onClose, defaultListId, defaultDate }: TaskFormProps) {
   const [name, setName] = useState(task?.name || '')
   const [description, setDescription] = useState(task?.description || '')
-  const [listId, setListId] = useState(task?.listId || lists[0]?.id || '')
-  const [date, setDate] = useState<Date | undefined>(task?.date ? new Date(task.date) : undefined)
+  const [listId, setListId] = useState(task?.listId || defaultListId || lists[0]?.id || '')
+  const [date, setDate] = useState<Date | undefined>(task?.date ? new Date(task.date) : (defaultDate ?? undefined))
   const [deadline, setDeadline] = useState<Date | undefined>(task?.deadline ? new Date(task.deadline) : undefined)
   const [estimate, setEstimate] = useState(task?.estimate || '')
   const [actualTime, setActualTime] = useState(task?.actualTime || '')
