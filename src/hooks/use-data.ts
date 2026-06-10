@@ -33,6 +33,13 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
     if (nextCompletedState) {
       sounds.playSuccess()
       window.dispatchEvent(new CustomEvent('trigger-confetti'))
+      toast(`"${task.name}" completed`, {
+        action: {
+          label: 'Undo',
+          onClick: () => update(task.id, { completed: false }),
+        },
+        duration: 5000,
+      })
     }
   }
 

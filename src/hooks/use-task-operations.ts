@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Task } from '@/lib/types'
 import { toast } from 'sonner'
 
@@ -34,6 +34,7 @@ export function useTaskOperations({
   const [showTaskForm, setShowTaskForm] = useState(false)
   const [showTaskDetail, setShowTaskDetail] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const deletedTasksRef = useRef<Map<string, Task>>(new Map())
 
   const selectedTask = tasks.find(t => t.id === selectedTaskId)
 
@@ -87,10 +88,24 @@ export function useTaskOperations({
 
   const handleDeleteTask = async () => {
     if (!selectedTask) return
+    const taskToDelete = selectedTask
     try {
-      await deleteTask(selectedTask.id)
+      await deleteTask(taskToDelete.id)
+      deletedTasksRef.current.set(taskToDelete.id, taskToDelete)
       setShowTaskDetail(false)
       setSelectedTaskId(null)
+      toast(`"${taskToDelete.name}" moved to trash`, {
+        action: {
+          label: 'Undo',
+          onClick: () => createTask({
+            ...taskToDelete,
+            labels: taskToDelete.labels.map(l => l.id),
+            subTasks: taskToDelete.subTasks.map(st => ({ name: st.name, completed: st.completed, order: st.order })),
+            reminders: taskToDelete.reminders.map(r => ({ type: r.type, time: r.time })),
+          }),
+        },
+        duration: 5000,
+      })
     } catch {
       // Error already handled by toast in use-data.ts
     }
@@ -115,9 +130,26 @@ export function useTaskOperations({
 
   const handleBatchDelete = async () => {
     if (selectedTaskIds.length === 0) return
+    const deletedIds = [...selectedTaskIds]
+    const batchTasks = tasks.filter(t => deletedIds.includes(t.id))
     try {
-      await Promise.all(selectedTaskIds.map(id => deleteTask(id)))
+      await Promise.all(deletedIds.map(id => deleteTask(id)))
+      batchTasks.forEach(t => deletedTasksRef.current.set(t.id, t))
       setSelectedTaskIds([])
+      toast(`${deletedIds.length} tasks moved to trash`, {
+        action: {
+          label: 'Undo',
+          onClick: () => Promise.all(batchTasks.map(t =>
+            createTask({
+              ...t,
+              labels: t.labels.map(l => l.id),
+              subTasks: t.subTasks.map(st => ({ name: st.name, completed: st.completed, order: st.order })),
+              reminders: t.reminders.map(r => ({ type: r.type, time: r.time })),
+            })
+          )),
+        },
+        duration: 5000,
+      })
     } catch {
       // Error handled by use-data.ts
     }
@@ -125,10 +157,19 @@ export function useTaskOperations({
 
   const handleBatchToggle = async () => {
     if (selectedTaskIds.length === 0) return
+    const toggleIds = [...selectedTaskIds]
     try {
-      const selectedTasks = tasks.filter(t => selectedTaskIds.includes(t.id))
+      const selectedTasks = tasks.filter(t => toggleIds.includes(t.id))
       await Promise.all(selectedTasks.map(t => toggleComplete(t)))
       setSelectedTaskIds([])
+      const allCompleted = selectedTasks.every(t => !t.completed)
+      toast(allCompleted ? `${toggleIds.length} tasks completed` : `${toggleIds.length} tasks restored`, {
+        action: {
+          label: 'Undo',
+          onClick: () => Promise.all(selectedTasks.map(t => updateTask(t.id, { completed: !t.completed }))),
+        },
+        duration: 5000,
+      })
     } catch {
       // Error handled by use-data.ts
     }
@@ -139,12 +180,27 @@ export function useTaskOperations({
       try {
         await Promise.all(selectedTaskIds.map(id => restoreTask(id)))
         setSelectedTaskIds([])
+        toast(`${selectedTaskIds.length} tasks restored`, {
+          action: {
+            label: 'Undo',
+            onClick: () => Promise.all(selectedTaskIds.map(id => deleteTask(id))),
+          },
+          duration: 5000,
+        })
       } catch {}
     } else if (selectedTaskId) {
+      const restoredId = selectedTaskId
       try {
-        await restoreTask(selectedTaskId)
+        await restoreTask(restoredId)
         setShowTaskDetail(false)
         setSelectedTaskId(null)
+        toast('Task restored', {
+          action: {
+            label: 'Undo',
+            onClick: () => deleteTask(restoredId),
+          },
+          duration: 5000,
+        })
       } catch {}
     }
   }
@@ -154,6 +210,7 @@ export function useTaskOperations({
       try {
         await Promise.all(selectedTaskIds.map(id => purgeTask(id)))
         setSelectedTaskIds([])
+        toast(`${selectedTaskIds.length} tasks permanently deleted`)
       } catch {}
     } else if (selectedTaskId) {
       try {
