@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Keyboard, HelpCircle } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useApp } from '@/hooks/use-app'
@@ -97,7 +97,7 @@ export function KeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [setView, toggleSidebar, toggleShowCompleted, toggleFocusMode])
+  }, [setView, toggleSidebar, toggleShowCompleted, toggleShowOverdue, toggleFocusMode])
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

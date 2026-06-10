@@ -28,7 +28,7 @@ export function getDb(): Database.Database {
 
   // Migration: Add deleted_at to tasks if it doesn't exist
   try {
-    const tableInfo = db.prepare("PRAGMA table_info(tasks)").all() as any[]
+    const tableInfo = db.prepare("PRAGMA table_info(tasks)").all() as Array<{ name: string }>
     if (!tableInfo.some(col => col.name === 'deleted_at')) {
       db.exec("ALTER TABLE tasks ADD COLUMN deleted_at TEXT")
     }

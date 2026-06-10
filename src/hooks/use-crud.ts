@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 
-interface UseCrudOptions<T> {
+interface UseCrudOptions {
   baseUrl: string
   entityName: string
   fetchParams?: Record<string, string>
@@ -39,13 +39,12 @@ export function useCrud<T extends { id: string }>({
   createSuccessMessage,
   updateSuccessMessage,
   deleteSuccessMessage,
-}: UseCrudOptions<T>): UseCrudReturn<T> {
+}: UseCrudOptions): UseCrudReturn<T> {
   const [data, setData] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isMutating, setIsMutating] = useState(false)
   const dataRef = useRef<T[]>([])
-  const paramsString = JSON.stringify(fetchParams)
   const cacheKey = getCacheKey(baseUrl, fetchParams)
 
   const fetchData = useCallback(async (forceRefresh = false) => {
@@ -79,7 +78,7 @@ export function useCrud<T extends { id: string }>({
     } finally {
       setLoading(false)
     }
-  }, [baseUrl, entityName, paramsString, cacheKey])
+  }, [baseUrl, entityName, fetchParams, cacheKey])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Task, Priority, Label, RecurringRule, RecurringPattern } from '@/lib/types'
+import { Task, Priority, Label, RecurringRule } from '@/lib/types'
 import { parseNaturalLanguage, DAYS } from '@/lib/natural-language'
 import { timeRegex } from '@/lib/validation'
 import { Button } from '@/components/ui/button'

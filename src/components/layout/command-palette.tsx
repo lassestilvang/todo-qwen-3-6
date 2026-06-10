@@ -34,7 +34,7 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const { 
-    currentView, setView, toggleSidebar, toggleShowCompleted, currentListId,
+    currentView, setView, toggleShowCompleted, currentListId,
     viewMode, setViewMode, setSelectedTaskId, focusMode, toggleFocusMode
   } = useApp()
   const { tasks, clearCompleted, createTask } = useTasks(currentView, null, true)

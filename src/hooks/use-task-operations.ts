@@ -4,12 +4,12 @@ import { toast } from 'sonner'
 
 interface UseTaskOperationsProps {
   tasks: Task[]
-  createTask: (data: any) => Promise<any>
-  updateTask: (id: string, data: any) => Promise<any>
-  deleteTask: (id: string) => Promise<any>
-  toggleComplete: (task: Task) => Promise<any>
-  restoreTask: (id: string) => Promise<any>
-  purgeTask: (id: string) => Promise<any>
+  createTask: (data: Record<string, unknown>) => Promise<unknown>
+  updateTask: (id: string, data: Record<string, unknown>) => Promise<unknown>
+  deleteTask: (id: string) => Promise<unknown>
+  toggleComplete: (task: Task) => Promise<unknown>
+  restoreTask: (id: string) => Promise<unknown>
+  purgeTask: (id: string) => Promise<unknown>
   selectedTaskId: string | null
   setSelectedTaskId: (id: string | null) => void
   selectedTaskIds: string[]
@@ -114,7 +114,8 @@ export function useTaskOperations({
   const handleDuplicateTask = async () => {
     if (!selectedTask) return
     try {
-      const { id, createdAt, updatedAt, completedAt, completed, labels, subTasks, reminders, attachments, ...rest } = selectedTask
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id: _id, createdAt: _createdAt, updatedAt: _updatedAt, completedAt: _completedAt, completed: _completed, attachments: _attachments, labels, subTasks, reminders, ...rest } = selectedTask
       await createTask({
         ...rest,
         name: `${rest.name} (Copy)`,

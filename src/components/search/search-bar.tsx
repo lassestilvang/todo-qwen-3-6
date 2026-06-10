@@ -1,13 +1,13 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useCallback } from 'react'
 import { useSearch, useLists } from '@/hooks/use-data'
 import { useApp } from '@/hooks/use-app'
 import { Input } from '@/components/ui/input'
 import { Task } from '@/lib/types'
 import { useCrud } from '@/hooks/use-crud'
 import { parseNaturalLanguage } from '@/lib/natural-language'
-import { Search, X, Flag, Zap, Calendar, Clock, Tag } from 'lucide-react'
+import { Search, X, Flag, Zap, Calendar, Tag } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { highlightText } from '@/lib/utils'
 
@@ -22,7 +22,7 @@ export function SearchBar() {
   const parsed = searchQuery.trim() ? parseNaturalLanguage(searchQuery) : null
   const showQuickCreate = searchQuery.trim().length > 0 && results.length === 0 && !loading
 
-  const handleQuickCreate = async () => {
+  const handleQuickCreate = useCallback(async () => {
     if (!parsed) return
     const listName = parsed.listName
     const matchedList = listName
@@ -37,7 +37,7 @@ export function SearchBar() {
     })
     setSearchQuery('')
     inputRef.current?.blur()
-  }
+  }, [parsed, lists, create, currentListId, setSearchQuery])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -56,7 +56,7 @@ export function SearchBar() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [setSearchQuery, showQuickCreate, parsed])
+  }, [setSearchQuery, showQuickCreate, parsed, handleQuickCreate])
 
   const handleSelect = (task: Task) => {
     setSelectedTaskId(task.id)

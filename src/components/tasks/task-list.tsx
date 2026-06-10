@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Task } from '@/lib/types'
 import { TaskItem } from './task-item'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ClipboardList, Sparkles, Rocket, Zap, Plus, GripVertical } from 'lucide-react'
+import { ClipboardList, Sparkles, Zap, Plus, GripVertical } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -24,7 +24,6 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { cn } from '@/lib/utils'
 
 interface TaskListProps {
   tasks: Task[]

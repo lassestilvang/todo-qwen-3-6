@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Task, Priority } from '@/lib/types'
 import { KanbanTaskCard } from './kanban-task-card'
 import { KanbanQuickAdd } from './kanban-quick-add'
@@ -15,12 +15,10 @@ import {
   useSensor,
   useSensors,
   DragStartEvent,
-  DragOverEvent,
   DragEndEvent,
   defaultDropAnimationSideEffects,
 } from '@dnd-kit/core'
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,

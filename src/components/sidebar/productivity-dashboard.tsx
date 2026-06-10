@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { BarChart3, TrendingUp, Award, Clock, Flame, AlertCircle } from 'lucide-react'
+import { BarChart3, TrendingUp, Clock, Flame, AlertCircle } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Task, TaskList } from '@/lib/types'
 import { cn } from '@/lib/utils'
@@ -31,8 +31,8 @@ export function ProductivityDashboard() {
           setTasks(tasksData)
           setLists(listsData)
         }
-      } catch (err) {
-        console.error('Failed to fetch stats data:', err)
+      } catch {
+        console.error('Failed to fetch stats data:')
       } finally {
         setLoading(false)
       }
@@ -51,7 +51,6 @@ export function ProductivityDashboard() {
   // Stats calculations
   const totalTasks = tasks.length
   const completedTasks = tasks.filter((t) => t.completed).length
-  const pendingTasks = totalTasks - completedTasks
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
   // Priority count
@@ -95,12 +94,12 @@ export function ProductivityDashboard() {
     
     let streak = 0
     const today = new Date().toISOString().split('T')[0]
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+    const yesterday = new Date(new Date() - 86400000).toISOString().split('T')[0]
     
     // If no tasks completed today or yesterday, streak is broken
     if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) return 0
     
-    let currentDate = new Date(uniqueDates[0])
+    const currentDate = new Date(uniqueDates[0])
     
     for (let i = 0; i < uniqueDates.length; i++) {
       const dateStr = uniqueDates[i]

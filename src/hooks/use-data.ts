@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Task, TaskList, Label, ViewType } from '@/lib/types'
 import { useCrud } from './use-crud'

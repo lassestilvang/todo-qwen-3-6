@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Markdown } from '@/components/ui/markdown'
 import { format } from 'date-fns'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   X,
   Trash2,
@@ -26,7 +25,6 @@ import {
   Copy,
   Clipboard,
   RotateCcw,
-  GripVertical,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {

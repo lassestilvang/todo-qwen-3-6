@@ -653,68 +653,6 @@ function batchLoadTaskRelations(
   return rows.map(row => mapTaskRowWithRelations(row, labelsByTask, subTasksByTask, remindersByTask, attachmentsByTask, dependenciesByTask))
 }
 
-function mapTaskRow(row: TaskRow, db: ReturnType<typeof getDb>): Task {
-  let recurringRule: RecurringRule | null = null
-  if (row.recurring_rule) {
-    try {
-      recurringRule = JSON.parse(row.recurring_rule)
-    } catch {}
-  }
-
-  const labels = db.prepare(`
-    SELECT lb.* FROM labels lb
-    INNER JOIN task_labels tl ON lb.id = tl.label_id
-    WHERE tl.task_id = ?
-  `).all(row.id) as Label[]
-
-  const rawSubTasks = db.prepare(`
-    SELECT * FROM subtasks WHERE task_id = ? ORDER BY "order" ASC
-  `).all(row.id) as SubTaskRow[]
-  const subTasks: SubTask[] = rawSubTasks.map(st => ({
-    id: st.id,
-    taskId: st.task_id,
-    name: st.name,
-    completed: st.completed === 1,
-    order: st.order,
-    createdAt: st.created_at,
-    updatedAt: st.updated_at,
-  }))
-
-  const reminders = db.prepare(`
-    SELECT * FROM reminders WHERE task_id = ?
-  `).all(row.id) as Reminder[]
-
-  const attachments = db.prepare(`
-    SELECT * FROM attachments WHERE task_id = ?
-  `).all(row.id) as Attachment[]
-
-  const dependencies : string[] = []
-
-  return {
-    id: row.id,
-    name: row.name,
-    description: row.description || '',
-    listId: row.list_id,
-    date: row.date,
-    deadline: row.deadline,
-    estimate: row.estimate,
-    actualTime: row.actual_time,
-    actualTimeSeconds: row.actual_time_seconds,
-    priority: row.priority as Priority,
-    completed: row.completed === 1,
-    completedAt: row.completed_at,
-    recurringRule,
-    sortOrder: row.sort_order,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    labels,
-    subTasks,
-    reminders,
-    attachments,
-    dependencies,
-  }
-}
-
 function mapTaskRowWithRelations(
   row: TaskRow,
   labelsByTask: Map<string, Label[]>,

@@ -1,59 +1,55 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Task, ViewType } from '@/lib/types'
-import { useTasks } from './use-data' // Assuming useTasks provides updateTask
+import { ViewType } from '@/lib/types'
+import { useTasks } from './use-data'
 
 interface UseTimeTrackingResult {
   activeTaskId: string | null
-  timeElapsed: number // in seconds
+  timeElapsed: number
   startTracking: (taskId: string) => void
   stopTracking: () => void
   toggleTracking: (taskId: string) => void
   formatTime: (totalSeconds: number) => string
 }
 
+function getInitialActiveTaskId(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('time_tracker_active_task_id')
+}
+
+function getInitialStartTime(): number | null {
+  if (typeof window === 'undefined') return null
+  const saved = localStorage.getItem('time_tracker_start_time')
+  return saved ? parseInt(saved, 10) : null
+}
+
 export function useTimeTracking(currentView: ViewType, currentListId: string | null, showCompleted: boolean, currentLabelId: string | null): UseTimeTrackingResult {
-  const [activeTaskId, setActiveTaskId] = useState<string | null>(null)
-  const [startTime, setStartTime] = useState<number | null>(null) // Unix timestamp
-  const [timeElapsed, setTimeElapsed] = useState<number>(0) // for current session display
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(getInitialActiveTaskId)
+  const [startTime, setStartTime] = useState<number | null>(getInitialStartTime)
+  const [timeElapsed, setTimeElapsed] = useState<number>(0)
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const { updateTask, tasks } = useTasks(currentView, currentListId, showCompleted, currentLabelId)
 
-  // Load from localStorage on mount
-  useEffect(() => {
-    const savedActiveTaskId = localStorage.getItem('time_tracker_active_task_id')
-    const savedStartTime = localStorage.getItem('time_tracker_start_time')
+  const isActive = activeTaskId !== null && startTime !== null
 
-    if (savedActiveTaskId && savedStartTime) {
-      setActiveTaskId(savedActiveTaskId)
-      setStartTime(parseInt(savedStartTime, 10))
-    }
-  }, [])
-
-  // Start/stop interval based on activeTaskId and startTime
   useEffect(() => {
-    if (activeTaskId && startTime !== null) {
+    if (isActive) {
       if (intervalRef.current) clearInterval(intervalRef.current)
 
       intervalRef.current = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000)
+        const elapsed = Math.floor((Date.now() - startTime!) / 1000)
         setTimeElapsed(elapsed)
       }, 1000)
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
-      setTimeElapsed(0) // Reset display when not active
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
     }
 
-    // Cleanup on unmount
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [activeTaskId, startTime])
+  }, [activeTaskId, startTime, isActive])
 
-  // Persist to localStorage
   useEffect(() => {
     if (activeTaskId && startTime !== null) {
       localStorage.setItem('time_tracker_active_task_id', activeTaskId)
@@ -105,10 +101,11 @@ export function useTimeTracking(currentView: ViewType, currentListId: string | n
 
         await updateTask(activeTaskId, {
           actualTimeSeconds: newTotalSeconds,
-          actualTime: formatTime(newTotalSeconds), // Update formatted string as well
+          actualTime: formatTime(newTotalSeconds),
         })
       }
     }
+    setTimeElapsed(0)
     setActiveTaskId(null)
     setStartTime(null)
   }, [activeTaskId, startTime, tasks, updateTask, formatTime])

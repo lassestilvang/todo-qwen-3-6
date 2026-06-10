@@ -33,50 +33,43 @@ interface AppContextType extends AppState {
 
 const AppContext = createContext<AppContextType | null>(null)
 
+function getInitial<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback
+  try {
+    const stored = localStorage.getItem(key)
+    if (stored === null) return fallback
+    if (typeof fallback === 'boolean') return (stored === 'true') as T
+    return stored as T
+  } catch {
+    return fallback
+  }
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [currentView, setCurrentView] = useState<ViewType>('today')
   const [currentListId, setCurrentListId] = useState<string | null>(null)
   const [currentLabelId, setCurrentLabelId] = useState<string | null>(null)
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
-  const [showCompleted, setShowCompleted] = useState(false)
-  const [showOverdue, setShowOverdue] = useState(false)
+  const [showCompleted, setShowCompleted] = useState(() => getInitial('app_show_completed', false))
+  const [showOverdue, setShowOverdue] = useState(() => getInitial('app_show_overdue', false))
   const [searchQuery, setSearchQuery] = useState('')
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
-  const [accentColor, setAccentColor] = useState('#6366f1')
-  const [sortBy, setSortBy] = useState<SortBy>('date')
-  const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
-  const [focusMode, setFocusMode] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(() => getInitial('app_sidebar_open', true))
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>(() => {
+    const saved = getInitial<string | null>('app_view_mode', null)
+    return saved === 'kanban' || saved === 'list' ? saved : 'list'
+  })
+  const [accentColor, setAccentColor] = useState(() => getInitial('app_accent_color', '#6366f1'))
+  const [sortBy, setSortBy] = useState<SortBy>(() => {
+    const saved = getInitial<string | null>('app_sort_by', null)
+    return (['date', 'priority', 'name', 'created'] as SortBy[]).includes(saved as SortBy) ? saved as SortBy : 'date'
+  })
+  const [sortOrder, setSortOrder] = useState<SortOrder>(() => {
+    const saved = getInitial<string | null>('app_sort_order', null)
+    return saved === 'asc' || saved === 'desc' ? saved : 'asc'
+  })
+  const [focusMode, setFocusMode] = useState(() => getInitial('app_focus_mode', false))
 
-  // Load from localStorage on mount
-  useEffect(() => {
-    const savedAccent = localStorage.getItem('app_accent_color')
-    if (savedAccent) setAccentColor(savedAccent)
-
-    const savedViewMode = localStorage.getItem('app_view_mode')
-    if (savedViewMode === 'kanban' || savedViewMode === 'list') setViewMode(savedViewMode)
-
-    const savedShowCompleted = localStorage.getItem('app_show_completed')
-    if (savedShowCompleted !== null) setShowCompleted(savedShowCompleted === 'true')
-
-    const savedShowOverdue = localStorage.getItem('app_show_overdue')
-    if (savedShowOverdue !== null) setShowOverdue(savedShowOverdue === 'true')
-
-    const savedSidebarOpen = localStorage.getItem('app_sidebar_open')
-    if (savedSidebarOpen !== null) setSidebarOpen(savedSidebarOpen === 'true')
-
-    const savedSortBy = localStorage.getItem('app_sort_by') as SortBy
-    if (savedSortBy) setSortBy(savedSortBy)
-
-    const savedSortOrder = localStorage.getItem('app_sort_order') as SortOrder
-    if (savedSortOrder) setSortOrder(savedSortOrder)
-
-    const savedFocusMode = localStorage.getItem('app_focus_mode')
-    if (savedFocusMode !== null) setFocusMode(savedFocusMode === 'true')
-  }, [])
-
-  // Save to localStorage when values change
   useEffect(() => {
     localStorage.setItem('app_accent_color', accentColor)
   }, [accentColor])
@@ -171,7 +164,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     sortOrder,
     setSortOrder,
     setView,
-    setListId: setCurrentListId,
+    setListId,
     setLabelId,
     setSelectedTaskId,
     toggleShowCompleted,

@@ -46,10 +46,6 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelect
     }
   }, [editing])
 
-  useEffect(() => {
-    setEditName(task.name)
-  }, [task.name])
-
   const startEditing = (e: React.MouseEvent) => {
     e.stopPropagation()
     setEditName(task.name)

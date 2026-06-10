@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
 import Database from 'better-sqlite3'
 import { getDb, closeDb } from '@/lib/db'

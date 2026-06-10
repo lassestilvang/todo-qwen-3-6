@@ -88,7 +88,7 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
       a.click()
       URL.revokeObjectURL(url)
       toast.success('Data exported successfully')
-    } catch (err) {
+    } catch {
       toast.error('Failed to export data')
     }
   }
@@ -471,7 +471,7 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
       </Dialog>
 
       <Dialog open={showCreateList} onOpenChange={setShowCreateList}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-card-foreground p-6 rounded-2xl shadow-2xl">
           <DialogHeader>
             <DialogTitle>Create New List</DialogTitle>
           </DialogHeader>
@@ -482,7 +482,7 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
                 value={newListName}
                 onChange={e => setNewListName(e.target.value)}
                 placeholder="List name"
-                className="bg-zinc-800 border-zinc-700 text-white mt-1"
+                className="bg-secondary/50 border-border text-foreground mt-1"
                 autoFocus
               />
             </div>
@@ -497,7 +497,7 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
                     aria-pressed={newListEmoji === emoji}
                     className={cn(
                       'w-8 h-8 flex items-center justify-center rounded-lg text-lg transition-colors',
-                      newListEmoji === emoji ? 'bg-zinc-700' : 'hover:bg-zinc-800'
+                      newListEmoji === emoji ? 'bg-secondary' : 'hover:bg-secondary/50'
                     )}
                   >
                     {emoji}
@@ -516,7 +516,7 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
                     aria-pressed={newListColor === color}
                     className={cn(
                       'w-8 h-8 rounded-full transition-transform',
-                      newListColor === color ? 'ring-2 ring-white ring-offset-2 ring-offset-zinc-900 scale-110' : 'hover:scale-110'
+                      newListColor === color ? 'ring-2 ring-foreground ring-offset-2 ring-offset-background scale-110' : 'hover:scale-110'
                     )}
                     style={{ backgroundColor: color }}
                   />
@@ -525,7 +525,7 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateList(false)} className="border-zinc-700">
+            <Button variant="outline" onClick={() => setShowCreateList(false)} className="border-border text-muted-foreground">
               Cancel
             </Button>
             <Button onClick={handleCreateList} disabled={!newListName.trim()}>
@@ -536,15 +536,15 @@ export function Sidebar({ tasks }: { tasks: Task[] }) {
       </Dialog>
 
       <Dialog open={!!deleteListId} onOpenChange={(open) => !open && setDeleteListId(null)}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-card-foreground p-6 rounded-2xl shadow-2xl">
           <DialogHeader>
             <DialogTitle>Delete List</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             Are you sure you want to delete this list? This action cannot be undone.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteListId(null)} className="border-zinc-700">
+            <Button variant="outline" onClick={() => setDeleteListId(null)} className="border-border text-muted-foreground">
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDeleteList}>
