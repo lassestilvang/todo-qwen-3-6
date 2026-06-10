@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Markdown } from '@/components/ui/markdown'
 import { format } from 'date-fns'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -193,7 +194,7 @@ export function TaskDetail({ task, onClose, onDelete, onEdit, onDuplicate, onUpd
               <div>
                 <h3 className="text-lg font-bold text-foreground">{task.name}</h3>
                 {task.description && (
-                  <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap leading-relaxed">{task.description}</p>
+                  <Markdown className="text-sm text-muted-foreground mt-2 leading-relaxed">{task.description}</Markdown>
                 )}
               </div>
 

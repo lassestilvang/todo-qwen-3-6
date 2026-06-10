@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { Markdown } from '@/components/ui/markdown'
 import { isBefore, startOfDay } from 'date-fns'
 import { memo, useState, useRef, useEffect } from 'react'
 
@@ -191,9 +192,9 @@ function TaskItemComponent({ task, onToggle, onSelect, isSelected, isMultiSelect
         </div>
 
         {task.description && (
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
-            {highlightText(task.description, searchQuery)}
-          </p>
+          <div className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed [&_*]:text-xs [&_*]:text-muted-foreground">
+            <Markdown>{task.description}</Markdown>
+          </div>
         )}
 
         <div className="flex flex-wrap items-center gap-2 mt-2">

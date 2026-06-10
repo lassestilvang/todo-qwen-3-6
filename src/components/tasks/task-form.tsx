@@ -293,13 +293,13 @@ export function TaskForm({ task, lists, labels, onSave, onClose, defaultListId, 
 
           <div>
             <UILabel htmlFor="task-description" className="text-sm font-medium text-muted-foreground">
-              Description
+              Description <span className="text-[10px] text-muted-foreground/50 font-normal">(Markdown supported)</span>
             </UILabel>
             <Textarea
               id="task-description"
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Add details..."
+              placeholder="Add details... **bold**, _italic_, `code`, [links](url), - lists"
               className="mt-1.5 bg-secondary/50 border-border text-foreground placeholder:text-muted-foreground/60 min-h-[100px] resize-none"
             />
           </div>
