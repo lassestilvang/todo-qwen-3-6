@@ -1,4 +1,4 @@
-import { addDays, startOfDay, isValid } from 'date-fns'
+import { addDays, startOfDay, isValid, addWeeks, addMonths, addYears } from 'date-fns'
 import { RecurringRule, RecurringPattern } from './types'
 
 interface ParsedTask {
@@ -283,6 +283,52 @@ function extractPriority(input: string, callback: (priority: 'high' | 'medium' |
   }
 
   return input
+}
+
+export function getNextRecurrenceDate(rule: RecurringRule, fromDate: Date = new Date()): Date {
+  const interval = rule.interval || 1
+  let nextDate: Date
+
+  switch (rule.pattern) {
+    case 'daily': {
+      nextDate = addDays(fromDate, interval)
+      break
+    }
+    case 'weekday': {
+      nextDate = addDays(fromDate, 1)
+      while (nextDate.getDay() === 0 || nextDate.getDay() === 6) {
+        nextDate = addDays(nextDate, 1)
+      }
+      break
+    }
+    case 'weekly': {
+      if (rule.daysOfWeek && rule.daysOfWeek.length > 0) {
+        const currentDay = fromDate.getDay()
+        const nextDay = rule.daysOfWeek.find(d => d > currentDay)
+        if (nextDay !== undefined) {
+          nextDate = addDays(fromDate, nextDay - currentDay)
+        } else {
+          nextDate = addDays(fromDate, (7 - currentDay) + rule.daysOfWeek[0])
+        }
+      } else {
+        nextDate = addWeeks(fromDate, interval)
+      }
+      break
+    }
+    case 'monthly': {
+      nextDate = addMonths(fromDate, interval)
+      break
+    }
+    case 'yearly': {
+      nextDate = addYears(fromDate, interval)
+      break
+    }
+    default: {
+      nextDate = addDays(fromDate, 1)
+    }
+  }
+
+  return startOfDay(nextDate)
 }
 
 export function formatTimeDifference(date: Date): string {

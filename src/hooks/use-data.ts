@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Task, TaskList, Label, ViewType } from '@/lib/types'
 import { useCrud } from './use-crud'
 import { sounds } from '@/lib/sounds'
+import { getNextRecurrenceDate } from '@/lib/natural-language'
 
 export function useTasks(view: ViewType, listId: string | null, showCompleted: boolean, labelId: string | null = null, showOverdue: boolean = false) {
   const params = useMemo(() => {
@@ -40,6 +41,23 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
         },
         duration: 5000,
       })
+
+      if (task.recurringRule) {
+        const nextDate = getNextRecurrenceDate(task.recurringRule)
+        create({
+          name: task.name,
+          description: task.description,
+          listId: task.listId,
+          date: nextDate.toISOString(),
+          deadline: null,
+          estimate: task.estimate,
+          priority: task.priority,
+          labels: task.labels.map(l => l.id),
+          subTasks: task.subTasks.map(st => ({ name: st.name, completed: false, order: st.order })),
+          reminders: task.reminders.map(r => ({ type: r.type, time: r.time })),
+          recurringRule: task.recurringRule,
+        })
+      }
     }
   }
 
