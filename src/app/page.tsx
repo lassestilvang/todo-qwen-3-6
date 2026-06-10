@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useApp } from '@/hooks/use-app'
 import { useTasks, useLists, useLabels } from '@/hooks/use-data'
 import { useSortedTasks } from '@/hooks/use-sorted-tasks'
@@ -41,6 +41,19 @@ export default function Home() {
   const { activeTaskId: activeTrackedTaskId, timeElapsed: currentSessionElapsed, toggleTracking: toggleTimeTracking, formatTime } = useTimeTracking(
     currentView, currentListId, showCompleted, currentLabelId
   )
+
+  const [showMoveToList, setShowMoveToList] = useState(false)
+
+  const handleMoveToList = async (listId: string | null) => {
+    try {
+      await Promise.all(selectedTaskIds.map(id => updateTask(id, { listId })))
+      toast.success(`Moved ${selectedTaskIds.length} tasks`)
+      setSelectedTaskIds([])
+    } catch {
+      toast.error('Failed to move tasks')
+    }
+    setShowMoveToList(false)
+  }
 
   const {
     showTaskForm,
@@ -221,10 +234,34 @@ export default function Home() {
           onDeselectAll={() => setSelectedTaskIds([])}
           onToggleComplete={currentView === 'trash' ? handleRestoreTask : handleBatchToggle}
           onDelete={currentView === 'trash' ? handlePurgeTask : handleBatchDelete}
-          onMoveToList={() => {}}
+          onMoveToList={() => setShowMoveToList(true)}
           labels={currentView === 'trash' ? { toggle: 'Restore', delete: 'Purge' } : undefined}
         />
       </motion.main>
+
+      <Dialog open={showMoveToList} onOpenChange={setShowMoveToList}>
+        <DialogContent className="max-w-xs bg-card border-border text-card-foreground p-6 rounded-2xl shadow-2xl">
+          <h3 className="text-sm font-bold mb-3">Move {selectedTaskIds.length} tasks to...</h3>
+          <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
+            <button
+              onClick={() => handleMoveToList(null)}
+              className="w-full text-left px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary/70 hover:text-foreground transition-colors"
+            >
+              No list
+            </button>
+            {lists.map(list => (
+              <button
+                key={list.id}
+                onClick={() => handleMoveToList(list.id)}
+                className="w-full text-left px-3 py-2 rounded-lg text-sm text-foreground hover:bg-secondary/70 transition-colors flex items-center gap-2"
+              >
+                <span>{list.emoji}</span>
+                <span>{list.name}</span>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showTaskForm} onOpenChange={setShowTaskForm}>
         <DialogContent className="max-w-2xl max-h-[90vh] p-0 bg-card border-border overflow-hidden">
