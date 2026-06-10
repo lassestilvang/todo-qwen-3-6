@@ -34,6 +34,10 @@ interface KanbanBoardProps {
   onToggle: (task: Task) => void
   onSelect: (task: Task) => void
   selectedTaskId: string | null
+  activeTrackedTaskId: string | null
+  toggleTimeTracking: (taskId: string) => void
+  formatTime: (totalSeconds: number) => string
+  currentSessionElapsed: number
 }
 
 const COLUMNS: { id: Priority; label: string; color: string }[] = [
@@ -42,7 +46,7 @@ const COLUMNS: { id: Priority; label: string; color: string }[] = [
   { id: 'low', label: 'Low Priority', color: 'bg-blue-500' },
   { id: 'none', label: 'No Priority', color: 'bg-zinc-500' },
 ]
-export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedTaskId }: KanbanBoardProps) {
+export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedTaskId, activeTrackedTaskId, toggleTimeTracking, formatTime, currentSessionElapsed }: KanbanBoardProps) {
   const { currentView, currentListId, showCompleted, currentLabelId } = useApp()
   const { updateTask, createTask } = useTasks(currentView, currentListId, showCompleted, currentLabelId)
 
@@ -218,6 +222,10 @@ export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedT
                         onToggle={onToggle}
                         onSelect={onSelect}
                         isSelected={selectedTaskId === task.id}
+                        activeTrackedTaskId={activeTrackedTaskId}
+                        toggleTimeTracking={toggleTimeTracking}
+                        formatTime={formatTime}
+                        currentSessionElapsed={currentSessionElapsed}
                       />
                     ))}
                   </AnimatePresence>
@@ -253,6 +261,11 @@ export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedT
               onToggle={() => {}}
               onSelect={() => {}}
               isSelected={true}
+              isMultiSelected={false}
+              activeTrackedTaskId={activeTrackedTaskId}
+              toggleTimeTracking={toggleTimeTracking}
+              formatTime={formatTime}
+              currentSessionElapsed={currentSessionElapsed}
             />
           </div>
         ) : null}
