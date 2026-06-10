@@ -94,7 +94,7 @@ export function ProductivityDashboard() {
     
     let streak = 0
     const today = new Date().toISOString().split('T')[0]
-    const yesterday = new Date(new Date() - 86400000).toISOString().split('T')[0]
+    const yesterday = new Date(new Date().getTime() - 86400000).toISOString().split('T')[0]
     
     // If no tasks completed today or yesterday, streak is broken
     if (uniqueDates[0] !== today && uniqueDates[0] !== yesterday) return 0
