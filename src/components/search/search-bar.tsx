@@ -24,8 +24,9 @@ export function SearchBar() {
 
   const handleQuickCreate = async () => {
     if (!parsed) return
-    const matchedList = parsed.listName
-      ? lists.find(l => l.name.toLowerCase() === parsed.listName.toLowerCase())
+    const listName = parsed.listName
+    const matchedList = listName
+      ? lists.find(l => l.name.toLowerCase() === listName.toLowerCase())
       : null
     await create({
       name: parsed.name,

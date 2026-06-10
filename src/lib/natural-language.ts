@@ -65,8 +65,6 @@ export function parseNaturalLanguage(input: string): ParsedTask {
 }
 
 function extractRecurring(input: string, callback: (rule: RecurringRule) => void): string {
-  const lowerInput = input.toLowerCase()
-  
   const patterns: { regex: RegExp; pattern: RecurringPattern; daysOfWeek?: number[] }[] = [
     { regex: /\bevery\s+day\b/i, pattern: 'daily' },
     { regex: /\bdaily\b/i, pattern: 'daily' },

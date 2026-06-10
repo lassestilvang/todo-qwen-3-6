@@ -62,8 +62,9 @@ export function CommandPalette() {
   const handleCreateFromSearch = async () => {
     if (!searchValue.trim()) return
     const parsed = parseNaturalLanguage(searchValue)
-    const matchedList = parsed.listName
-      ? lists.find(l => l.name.toLowerCase() === parsed.listName.toLowerCase())
+    const listName = parsed.listName
+    const matchedList = listName
+      ? lists.find(l => l.name.toLowerCase() === listName.toLowerCase())
       : null
 
     await createTask({

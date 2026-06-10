@@ -216,13 +216,16 @@ export function TaskList({
                   onToggle={() => {}}
                   onSelect={() => {}}
                   isSelected={false}
+                  activeTrackedTaskId={activeTrackedTaskId}
+                  toggleTimeTracking={toggleTimeTracking}
+                  formatTime={formatTime}
+                  currentSessionElapsed={currentSessionElapsed}
                 />
               </div>
             ) : null}
           </DragOverlay>
         </DndContext>
       </div>
-      <div className="indicator-bottom" />
     </div>
   )
 }

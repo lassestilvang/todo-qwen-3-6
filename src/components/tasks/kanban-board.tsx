@@ -28,6 +28,7 @@ import {
 import { TaskItem } from './task-item'
 import { useTasks } from '@/hooks/use-data'
 import { useApp } from '@/hooks/use-app'
+import { Plus } from 'lucide-react'
 
 interface KanbanBoardProps {
   tasks: Task[]

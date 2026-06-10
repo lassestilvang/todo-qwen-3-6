@@ -264,7 +264,7 @@ export const taskRepository = {
     }))
     attachmentsByTask.set(row.id, attachmentsArr)
 
-    return mapTaskRowWithRelations(row, labelsByTask, subTasksByTask, remindersByTask, attachmentsByTask)
+    return mapTaskRowWithRelations(row, labelsByTask, subTasksByTask, remindersByTask, attachmentsByTask, new Map())
   },
 
   search(query: string): Task[] {
@@ -420,7 +420,7 @@ export const taskRepository = {
 
     if (fields.length === 0) return existing
 
-    fields.push('updated_at = datetime('now')')
+    fields.push("updated_at = datetime('now')")
     params.push(id)
 
     db.prepare(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`).run(...params)
@@ -688,6 +688,8 @@ function mapTaskRow(row: TaskRow, db: ReturnType<typeof getDb>): Task {
     SELECT * FROM attachments WHERE task_id = ?
   `).all(row.id) as Attachment[]
 
+  const dependencies : string[] = []
+
   return {
     id: row.id,
     name: row.name,
@@ -709,6 +711,7 @@ function mapTaskRow(row: TaskRow, db: ReturnType<typeof getDb>): Task {
     subTasks,
     reminders,
     attachments,
+    dependencies,
   }
 }
 
@@ -808,7 +811,7 @@ export const listRepository = {
 
     if (fields.length === 0) return this.findById(id)
 
-    fields.push('updated_at = datetime('now')')
+    fields.push("updated_at = datetime('now')")
     params.push(id)
 
     db.prepare(`UPDATE lists SET ${fields.join(', ')} WHERE id = ?`).run(...params)
@@ -884,7 +887,7 @@ export const labelRepository = {
 
     if (fields.length === 0) return this.findById(id)
 
-    fields.push('updated_at = datetime('now')')
+    fields.push("updated_at = datetime('now')")
     params.push(id)
 
     db.prepare(`UPDATE labels SET ${fields.join(', ')} WHERE id = ?`).run(...params)

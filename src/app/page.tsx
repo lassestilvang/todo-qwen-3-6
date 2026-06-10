@@ -25,7 +25,7 @@ export default function Home() {
     sidebarOpen, showCompleted, showOverdue, viewMode, sortBy, sortOrder,
     focusMode
   } = useApp()
-  const { tasks: rawTasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, clearCompleted, refresh } = useTasks(
+  const { tasks: rawTasks, loading, error, toggleComplete, deleteTask, updateTask, createTask, clearCompleted, restoreTask, purgeTask, refresh } = useTasks(
     currentView,
     currentListId,
     showCompleted,
@@ -37,7 +37,7 @@ export default function Home() {
   const tasks = useSortedTasks(rawTasks, sortBy, sortOrder)
   const { lists } = useLists()
   const { labels } = useLabels()
-  const { activeTaskId: activeTrackedTaskId, timeElapsed: currentSessionElapsed, toggleTimeTracking, formatTime } = useTimeTracking(
+  const { activeTaskId: activeTrackedTaskId, timeElapsed: currentSessionElapsed, toggleTracking: toggleTimeTracking, formatTime } = useTimeTracking(
     currentView, currentListId, showCompleted, currentLabelId
   )
 

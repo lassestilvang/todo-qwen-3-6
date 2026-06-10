@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Task } from '@/lib/types'
+import { Task, ViewType } from '@/lib/types'
 import { useTasks } from './use-data' // Assuming useTasks provides updateTask
 
 interface UseTimeTrackingResult {
@@ -11,7 +11,7 @@ interface UseTimeTrackingResult {
   formatTime: (totalSeconds: number) => string
 }
 
-export function useTimeTracking(currentView: string, currentListId: string | null, showCompleted: boolean, currentLabelId: string | null): UseTimeTrackingResult {
+export function useTimeTracking(currentView: ViewType, currentListId: string | null, showCompleted: boolean, currentLabelId: string | null): UseTimeTrackingResult {
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null)
   const [startTime, setStartTime] = useState<number | null>(null) // Unix timestamp
   const [timeElapsed, setTimeElapsed] = useState<number>(0) // for current session display
@@ -75,13 +75,25 @@ export function useTimeTracking(currentView: string, currentListId: string | nul
   }, [])
 
   const startTracking = useCallback((taskId: string) => {
-    // If a different task is already active, stop it first
     if (activeTaskId && activeTaskId !== taskId) {
-      stopTracking()
+      if (activeTaskId && startTime !== null) {
+        const task = tasks.find(t => t.id === activeTaskId)
+        if (task) {
+          const currentTotalSeconds = task.actualTimeSeconds || 0
+          const sessionElapsedSeconds = Math.floor((Date.now() - startTime) / 1000)
+          const newTotalSeconds = currentTotalSeconds + sessionElapsedSeconds
+          updateTask(activeTaskId, {
+            actualTimeSeconds: newTotalSeconds,
+            actualTime: formatTime(newTotalSeconds),
+          })
+        }
+        setActiveTaskId(null)
+        setStartTime(null)
+      }
     }
     setActiveTaskId(taskId)
     setStartTime(Date.now())
-  }, [activeTaskId, stopTracking])
+  }, [activeTaskId, startTime, tasks, updateTask, formatTime])
 
   const stopTracking = useCallback(async () => {
     if (activeTaskId && startTime !== null) {
