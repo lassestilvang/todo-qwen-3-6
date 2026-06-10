@@ -16,6 +16,7 @@ interface TaskRow {
   completed_at: string | null
   recurring_rule: string | null
   deleted_at: string | null
+  sort_order: number
   created_at: string
   updated_at: string
   list_name?: string
@@ -174,7 +175,7 @@ export const taskRepository = {
           ELSE 4
         END,
         t.date ASC,
-        t.created_at DESC
+        t.sort_order ASC
     `
 
     const rows = db.prepare(query).all(...params) as TaskRow[]
@@ -329,9 +330,11 @@ export const taskRepository = {
     const id = uuidv4()
     const recurringRuleJson = data.recurringRule ? JSON.stringify(data.recurringRule) : null
 
+    const sortOrder = Date.now()
+
     db.prepare(`
-      INSERT INTO tasks (id, name, description, list_id, date, deadline, estimate, actual_time, actual_time_seconds, priority, recurring_rule)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO tasks (id, name, description, list_id, date, deadline, estimate, actual_time, actual_time_seconds, priority, recurring_rule, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id,
       data.name,
@@ -343,7 +346,8 @@ export const taskRepository = {
       data.actualTime || null,
       data.actualTimeSeconds || 0,
       data.priority || 'none',
-      recurringRuleJson
+      recurringRuleJson,
+      sortOrder
     )
 
     return this.findById(id)!
@@ -378,6 +382,7 @@ export const taskRepository = {
       estimate: { key: 'estimate' },
       actualTime: { key: 'actual_time' },
       actualTimeSeconds: { key: 'actual_time_seconds' },
+      sortOrder: { key: 'sort_order' },
       priority: { key: 'priority' },
       completed: { key: 'completed', transform: (v: unknown) => (v as boolean) ? 1 : 0 },
       recurringRule: { key: 'recurring_rule', transform: (v: unknown) => v ? JSON.stringify(v) : null },
@@ -546,6 +551,16 @@ export const taskRepository = {
     const db = getDb()
     db.prepare("DELETE FROM tasks WHERE deleted_at IS NOT NULL").run()
   },
+
+  reorder(orderedIds: string[]): void {
+    const db = getDb()
+    const transaction = db.transaction((ids: string[]) => {
+      for (let i = 0; i < ids.length; i++) {
+        db.prepare('UPDATE tasks SET sort_order = ? WHERE id = ?').run(i, ids[i])
+      }
+    })
+    transaction(orderedIds)
+  },
 }
 
 function batchLoadTaskRelations(
@@ -687,6 +702,7 @@ function mapTaskRow(row: TaskRow, db: ReturnType<typeof getDb>): Task {
     completed: row.completed === 1,
     completedAt: row.completed_at,
     recurringRule,
+    sortOrder: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     labels,
@@ -725,6 +741,7 @@ function mapTaskRowWithRelations(
     completed: row.completed === 1,
     completedAt: row.completed_at,
     recurringRule,
+    sortOrder: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     labels: labelsByTask.get(row.id) || [],

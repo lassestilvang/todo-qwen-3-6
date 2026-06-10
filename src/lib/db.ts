@@ -35,6 +35,10 @@ export function getDb(): Database.Database {
     if (!tableInfo.some(col => col.name === 'actual_time_seconds')) {
       db.exec("ALTER TABLE tasks ADD COLUMN actual_time_seconds INTEGER NOT NULL DEFAULT 0")
     }
+    if (!tableInfo.some(col => col.name === 'sort_order')) {
+      db.exec("ALTER TABLE tasks ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0")
+      db.exec("UPDATE tasks SET sort_order = CAST(strftime('%s', created_at) AS INTEGER) WHERE sort_order = 0")
+    }
   } catch (err) {
     console.error("Migration failed:", err)
   }

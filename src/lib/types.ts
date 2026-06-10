@@ -58,6 +58,7 @@ export interface Task {
   completedAt: string | null
   deletedAt?: string | null
   recurringRule: RecurringRule | null
+  sortOrder: number
   createdAt: string
   updatedAt: string
   labels: Label[]

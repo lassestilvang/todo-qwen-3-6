@@ -1,9 +1,30 @@
 'use client'
 
+import { useState } from 'react'
 import { Task } from '@/lib/types'
 import { TaskItem } from './task-item'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ClipboardList, Sparkles, Rocket, Zap, Plus } from 'lucide-react'
+import { ClipboardList, Sparkles, Rocket, Zap, Plus, GripVertical } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
+} from '@dnd-kit/core'
+import {
+  useSortable,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { cn } from '@/lib/utils'
 
 interface TaskListProps {
   tasks: Task[]
@@ -18,6 +39,39 @@ interface TaskListProps {
   onUpdateTask?: (id: string, data: Record<string, unknown>) => Promise<unknown>
 }
 
+function SortableTaskItem({ task, ...props }: { task: Task } & Omit<React.ComponentProps<typeof TaskItem>, 'task'>) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id })
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative group">
+      <div
+        {...attributes}
+        {...listeners}
+        className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity z-10"
+      >
+        <GripVertical className="w-3.5 h-3.5 text-muted-foreground/50" />
+      </div>
+      <div className="ml-0">
+        <TaskItem task={task} {...props} />
+      </div>
+    </div>
+  )
+}
+
 export function TaskList({ 
   tasks, 
   onToggle, 
@@ -30,7 +84,41 @@ export function TaskList({
   currentSessionElapsed,
   onUpdateTask
 }: TaskListProps) {
-  if (tasks.length === 0) {
+  const [activeDragTask, setActiveDragTask] = useState<Task | null>(null)
+  const [optimisticTasks, setOptimisticTasks] = useState<Task[] | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  const displayTasks = optimisticTasks ?? tasks
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const task = tasks.find(t => t.id === event.active.id)
+    if (task) setActiveDragTask(task)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDragTask(null)
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = displayTasks.findIndex(t => t.id === active.id)
+    const newIndex = displayTasks.findIndex(t => t.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = arrayMove(displayTasks, oldIndex, newIndex)
+    setOptimisticTasks(reordered)
+
+    fetch('/api/tasks/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderedIds: reordered.map(t => t.id) }),
+    }).catch(() => setOptimisticTasks(null))
+  }
+
+  if (displayTasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8 select-none overflow-hidden relative">
         {/* Decorative background elements */}
@@ -92,23 +180,47 @@ export function TaskList({
     <div className="h-full overflow-y-auto custom-scrollbar scroller">
       <div className="indicator-top" />
       <div className="space-y-2.5 p-4 pr-3">
-        <AnimatePresence mode="popLayout">
-          {tasks.map(task => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              onToggle={onToggle}
-              onSelect={onSelect}
-              isSelected={selectedTaskId === task.id}
-              isMultiSelected={selectedTaskIds.includes(task.id)}
-              activeTrackedTaskId={activeTrackedTaskId}
-              toggleTimeTracking={toggleTimeTracking}
-              formatTime={formatTime}
-              currentSessionElapsed={currentSessionElapsed}
-              onUpdateTask={onUpdateTask}
-            />
-          ))}
-        </AnimatePresence>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={displayTasks.map(t => t.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <AnimatePresence mode="popLayout">
+              {displayTasks.map(task => (
+                <SortableTaskItem
+                  key={task.id}
+                  task={task}
+                  onToggle={onToggle}
+                  onSelect={onSelect}
+                  isSelected={selectedTaskId === task.id}
+                  isMultiSelected={selectedTaskIds.includes(task.id)}
+                  activeTrackedTaskId={activeTrackedTaskId}
+                  toggleTimeTracking={toggleTimeTracking}
+                  formatTime={formatTime}
+                  currentSessionElapsed={currentSessionElapsed}
+                  onUpdateTask={onUpdateTask}
+                />
+              ))}
+            </AnimatePresence>
+          </SortableContext>
+          <DragOverlay>
+            {activeDragTask ? (
+              <div className="opacity-80 shadow-2xl rounded-xl overflow-hidden ring-2 ring-primary/40">
+                <TaskItem
+                  task={activeDragTask}
+                  onToggle={() => {}}
+                  onSelect={() => {}}
+                  isSelected={false}
+                />
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </div>
       <div className="indicator-bottom" />
     </div>
