@@ -135,6 +135,10 @@ export function KeyboardShortcuts() {
             <ShortcutRow keys={['N', 'or', 'A']} description="Create new task" />
             <ShortcutRow keys={['C']} description="Toggle completed tasks" />
             <ShortcutRow keys={['O']} description="Toggle overdue tasks" />
+            <ShortcutRow keys={['J', '↓']} description="Select next task" />
+            <ShortcutRow keys={['K', '↑']} description="Select previous task" />
+            <ShortcutRow keys={['Enter']} description="Open task details" />
+            <ShortcutRow keys={['Esc']} description="Deselect / close details" />
           </div>
 
           <div>

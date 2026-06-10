@@ -88,11 +88,11 @@ export default function Home() {
 
       const currentIndex = tasks.findIndex(t => t.id === selectedTaskId)
 
-      if (e.key === 'ArrowDown') {
+      if (e.key === 'ArrowDown' || e.key === 'j') {
         e.preventDefault()
         const nextIndex = (currentIndex + 1) % tasks.length
         setSelectedTaskId(tasks[nextIndex].id)
-      } else if (e.key === 'ArrowUp') {
+      } else if (e.key === 'ArrowUp' || e.key === 'k') {
         e.preventDefault()
         const prevIndex = (currentIndex - 1 + tasks.length) % tasks.length
         setSelectedTaskId(tasks[prevIndex].id)
