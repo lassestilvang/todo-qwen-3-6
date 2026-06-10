@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useApp } from '@/hooks/use-app'
 import { useLists } from '@/hooks/use-data'
 import { SearchBar } from '@/components/search/search-bar'
@@ -21,8 +21,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { Task } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
-export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAddTask: () => void; taskCount: number; tasks: Task[]; onClearCompleted: () => void }) {
+export function Header({ onAddTask, taskCount, tasks, onClearCompleted, onEmptyTrash }: { onAddTask: () => void; taskCount: number; tasks: Task[]; onClearCompleted: () => void; onEmptyTrash?: () => void }) {
   const { 
     showCompleted, toggleShowCompleted, showOverdue, toggleShowOverdue, sidebarOpen, toggleSidebar, currentListId, currentView, viewMode, setViewMode,
     sortBy, setSortBy, sortOrder, setSortOrder, focusMode, toggleFocusMode
@@ -45,6 +46,18 @@ export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAd
   const completedCount = tasks.filter(t => t.completed).length
 
 
+
+  const [emptying, setEmptying] = useState(false)
+
+  const handleEmptyTrash = async () => {
+    if (emptying || !onEmptyTrash) return
+    setEmptying(true)
+    try {
+      await onEmptyTrash()
+    } finally {
+      setEmptying(false)
+    }
+  }
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
@@ -158,16 +171,11 @@ export function Header({ onAddTask, taskCount, tasks, onClearCompleted }: { onAd
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                onClick={async () => {
-                  if (confirm('Are you sure you want to permanently delete all tasks in the trash?')) {
-                    await fetch('/api/tasks?purgeTrash=true', { method: 'DELETE' })
-                    window.location.reload()
-                  }
-                }}
+                onClick={handleEmptyTrash}
                 className="text-red-400 hover:text-red-500 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors ml-1"
                 title="Empty Trash"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className={cn("w-3.5 h-3.5", emptying && "animate-spin")} />
               </motion.button>
             )}
           </AnimatePresence>

@@ -17,6 +17,7 @@ import { TaskDetail } from '@/components/tasks/task-detail'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 export default function Home() {
   const { 
@@ -125,7 +126,15 @@ export default function Home() {
           onAddTask={handleAddTask} 
           taskCount={tasks.length} 
           tasks={tasks} 
-          onClearCompleted={clearCompleted} 
+          onClearCompleted={clearCompleted}
+          onEmptyTrash={async () => {
+            const res = await fetch('/api/tasks?purgeTrash=true', { method: 'DELETE' })
+            if (!res.ok) throw new Error('Failed to empty trash')
+            toast.success('Trash emptied', {
+              description: 'All tasks permanently deleted.',
+            })
+            refresh()
+          }}
         />
 
         <div className="flex-1 flex min-h-0">
