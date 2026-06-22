@@ -39,8 +39,30 @@ export function useTaskOperations({
   const selectedTask = tasks.find(t => t.id === selectedTaskId)
 
   useEffect(() => {
-    const handleAddTaskEvent = () => {
-      setEditingTask(null)
+    const handleAddTaskEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ priority?: string; date?: string }>
+      if (customEvent.detail) {
+        setEditingTask({
+          id: '',
+          name: '',
+          description: '',
+          completed: false,
+          priority: customEvent.detail.priority || 'none',
+          date: customEvent.detail.date || null,
+          deadline: null,
+          listId: '',
+          estimate: null,
+          actualTime: null,
+          labels: [],
+          subTasks: [],
+          reminders: [],
+          attachments: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any)
+      } else {
+        setEditingTask(null)
+      }
       setShowTaskForm(true)
     }
     window.addEventListener('add-task', handleAddTaskEvent)
