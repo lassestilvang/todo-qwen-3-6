@@ -9,9 +9,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "format": "prettier --check .",
-    "test": "bun test src/tests/ --exclude src/tests/api.test.ts",
-    "test:all": "bun test src/tests/",
-    "test:watch": "bun test src/tests/ --exclude src/tests/api.test.ts --watch"
+    "test": "vitest run --exclude src/tests/api.test.ts",
+    "test:all": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -45,10 +45,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "4.1.9",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "4.1.9"
   },
   "ignoreScripts": [
     "sharp",
