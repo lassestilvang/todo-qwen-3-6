@@ -30,7 +30,7 @@ export async function PATCH(
     const body = await request.json()
     const validated = updateTaskSchema.parse(body)
 
-    const { labels, subTasks, reminders, ...taskData } = validated
+    const { labels, subTasks, reminders, dependencies, ...taskData } = validated
 
     const task = taskRepository.update(id, taskData)
 
@@ -48,6 +48,10 @@ export async function PATCH(
 
     if (reminders !== undefined) {
       taskRepository.setReminders(id, reminders)
+    }
+
+    if (dependencies !== undefined) {
+      taskRepository.setDependencies(id, dependencies)
     }
 
     const freshTask = taskRepository.findById(id)
