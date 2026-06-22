@@ -264,7 +264,14 @@ export const taskRepository = {
     }))
     attachmentsByTask.set(row.id, attachmentsArr)
 
-    return mapTaskRowWithRelations(row, labelsByTask, subTasksByTask, remindersByTask, attachmentsByTask, new Map())
+    const dependencies = db.prepare(`
+      SELECT dependency_id FROM task_dependencies WHERE task_id = ?
+    `).all(row.id) as Array<{ dependency_id: string }>
+
+    const dependenciesByTask = new Map<string, string[]>()
+    dependenciesByTask.set(row.id, dependencies.map(d => d.dependency_id))
+
+    return mapTaskRowWithRelations(row, labelsByTask, subTasksByTask, remindersByTask, attachmentsByTask, dependenciesByTask)
   },
 
   search(query: string): Task[] {
