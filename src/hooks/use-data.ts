@@ -42,6 +42,48 @@ export function useTasks(view: ViewType, listId: string | null, showCompleted: b
         duration: 5000,
       })
 
+      // Asynchronous level-up check
+      fetch('/api/tasks?view=all&showCompleted=true')
+        .then(res => {
+          if (res.ok) return res.json()
+          throw new Error()
+        })
+        .then(tasksData => {
+          const completedCount = tasksData.filter((t: any) => t.completed).length
+          const savedPomodoro = localStorage.getItem('pomodoro_sessions_completed')
+          const pomodoroCount = savedPomodoro ? parseInt(savedPomodoro, 10) : 0
+          
+          const totalXP = (completedCount * 15) + (pomodoroCount * 50)
+          const currentLevel = Math.floor(totalXP / 100) + 1
+          const savedLevelStr = localStorage.getItem('productivity_level')
+          const savedLevel = savedLevelStr ? parseInt(savedLevelStr, 10) : 1
+          
+          if (currentLevel > savedLevel) {
+            localStorage.setItem('productivity_level', currentLevel.toString())
+            sounds.playLevelUp()
+            window.dispatchEvent(new CustomEvent('trigger-level-up-confetti'))
+            
+            const getRankTitle = (lvl: number) => {
+              if (lvl <= 2) return 'Task Initiate 🎯'
+              if (lvl <= 5) return 'Focus Apprentice 🧠'
+              if (lvl <= 9) return 'Efficiency Knight ⚔️'
+              if (lvl <= 14) return 'Productivity Ninja 🥷'
+              if (lvl <= 20) return 'Focus Shogun 👑'
+              return 'Antigravity Overlord 🚀'
+            }
+            
+            setTimeout(() => {
+              toast.success(`🎉 LEVEL UP! You reached Level ${currentLevel}!`, {
+                description: `Rank Unlocked: ${getRankTitle(currentLevel)}`,
+                duration: 6000,
+              })
+            }, 800)
+          } else if (!savedLevelStr) {
+            localStorage.setItem('productivity_level', currentLevel.toString())
+          }
+        })
+        .catch(() => {})
+
       if (task.recurringRule) {
         const nextDate = getNextRecurrenceDate(task.recurringRule)
         create({
