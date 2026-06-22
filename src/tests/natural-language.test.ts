@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test'
-import { parseNaturalLanguage, formatTimeDifference } from '@/lib/natural-language'
+import { parseNaturalLanguage, formatTimeDifference, getNextRecurrenceDate } from '@/lib/natural-language'
 import { addDays, startOfDay } from 'date-fns'
 
 describe('Natural Language Parser', () => {
@@ -224,5 +224,60 @@ describe('Format Time Difference', () => {
   it('should format overdue days', () => {
     const overdue = startOfDay(addDays(new Date(), -5))
     expect(formatTimeDifference(overdue)).toBe('5 days overdue')
+  })
+})
+
+describe('getNextRecurrenceDate', () => {
+  it('should calculate next daily recurrence', () => {
+    const from = new Date(2026, 5, 23, 12, 0, 0)
+    const result = getNextRecurrenceDate({ pattern: 'daily', interval: 2 }, from)
+    expect(result.getFullYear()).toBe(2026)
+    expect(result.getMonth()).toBe(5)
+    expect(result.getDate()).toBe(25)
+  })
+
+  it('should calculate next weekday recurrence from Friday to Monday', () => {
+    const from = new Date(2026, 5, 19, 12, 0, 0) // Friday
+    const result = getNextRecurrenceDate({ pattern: 'weekday' }, from)
+    expect(result.getDay()).toBe(1) // Monday
+    expect(result.getDate()).toBe(22)
+  })
+
+  it('should calculate next weekly recurrence with specific days of week', () => {
+    const from = new Date(2026, 5, 23, 12, 0, 0) // Tuesday (day index 2)
+    // next Thursday (day index 4)
+    const result = getNextRecurrenceDate({ pattern: 'weekly', daysOfWeek: [4] }, from)
+    expect(result.getDay()).toBe(4) // Thursday
+    expect(result.getDate()).toBe(25)
+  })
+
+  it('should calculate next weekly recurrence for next week if all days of week passed', () => {
+    const from = new Date(2026, 5, 24, 12, 0, 0) // Wednesday (day index 3)
+    // Monday (day index 1)
+    const result = getNextRecurrenceDate({ pattern: 'weekly', daysOfWeek: [1] }, from)
+    expect(result.getDay()).toBe(1) // Monday
+    expect(result.getDate()).toBe(29)
+  })
+
+  it('should calculate next weekly recurrence interval weeks if daysOfWeek is empty', () => {
+    const from = new Date(2026, 5, 23, 12, 0, 0)
+    const result = getNextRecurrenceDate({ pattern: 'weekly', interval: 2 }, from)
+    expect(result.getDate()).toBe(7) // 14 days later is July 7
+    expect(result.getMonth()).toBe(6) // July
+  })
+
+  it('should calculate next monthly recurrence', () => {
+    const from = new Date(2026, 5, 23, 12, 0, 0)
+    const result = getNextRecurrenceDate({ pattern: 'monthly', interval: 1 }, from)
+    expect(result.getMonth()).toBe(6) // July
+    expect(result.getDate()).toBe(23)
+  })
+
+  it('should calculate next yearly recurrence', () => {
+    const from = new Date(2026, 5, 23, 12, 0, 0)
+    const result = getNextRecurrenceDate({ pattern: 'yearly', interval: 1 }, from)
+    expect(result.getFullYear()).toBe(2027)
+    expect(result.getMonth()).toBe(5)
+    expect(result.getDate()).toBe(23)
   })
 })
