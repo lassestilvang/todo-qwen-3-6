@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useTasks } from '@/hooks/use-data'
 import { useApp } from '@/hooks/use-app'
 import { toast } from 'sonner'
+import { sounds } from '@/lib/sounds'
 
 type TimerMode = 'work' | 'shortBreak' | 'longBreak'
 
@@ -61,6 +62,8 @@ export function PomodoroTimer() {
   const [isMuted, setIsMuted] = useState(false)
   const [focusTaskId, setFocusTaskId] = useState<string | null>(null)
   const [sessionsCompleted, setSessionsCompleted] = useState(0)
+  const [soundscape, setSoundscape] = useState<'brown' | 'ocean' | 'rain' | null>(null)
+  const [volume, setVolume] = useState(50)
 
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -72,6 +75,19 @@ export function PomodoroTimer() {
       setTimeout(() => setSessionsCompleted(parsed), 0)
     }
   }, [])
+
+  // Sync Focus Soundscape with state
+  useEffect(() => {
+    if (isRunning && mode === 'work' && soundscape && !isMuted) {
+      sounds.startSoundscape(soundscape)
+      sounds.setSoundscapeVolume(volume / 100)
+    } else {
+      sounds.stopSoundscape()
+    }
+    return () => {
+      sounds.stopSoundscape()
+    }
+  }, [isRunning, mode, soundscape, volume, isMuted])
 
   // Synthesize alarm sound using AudioContext (no external files needed)
   const playAlarmSound = (type: 'tick' | 'complete' | 'click') => {
@@ -372,6 +388,63 @@ export function PomodoroTimer() {
                       </option>
                     ))}
                 </select>
+              )}
+            </div>
+          )}
+
+          {/* Focus Soundscapes Selector */}
+          {mode === 'work' && (
+            <div className="w-full border-t border-border/40 pt-4 flex flex-col gap-2">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+                <span>Focus Soundscape:</span>
+                {soundscape && isRunning && (
+                  <span className="text-[10px] text-indigo-400 animate-pulse font-normal lowercase">
+                    synthesizing...
+                  </span>
+                )}
+              </label>
+              
+              <div className="grid grid-cols-4 gap-1.5">
+                {[
+                  { id: null, label: 'Silence' },
+                  { id: 'brown', label: 'Deep Space' },
+                  { id: 'ocean', label: 'Waves' },
+                  { id: 'rain', label: 'Rain' }
+                ].map((s) => (
+                  <button
+                    key={s.id ?? 'none'}
+                    onClick={() => {
+                      playAlarmSound('click')
+                      setSoundscape(s.id as any)
+                    }}
+                    className={`py-1.5 rounded-lg text-[11px] font-medium transition-all border ${
+                      soundscape === s.id
+                        ? 'bg-indigo-500/10 border-indigo-500/35 text-indigo-400 font-bold'
+                        : 'bg-secondary/20 border-border/40 text-muted-foreground hover:text-foreground hover:bg-secondary/40'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+
+              {soundscape && (
+                <div className="flex items-center gap-3 mt-1.5 px-1">
+                  <span className="text-muted-foreground"><Volume2 className="w-3.5 h-3.5" /></span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={volume}
+                    onChange={(e) => {
+                      const newVol = parseInt(e.target.value)
+                      setVolume(newVol)
+                      sounds.setSoundscapeVolume(newVol / 100)
+                    }}
+                    className="w-full h-1 bg-secondary rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  />
+                  <span className="text-[10px] font-mono font-medium text-muted-foreground w-6 text-right">{volume}%</span>
+                </div>
               )}
             </div>
           )}
