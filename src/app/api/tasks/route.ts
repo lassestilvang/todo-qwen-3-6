@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validated = createTaskSchema.parse(body)
 
-    const { labels, subTasks, reminders, ...taskData } = validated
+    const { labels, subTasks, reminders, dependencies, ...taskData } = validated
 
     const task = taskRepository.create(taskData)
 
@@ -45,6 +45,10 @@ export async function POST(request: NextRequest) {
 
     if (reminders.length > 0) {
       taskRepository.setReminders(task.id, reminders)
+    }
+
+    if (dependencies && dependencies.length > 0) {
+      taskRepository.setDependencies(task.id, dependencies)
     }
 
     const freshTask = taskRepository.findById(task.id)
