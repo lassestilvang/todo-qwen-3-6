@@ -10,6 +10,7 @@ import { Sidebar } from '@/components/sidebar/sidebar'
 import { Header } from '@/components/layout/header'
 import { TaskList } from '@/components/tasks/task-list'
 import { KanbanBoard } from '@/components/tasks/kanban-board'
+import { EisenhowerMatrix } from '@/components/tasks/eisenhower-matrix'
 import { MultiSelectBar } from '@/components/tasks/multi-select-bar'
 import { TaskListSkeleton } from '@/components/tasks/task-list-skeleton'
 import { TaskForm } from '@/components/tasks/task-form'
@@ -184,8 +185,20 @@ export default function Home() {
                       formatTime={formatTime}
                       currentSessionElapsed={currentSessionElapsed}
                     />
-                  ) : (
+                  ) : viewMode === 'kanban' ? (
                     <KanbanBoard
+                      tasks={tasks}
+                      onToggle={toggleComplete}
+                      onSelect={handleSelectTask}
+                      selectedTaskId={selectedTaskId}
+                      activeTrackedTaskId={activeTrackedTaskId}
+                      toggleTimeTracking={toggleTimeTracking}
+                      formatTime={formatTime}
+                      currentSessionElapsed={currentSessionElapsed}
+                      onUpdateTask={updateTask}
+                    />
+                  ) : (
+                    <EisenhowerMatrix
                       tasks={tasks}
                       onToggle={toggleComplete}
                       onSelect={handleSelectTask}
