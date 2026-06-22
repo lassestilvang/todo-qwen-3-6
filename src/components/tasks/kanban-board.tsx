@@ -23,7 +23,6 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import { TaskItem } from './task-item'
 import { useTasks } from '@/hooks/use-data'
 import { useApp } from '@/hooks/use-app'
 import { Plus } from 'lucide-react'
@@ -256,19 +255,36 @@ export function KanbanBoard({ tasks: initialTasks, onToggle, onSelect, selectedT
         }),
       }}>
         {activeTask ? (
-          <div className="w-72 cursor-grabbing shadow-2xl rounded-xl overflow-hidden ring-2 ring-primary/50">
-            <TaskItem
-              task={activeTask}
-              onToggle={() => {}}
-              onSelect={() => {}}
-              isSelected={true}
-              isMultiSelected={false}
-              activeTrackedTaskId={activeTrackedTaskId}
-              toggleTimeTracking={toggleTimeTracking}
-              formatTime={formatTime}
-              currentSessionElapsed={currentSessionElapsed}
-              onUpdateTask={onUpdateTask}
-            />
+          <div className="w-72 cursor-grabbing shadow-2xl rounded-xl overflow-hidden ring-2 ring-primary/50 bg-card border border-border/60 p-3">
+            <div className="flex items-start gap-3">
+              <div className="pt-0.5">
+                <div className={cn(
+                  "w-4 h-4 rounded border-2 border-muted-foreground/30",
+                  activeTask.completed && "bg-primary border-primary/80"
+                )} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={cn(
+                  "text-sm font-medium",
+                  activeTask.completed && "line-through text-muted-foreground"
+                )}>
+                  {activeTask.name}
+                </p>
+                {activeTask.labels.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {activeTask.labels.map(label => (
+                      <span
+                        key={label.id}
+                        className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                        style={{ backgroundColor: `${label.color}20`, color: label.color }}
+                      >
+                        {label.icon} {label.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         ) : null}
       </DragOverlay>
