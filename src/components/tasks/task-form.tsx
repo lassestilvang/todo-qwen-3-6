@@ -21,6 +21,7 @@ import { SubTasksSection } from './subtasks-section'
 import { RemindersSection } from './reminders-section'
 import { LabelsSection } from './labels-section'
 import { RecurringSection } from './recurring-section'
+import { DependenciesSection } from './dependencies-section'
 
 interface SubTaskForm {
   id?: string
@@ -43,9 +44,10 @@ interface TaskFormProps {
   onClose: () => void
   defaultListId?: string | null
   defaultDate?: Date | null
+  allTasks: Task[]
 }
 
-export function TaskForm({ task, lists, labels, onSave, onClose, defaultListId, defaultDate }: TaskFormProps) {
+export function TaskForm({ task, lists, labels, onSave, onClose, defaultListId, defaultDate, allTasks }: TaskFormProps) {
   const [name, setName] = useState(task?.name || '')
   const [description, setDescription] = useState(task?.description || '')
   const [listId, setListId] = useState(task?.listId || defaultListId || lists[0]?.id || '')
@@ -62,6 +64,7 @@ export function TaskForm({ task, lists, labels, onSave, onClose, defaultListId, 
     task?.reminders?.map(r => ({ id: r.id, type: r.type, time: r.time })) ?? []
   )
   const [recurringRule, setRecurringRule] = useState<RecurringRule | null>(task?.recurringRule || null)
+  const [selectedDependencies, setSelectedDependencies] = useState<string[]>(task?.dependencies || [])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [parsedPreview, setParsedPreview] = useState<{ 
     date?: Date; 
@@ -157,7 +160,14 @@ export function TaskForm({ task, lists, labels, onSave, onClose, defaultListId, 
       subTasks: validSubTasks,
       reminders: validReminders,
       recurringRule,
+      dependencies: selectedDependencies,
     })
+  }
+
+  const toggleDependency = (taskId: string) => {
+    setSelectedDependencies(prev =>
+      prev.includes(taskId) ? prev.filter(id => id !== taskId) : [...prev, taskId]
+    )
   }
 
   const addSubTask = () => {
@@ -447,6 +457,15 @@ export function TaskForm({ task, lists, labels, onSave, onClose, defaultListId, 
           <Separator className="bg-border/60" />
 
           <RecurringSection recurringRule={recurringRule} onChange={setRecurringRule} />
+
+          <Separator className="bg-border/60" />
+
+          <DependenciesSection
+            allTasks={allTasks}
+            currentTaskId={task?.id}
+            selectedDependencies={selectedDependencies}
+            onToggle={toggleDependency}
+          />
         </div>
       </ScrollArea>
 
