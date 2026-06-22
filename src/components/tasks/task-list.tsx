@@ -225,6 +225,7 @@ export function TaskList({
           </DragOverlay>
         </DndContext>
       </div>
+      <div className="indicator-bottom" />
     </div>
   )
 }
