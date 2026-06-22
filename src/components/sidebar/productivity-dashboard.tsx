@@ -129,6 +129,24 @@ export function ProductivityDashboard() {
   }
   const productivityScore = calculateProductivityScore()
 
+  // Level & XP gamification calculations
+  const totalXP = (completedTasks * 15) + (sessionsCompleted * 50)
+  const xpPerLevel = 100
+  const level = Math.floor(totalXP / xpPerLevel) + 1
+  const xpInCurrentLevel = totalXP % xpPerLevel
+  const progressToNextLevel = (xpInCurrentLevel / xpPerLevel) * 100
+
+  const getRank = (lvl: number) => {
+    if (lvl <= 2) return { title: 'Task Initiate', emoji: '🎯', color: 'text-blue-400' }
+    if (lvl <= 5) return { title: 'Focus Apprentice', emoji: '🧠', color: 'text-emerald-400' }
+    if (lvl <= 9) return { title: 'Efficiency Knight', emoji: '⚔️', color: 'text-amber-400' }
+    if (lvl <= 14) return { title: 'Productivity Ninja', emoji: '🥷', color: 'text-purple-400' }
+    if (lvl <= 20) return { title: 'Focus Shogun', emoji: '👑', color: 'text-rose-400' }
+    return { title: 'Antigravity Overlord', emoji: '🚀', color: 'text-indigo-400 font-extrabold animate-pulse' }
+  }
+
+  const rank = getRank(level)
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger
@@ -158,6 +176,42 @@ export function ProductivityDashboard() {
           </div>
         ) : (
           <div className="mt-4 space-y-6">
+            {/* XP & Leveling Gamification */}
+            <div className="p-4 rounded-2xl bg-card border border-border/80 space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="space-y-0.5">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Productivity Rank
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base font-bold text-foreground">{rank.title}</span>
+                    <span>{rank.emoji}</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                    Level
+                  </span>
+                  <span className="text-2xl font-black text-indigo-500">{level}</span>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex justify-between text-[11px] font-semibold text-muted-foreground">
+                  <span>Progress to Next Level</span>
+                  <span>{xpInCurrentLevel} / {xpPerLevel} XP</span>
+                </div>
+                <div className="h-2.5 w-full bg-secondary/50 rounded-full overflow-hidden border border-border/30">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressToNextLevel}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Productivity Score card */}
             <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/10 flex items-center justify-between gap-4">
               <div className="space-y-1">
