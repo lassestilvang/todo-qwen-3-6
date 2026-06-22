@@ -50,6 +50,7 @@ export const createTaskSchema = z.object({
   subTasks: z.array(subTaskSchema).optional().default([]),
   reminders: z.array(reminderSchema).optional().default([]),
   attachments: z.array(attachmentSchema).optional().default([]),
+  dependencies: z.array(z.string()).optional().default([]),
 })
 
 export const updateTaskSchema = createTaskSchema.partial()
