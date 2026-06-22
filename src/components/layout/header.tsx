@@ -30,6 +30,12 @@ export function Header({ onAddTask, taskCount, tasks, onClearCompleted, onEmptyT
   } = useApp()
   const { theme, setTheme, resolvedTheme } = useTheme()
   const { lists } = useLists()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+  }, [])
 
   const toggleViewMode = () => {
     setViewMode(viewMode === 'list' ? 'kanban' : 'list')
@@ -252,7 +258,13 @@ export function Header({ onAddTask, taskCount, tasks, onClearCompleted, onEmptyT
           onClick={toggleTheme}
           className="text-muted-foreground hover:text-foreground h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary/50 transition-colors"
         >
-          {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          {!mounted ? (
+            <div className="w-4 h-4" />
+          ) : resolvedTheme === 'dark' ? (
+            <Sun className="w-4 h-4" />
+          ) : (
+            <Moon className="w-4 h-4" />
+          )}
         </motion.button>
 
         <motion.button
