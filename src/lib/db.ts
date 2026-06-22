@@ -187,7 +187,90 @@ function initializeSchema(database: Database.Database) {
       database.exec(`INSERT INTO tasks_fts(tasks_fts) VALUES('rebuild')`)
     }
   }
+
+  deduplicateLists(database)
+  deduplicateLabels(database)
 }
+
+function deduplicateLists(database: Database.Database) {
+  try {
+    const lists = database.prepare('SELECT id, name, is_default FROM lists').all() as Array<{ id: string, name: string, is_default: number }>
+    const groups = new Map<string, Array<{ id: string, name: string, is_default: number }>>()
+    for (const list of lists) {
+      const key = list.name.toLowerCase().trim()
+      if (!groups.has(key)) {
+        groups.set(key, [])
+      }
+      groups.get(key)!.push(list)
+    }
+
+    for (const listGroup of groups.values()) {
+      if (listGroup.length <= 1) continue
+
+      // Find the primary list (prefer default list, then first item)
+      let primary = listGroup.find(l => l.is_default === 1)
+      if (!primary) {
+        primary = listGroup[0]
+      }
+
+      for (const list of listGroup) {
+        if (list.id === primary.id) continue
+
+        // Update any tasks referencing the duplicate list to the primary list
+        database.prepare('UPDATE tasks SET list_id = ? WHERE list_id = ?').run(primary.id, list.id)
+        
+        // Delete the duplicate list
+        database.prepare('DELETE FROM lists WHERE id = ?').run(list.id)
+      }
+    }
+  } catch (err) {
+    console.error("Deduplication of lists failed:", err)
+  }
+}
+
+function deduplicateLabels(database: Database.Database) {
+  try {
+    const labels = database.prepare('SELECT id, name FROM labels').all() as Array<{ id: string, name: string }>
+    const groups = new Map<string, Array<{ id: string, name: string }>>()
+    for (const label of labels) {
+      const key = label.name.toLowerCase().trim()
+      if (!groups.has(key)) {
+        groups.set(key, [])
+      }
+      groups.get(key)!.push(label)
+    }
+
+    for (const labelGroup of groups.values()) {
+      if (labelGroup.length <= 1) continue
+
+      // Find the primary label
+      const primary = labelGroup[0]
+
+      for (const label of labelGroup) {
+        if (label.id === primary.id) continue
+
+        // In task_labels, if a task already has the primary label, we want to delete this link.
+        // Otherwise update the label_id to primary.id
+        const tasksWithDuplicate = database.prepare('SELECT task_id FROM task_labels WHERE label_id = ?').all(label.id) as Array<{ task_id: string }>
+        for (const t of tasksWithDuplicate) {
+          const hasPrimary = database.prepare('SELECT 1 FROM task_labels WHERE task_id = ? AND label_id = ?').get(t.task_id, primary.id)
+          if (hasPrimary) {
+            database.prepare('DELETE FROM task_labels WHERE task_id = ? AND label_id = ?').run(t.task_id, label.id)
+          } else {
+            database.prepare('UPDATE task_labels SET label_id = ? WHERE task_id = ? AND label_id = ?').run(primary.id, t.task_id, label.id)
+          }
+        }
+
+        // Delete the duplicate label
+        database.prepare('DELETE FROM labels WHERE id = ?').run(label.id)
+      }
+    }
+  } catch (err) {
+    console.error("Deduplication of labels failed:", err)
+  }
+}
+
+
 
 export function closeDb() {
   if (db) {
