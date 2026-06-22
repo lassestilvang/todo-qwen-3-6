@@ -8,7 +8,7 @@ import { PomodoroTimer } from '@/components/layout/pomodoro-timer'
 import { KeyboardShortcuts } from '@/components/layout/keyboard-shortcuts'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
-import { Plus, Menu, Sun, Moon, LayoutList, LayoutGrid, Trash2, ArrowUpDown, Check, Maximize2, Minimize2 } from 'lucide-react'
+import { Plus, Menu, Sun, Moon, LayoutList, LayoutGrid, Grid3X3, Trash2, ArrowUpDown, Check, Maximize2, Minimize2 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -189,15 +189,31 @@ export function Header({ onAddTask, taskCount, tasks, onClearCompleted, onEmptyT
 
         <PomodoroTimer />
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={toggleViewMode}
-          className="text-muted-foreground hover:text-foreground h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary/50 transition-colors"
-          title={viewMode === 'list' ? 'Switch to Kanban' : 'Switch to List'}
-        >
-          {viewMode === 'list' ? <LayoutGrid className="w-4 h-4" /> : <LayoutList className="w-4 h-4" />}
-        </motion.button>
+        <div className="flex bg-secondary/30 p-0.5 rounded-xl border border-border/40">
+          {[
+            { id: 'list', label: 'List', icon: LayoutList },
+            { id: 'kanban', label: 'Board', icon: LayoutGrid },
+            { id: 'matrix', label: 'Matrix', icon: Grid3X3 }
+          ].map(opt => {
+            const Icon = opt.icon
+            return (
+              <button
+                key={opt.id}
+                onClick={() => setViewMode(opt.id as any)}
+                className={cn(
+                  "p-1.5 rounded-lg transition-all text-xs flex items-center gap-1.5 px-2.5 font-semibold",
+                  viewMode === opt.id
+                    ? "bg-background text-indigo-500 shadow-sm border border-border/10"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title={`Switch to ${opt.label} View`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">{opt.label}</span>
+              </button>
+            )
+          })}
+        </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger
