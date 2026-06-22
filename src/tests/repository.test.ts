@@ -225,6 +225,50 @@ describe('Task Repository', () => {
     expect(listTasks[0].name).toBe('List Task')
   })
 
+  it('should batch load task dependencies correctly', () => {
+    const taskA = taskRepository.create({ name: 'Task A' })
+    const taskB = taskRepository.create({ name: 'Task B' })
+    taskRepository.setDependencies(taskB.id, [taskA.id])
+
+    const allTasks = taskRepository.findAll('all', null, true)
+    const foundB = allTasks.find(t => t.id === taskB.id)
+    expect(foundB?.dependencies).toContain(taskA.id)
+  })
+
+  it('should parse recurring rules when finding tasks', () => {
+    const rule = { pattern: 'daily' as const, interval: 1 }
+    const task = taskRepository.create({ name: 'Recurring Task', recurringRule: rule })
+    const found = taskRepository.findById(task.id)
+    expect(found?.recurringRule).toEqual(rule)
+  })
+
+  it('should batch load all relations (reminders, attachments, labels, subtasks, dependencies) correctly', () => {
+    const taskA = taskRepository.create({ name: 'Task A' })
+    const taskB = taskRepository.create({ name: 'Task B' })
+    taskRepository.setDependencies(taskB.id, [taskA.id])
+
+    const label = labelRepository.create({ name: 'Work' })
+    taskRepository.setLabels(taskB.id, [label.id])
+
+    taskRepository.setSubTasks(taskB.id, [{ name: 'Subtask 1', completed: false, order: 0 }])
+
+    taskRepository.setReminders(taskB.id, [{ type: 'notification', time: new Date().toISOString() }])
+    
+    const db = getDb()
+    db.prepare(`
+      INSERT INTO attachments (id, task_id, name, url, size, mime_type)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run('attach-id', taskB.id, 'test.txt', 'http://example.com/test.txt', 123, 'text/plain')
+
+    const allTasks = taskRepository.findAll('all', null, true)
+    const foundTask = allTasks.find(t => t.id === taskB.id)
+    expect(foundTask?.dependencies.length).toBe(1)
+    expect(foundTask?.labels.length).toBe(1)
+    expect(foundTask?.subTasks.length).toBe(1)
+    expect(foundTask?.reminders.length).toBe(1)
+    expect(foundTask?.attachments.length).toBe(1)
+  })
+
   it('should search tasks by name', () => {
     taskRepository.create({ name: 'Buy groceries' })
     taskRepository.create({ name: 'Call mom' })
@@ -277,6 +321,18 @@ describe('Task Repository', () => {
     expect(tasks[1].priority).toBe('medium')
     expect(tasks[2].priority).toBe('low')
     expect(tasks[3].priority).toBe('none')
+  })
+
+  it('should set and get task dependencies', () => {
+    const taskA = taskRepository.create({ name: 'Task A' })
+    const taskB = taskRepository.create({ name: 'Task B' })
+
+    taskRepository.setDependencies(taskB.id, [taskA.id])
+
+    const foundB = taskRepository.findById(taskB.id)
+    expect(foundB?.dependencies).toBeDefined()
+    expect(foundB?.dependencies.length).toBe(1)
+    expect(foundB?.dependencies[0]).toBe(taskA.id)
   })
 })
 
