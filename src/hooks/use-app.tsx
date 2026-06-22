@@ -7,8 +7,8 @@ export type SortBy = 'date' | 'priority' | 'name' | 'created'
 export type SortOrder = 'asc' | 'desc'
 
 interface AppContextType extends AppState {
-  viewMode: 'list' | 'kanban'
-  setViewMode: (mode: 'list' | 'kanban') => void
+  viewMode: 'list' | 'kanban' | 'matrix'
+  setViewMode: (mode: 'list' | 'kanban' | 'matrix') => void
   accentColor: string
   setAccentColor: (color: string) => void
   sortBy: SortBy
@@ -55,9 +55,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showOverdue, setShowOverdue] = useState(() => getInitial('app_show_overdue', false))
   const [searchQuery, setSearchQuery] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(() => getInitial('app_sidebar_open', true))
-  const [viewMode, setViewMode] = useState<'list' | 'kanban'>(() => {
+  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'matrix'>(() => {
     const saved = getInitial<string | null>('app_view_mode', null)
-    return saved === 'kanban' || saved === 'list' ? saved : 'list'
+    return saved === 'kanban' || saved === 'list' || saved === 'matrix' ? saved as 'list' | 'kanban' | 'matrix' : 'list'
   })
   const [accentColor, setAccentColor] = useState(() => getInitial('app_accent_color', '#6366f1'))
   const [sortBy, setSortBy] = useState<SortBy>(() => {
