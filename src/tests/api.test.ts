@@ -190,4 +190,29 @@ describe('API Integration Tests', () => {
     const changes = await changesRes.json()
     expect(changes.length).toBeGreaterThan(0)
   })
+
+  it('should support task dependencies via API', async () => {
+    const resA = await fetch('http://localhost:3000/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Task A' }),
+    })
+    const taskA = await resA.json()
+
+    const resB = await fetch('http://localhost:3000/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Task B', dependencies: [taskA.id] }),
+    })
+    const taskB = await resB.json()
+    expect(taskB.dependencies).toContain(taskA.id)
+
+    const patchRes = await fetch(`http://localhost:3000/api/tasks/${taskB.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dependencies: [] }),
+    })
+    const patchedB = await patchRes.json()
+    expect(patchedB.dependencies.length).toBe(0)
+  })
 })
