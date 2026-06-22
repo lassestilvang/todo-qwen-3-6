@@ -53,9 +53,10 @@ interface TaskDetailProps {
   onUpdate?: (id: string, data: Record<string, unknown>) => Promise<unknown>
   onRestore?: () => void
   onPurge?: () => void
+  allTasks?: Task[]
 }
 
-export function TaskDetail({ task, onClose, onDelete, onEdit, onDuplicate, onUpdate, onRestore, onPurge }: TaskDetailProps) {
+export function TaskDetail({ task, onClose, onDelete, onEdit, onDuplicate, onUpdate, onRestore, onPurge, allTasks }: TaskDetailProps) {
   const [changes, setChanges] = useState<TaskChange[]>([])
   const [loadingChanges, setLoadingChanges] = useState(false)
   const [newSubTaskName, setNewSubTaskName] = useState('')
@@ -327,12 +328,35 @@ export function TaskDetail({ task, onClose, onDelete, onEdit, onDuplicate, onUpd
                   <Separator className="bg-border/60" />
                   <div>
                     <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium">
-                      <ListChecks className="w-3 h-3" /> Blocked by ({task.dependencies.length})
+                      <ListChecks className="w-3.5 h-3.5 text-amber-500" /> Blocked by ({task.dependencies.length})
                     </p>
                     <div className="space-y-1.5">
-                      {task.dependencies.map(depId => (
-                        <div key={depId} className="text-sm text-foreground/90">
-                          {depId}
+                      {task.dependencies.map(depId => {
+                        const depTask = allTasks?.find(t => t.id === depId)
+                        return (
+                          <div key={depId} className="text-xs flex items-center gap-2 bg-secondary/35 border border-border/40 p-2 rounded-xl text-foreground">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                            <span className="truncate">{depTask ? depTask.name : 'Unknown Task'}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {allTasks && allTasks.filter(t => t.dependencies.includes(task.id) && !t.deletedAt).length > 0 && (
+                <>
+                  <Separator className="bg-border/60" />
+                  <div>
+                    <p className="text-muted-foreground text-xs mb-2 flex items-center gap-1 font-medium">
+                      <ListChecks className="w-3.5 h-3.5 text-indigo-500" /> Blocking ({allTasks.filter(t => t.dependencies.includes(task.id) && !t.deletedAt).length})
+                    </p>
+                    <div className="space-y-1.5">
+                      {allTasks.filter(t => t.dependencies.includes(task.id) && !t.deletedAt).map(blockingTask => (
+                        <div key={blockingTask.id} className="text-xs flex items-center gap-2 bg-secondary/35 border border-border/40 p-2 rounded-xl text-foreground">
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+                          <span className="truncate">{blockingTask.name}</span>
                         </div>
                       ))}
                     </div>
