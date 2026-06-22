@@ -236,6 +236,7 @@ export default function Home() {
                   onUpdate={updateTask}
                   onRestore={handleRestoreTask}
                   onPurge={handlePurgeTask}
+                  allTasks={tasks}
                 />
               </motion.div>
             )}
@@ -288,6 +289,7 @@ export default function Home() {
             }}
             defaultListId={currentListId}
             defaultDate={currentView === 'today' ? new Date() : currentView === 'week' ? new Date() : null}
+            allTasks={tasks}
           />
         </DialogContent>
       </Dialog>
