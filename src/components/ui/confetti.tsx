@@ -53,14 +53,47 @@ export function Confetti() {
     particlesRef.current = particles
   };
 
+  const initLevelUpParticles = () => {
+    const width = window.innerWidth
+    const height = window.innerHeight
+    const particles: Particle[] = []
+
+    // 160 particles shooting from bottom corners
+    for (let i = 0; i < 160; i++) {
+      const fromLeft = i % 2 === 0
+      particles.push({
+        x: fromLeft ? 0 : width,
+        y: height - 10,
+        size: Math.random() * 8 + 6,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        speedX: fromLeft ? (Math.random() * 8 + 4) : -(Math.random() * 8 + 4),
+        speedY: -(Math.random() * 16 + 12), // shoot upwards
+        rotation: Math.random() * 360,
+        rotationSpeed: Math.random() * 14 - 7,
+        opacity: 1,
+      })
+    }
+
+    particlesRef.current = particles
+  }
+
   useEffect(() => {
     const triggerConfetti = () => {
       setIsActive(true)
       initParticles()
     }
 
+    const triggerLevelUpConfetti = () => {
+      setIsActive(true)
+      initLevelUpParticles()
+    }
+
     window.addEventListener('trigger-confetti', triggerConfetti)
-    return () => window.removeEventListener('trigger-confetti', triggerConfetti)
+    window.addEventListener('trigger-level-up-confetti', triggerLevelUpConfetti)
+    return () => {
+      window.removeEventListener('trigger-confetti', triggerConfetti)
+      window.removeEventListener('trigger-level-up-confetti', triggerLevelUpConfetti)
+    }
   }, [])
 
   useEffect(() => {
